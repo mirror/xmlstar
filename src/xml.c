@@ -1,4 +1,4 @@
-/*  $Id: xml.c,v 1.27 2003/05/10 23:00:50 mgrouch Exp $  */
+/*  $Id: xml.c,v 1.28 2003/05/11 18:40:38 mgrouch Exp $  */
 
 /*
 
@@ -38,6 +38,7 @@ extern int trMain(int argc, char **argv);
 extern int valMain(int argc, char **argv);
 extern int foMain(int argc, char **argv);
 extern int elMain(int argc, char **argv);
+extern int c14nMain(int argc, char **argv);
 
 static const char usage_str[] =
 "XMLStarlet Toolkit: Command line utilities for XML\n"
@@ -49,6 +50,7 @@ static const char usage_str[] =
 "   val  (or validate)  - Validate XML document(s) (well-formed/DTD/XSD/RelaxNG)\n"
 "   fo   (or format)    - Format XML document(s)\n"
 "   el   (or elements)  - Display element structure of XML document\n"
+"   c14n (or canonic)   - XML canonization\n"
 "<options> are:\n"
 "   --version           - show version\n"
 "   --help              - show help\n"
@@ -111,6 +113,10 @@ main(int argc, char **argv)
     {
         ret = elMain(argc, argv);
     }
+    else if (!strcmp(argv[1], "c14n") || !strcmp(argv[1], "canonic"))
+    {
+        ret = c14nMain(argc, argv);
+    }
     else if (!strcmp(argv[1], "--version"))
     {
         fprintf(stdout, "%s\n", VERSION);
@@ -123,4 +129,3 @@ main(int argc, char **argv)
     
     exit(ret);
 }
-
