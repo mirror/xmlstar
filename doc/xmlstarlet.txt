@@ -588,6 +588,17 @@ Result Output:
 Hello World!
 
 Command:
+./xmlstarlet sel -t -v "//*[local-name()='query']" xsql/jobserve.xsql
+Result Output:
+
+  SELECT substr(title,1,26) short_title, title, location, skills
+  FROM job
+  WHERE UPPER(title) LIKE '%ORACLE%'
+  ORDER BY first_posted DESC
+
+
+
+Command:
 ./xmlstarlet sel -t -m "/xml/table/rec[@id='2']" -v numField xml/table.xml
 Result Output:
 346
