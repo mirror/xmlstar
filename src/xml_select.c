@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.40 2002/12/11 00:50:45 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.41 2002/12/11 01:54:23 mgrouch Exp $  */
 
 /*
 
@@ -231,6 +231,11 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
         else if(!strcmp(argv[i], "-v") || !strcmp(argv[i], "--value-of"))
         {
             templateEmpty = 0;
+            if ((i+1) >= argc)
+            {
+                fprintf(stderr, "-v option requires argument\n");
+                exit (1);
+            }
             for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
             c += sprintf(xsl_buf + c, "<xsl:value-of select=\"%s\"/>\n", argv[i+1]);
             i++;
@@ -238,6 +243,11 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
         else if(!strcmp(argv[i], "-o") || !strcmp(argv[i], "--output"))
         {
             templateEmpty = 0;
+            if ((i+1) >= argc)
+            {
+                fprintf(stderr, "-o option requires argument\n");
+                exit (1);
+            }
             for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
             c += sprintf(xsl_buf + c, "<xsl:value-of select=\"'%s'\"/>\n", argv[i+1]);
             i++;
@@ -257,6 +267,11 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
         else if(!strcmp(argv[i], "-m") || !strcmp(argv[i], "--match"))
         {
             templateEmpty = 0;
+            if ((i+1) >= argc)
+            {
+                fprintf(stderr, "-m option requires argument\n");
+                exit (1);
+            }
             for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
             c += sprintf(xsl_buf + c, "<xsl:for-each select=\"%s\">\n", argv[i+1]);
             m++;
@@ -343,9 +358,8 @@ int
 selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops,
                int start, int argc, char **argv)
 {
-    int c, i, j, k, m, t;
-    int templateEmpty = 1;
-    
+    int c, i, t;
+   
     xsl_buf[0] = 0;
     *len = 0;
     c = 0;
