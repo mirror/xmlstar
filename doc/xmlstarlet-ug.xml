@@ -1362,6 +1362,22 @@ Lists current directory in XML format.
 XMLStarlet is a command line toolkit to query/edit/check/transform
 XML documents (for more information see http://xmlstar.sourceforge.net/)
 </programlisting>
+
+      <para>EXAMPLE</para>
+
+      <programlisting>xml ls
+</programlisting>
+
+      <para>Output</para>
+
+      <programlisting>&lt;xml&gt;
+&lt;d a="rwxr-xr-x" acc="2004.02.13 00:06:03" mod="2004.02.13 00:06:00" sz="4096"  n="."/&gt;
+&lt;d a="rwxr-xr-x" acc="2004.02.12 23:54:35" mod="2004.02.13 00:00:09" sz="4096"  n=".."/&gt;
+&lt;f a="rw-r--r--" acc="2004.02.12 23:54:58" mod="2004.02.12 23:54:58" sz="0"     n="resume.xml"/&gt;
+&lt;f a="rw-r--r--" acc="2004.02.12 23:54:58" mod="2004.02.12 23:54:58" sz="0"     n="resume-2004.xml"/&gt;
+&lt;d a="rwxr-xr-x" acc="2004.02.13 00:04:52" mod="2004.02.13 00:04:52" sz="4096"  n="old-resumes"/&gt;
+&lt;/xml&gt;
+</programlisting>
     </sect1>
   </chapter>
 </book>
