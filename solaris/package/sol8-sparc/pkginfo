@@ -1,9 +1,9 @@
-# $Id: pkginfo,v 1.2 2003/05/07 04:20:37 mgrouch Exp $
+# $Id: pkginfo,v 1.3 2003/05/07 22:19:19 mgrouch Exp $
 
 PKG=SFxmlstar
 NAME="xmlstarlet Command Line XML Toolkit"
 ARCH=sparc
-VERSION=0.0.2
+VERSION=0.0.3
 MAXINST=1
 CATEGORY=application
 DESC="xmlstarlet Command Line XML Toolkit"

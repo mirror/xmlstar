@@ -1,4 +1,4 @@
-/*  $Id: xml.c,v 1.25 2003/05/07 04:06:10 mgrouch Exp $  */
+/*  $Id: xml.c,v 1.26 2003/05/07 22:19:19 mgrouch Exp $  */
 
 /*
 
@@ -44,7 +44,7 @@ static const char usage_str[] =
 "   ed   (or edit)      - Edit/Update XML document(s)\n"
 "   sel  (or select)    - Select data or query XML document(s) (XPATH, etc)\n"
 "   tr   (or transform) - Transform XML document(s) using XSLT\n"
-"   val  (or validate)  - Validate XML document(s) (well-formed/DTD/XSD)\n"
+"   val  (or validate)  - Validate XML document(s) (well-formed/DTD/XSD/RelaxNG)\n"
 "   fo   (or format)    - Format XML document(s)\n"
 "   el   (or elements)  - Display element structure of XML document\n"
 "<options> are:\n"
@@ -111,7 +111,7 @@ main(int argc, char **argv)
     }
     else if (!strcmp(argv[1], "--version"))
     {
-        fprintf(stdout, "0.0.2\n");  /* TODO */
+        fprintf(stdout, "0.0.3\n");  /* TODO */
         ret = 0;
     }
     else
