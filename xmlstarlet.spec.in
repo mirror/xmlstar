@@ -41,8 +41,8 @@ rm -fr %{buildroot}
 %defattr(-, root, root)
 
 %doc AUTHORS ChangeLog NEWS README Copyright TODO doc/xmlstarlet.txt doc/xmlstarlet.pdf
+%doc %{_mandir}/man1/xmlstarlet.1*
 
 %{prefix}/bin/xml
-
 %changelog
 
