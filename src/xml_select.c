@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.11 2002/11/16 02:47:17 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.12 2002/11/16 02:55:29 mgrouch Exp $  */
 
 #include <string.h>
 #include <stdio.h>
@@ -42,11 +42,17 @@ void select_usage(int argc, char **argv)
     FILE* o = stderr;
 
     fprintf(o, "XMLStarlet Toolkit: Select from XML document(s)\n");
-    fprintf(o, "Usage: xml sel {<template>} {<xml-file>}\n");
+    fprintf(o, "Usage: xml sel <global-options> {<template>} {<xml-file>}\n");
     fprintf(o, "where\n");
+    fprintf(o, "  <global-options> - global options for selecting\n");
     fprintf(o, "  <xml-file> - input XML document file name (stdin is used if missing)\n");
     fprintf(o, "  <template> - template for querying XL document with following syntax:\n\n");
 
+    fprintf(o, "<global-options> are:\n");
+    fprintf(o, "  -C - display generated XSLT\n");
+    fprintf(o, "  -R - print root element <xsl-select>\n");
+    fprintf(o, "  -T - output is text (default is XML)\n\n");
+    
     fprintf(o, "Syntax for templates: -t|--template <options>\n");
     fprintf(o, "where <options>\n");
     fprintf(o, "  -c or --copy-of <xpath>  - print copy of XPATH expression\n");
@@ -54,10 +60,11 @@ void select_usage(int argc, char **argv)
     fprintf(o, "  -o or --output <order>   - print string literal \n");
     fprintf(o, "  -n or --nl              - print new line\n");
     fprintf(o, "  -s or --sort <order> - sort in order (used after -m)\n");
-    fprintf(o, "  -m or --match <xpath>   - match XPATH expression\n");
-    fprintf(o, "There can be multiple --match and --print options in a single template\n");
-    fprintf(o, "Effect of applying command line templates can be illustrated with the following XSLT analogue\n\n");
-
+    fprintf(o, "  -m or --match <xpath>   - match XPATH expression\n\n");
+    fprintf(o, "There can be multiple --match, --copy-of, value-of, etc options\n");
+    fprintf(o, "in a single template. The effect of applying command line templates\n");
+    fprintf(o, "can be illustrated with the following XSLT analogue\n\n");
+ 
     fprintf(o, "xml sel -t -c \"xpath0\" -m \"xpath1\" -m \"xpath2\" -v \"xpath3\" \\\n");
     fprintf(o, "        -t -m \"xpath4\" -c \"xpath5\"\n\n");
 
