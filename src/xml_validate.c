@@ -1,4 +1,4 @@
-/*  $Id: xml_validate.c,v 1.25 2003/05/12 23:55:43 mgrouch Exp $  */
+/*  $Id: xml_validate.c,v 1.26 2003/09/18 01:56:54 mgrouch Exp $  */
 
 /*
 
@@ -135,44 +135,44 @@ valParseOptions(valOptionsPtr ops, int argc, char **argv)
             ops->wellFormed = 1;
             i++;
         }
-        if (!strcmp(argv[i], "--err") || !strcmp(argv[i], "-e"))
+        else if (!strcmp(argv[i], "--err") || !strcmp(argv[i], "-e"))
         {
             ops->err = 1;
             i++;
         }
-        if (!strcmp(argv[i], "--list-good") || !strcmp(argv[i], "-g"))
+        else if (!strcmp(argv[i], "--list-good") || !strcmp(argv[i], "-g"))
         {
             ops->listGood = 1;
             ops->show_val_res = 0;
             i++;
         }
-        if (!strcmp(argv[i], "--list-bad") || !strcmp(argv[i], "-b"))
+        else if (!strcmp(argv[i], "--list-bad") || !strcmp(argv[i], "-b"))
         {
             ops->listGood = -1;
             ops->show_val_res = 0;
             i++;
         }
-        if (!strcmp(argv[i], "--quiet") || !strcmp(argv[i], "-q"))
+        else if (!strcmp(argv[i], "--quiet") || !strcmp(argv[i], "-q"))
         {
             ops->listGood = 0;
             ops->show_val_res = 0;
             i++;
         }
-        if (!strcmp(argv[i], "--dtd") || !strcmp(argv[i], "-d"))
+        else if (!strcmp(argv[i], "--dtd") || !strcmp(argv[i], "-d"))
         {
             i++;
             if (i >= argc) valUsage(argc, argv);
             ops->dtd = argv[i];
             i++;
         }
-        if (!strcmp(argv[i], "--xsd") || !strcmp(argv[i], "-s"))
+        else if (!strcmp(argv[i], "--xsd") || !strcmp(argv[i], "-s"))
         {
             i++;
             if (i >= argc) valUsage(argc, argv);
             ops->schema = argv[i];
             i++;
         }
-        if (!strcmp(argv[i], "--relaxng") || !strcmp(argv[i], "-r"))
+        else if (!strcmp(argv[i], "--relaxng") || !strcmp(argv[i], "-r"))
         {
             i++;
             if (i >= argc) valUsage(argc, argv);
@@ -281,7 +281,7 @@ valMain(int argc, char **argv)
     static valOptions ops;
     int invalidFound = 0;
     
-    if (argc <=2) valUsage(argc, argv);
+    if (argc <= 2) valUsage(argc, argv);
     valInitOptions(&ops);
     start = valParseOptions(&ops, argc, argv);
 
