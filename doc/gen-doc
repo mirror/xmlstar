@@ -85,6 +85,12 @@ echo ""
 cat ../examples/html/hello1.html
 echo ""
 echo ""
+echo "Input4"
+echo "examples/sgml/docbook1.sgml"
+echo ""
+cat ../examples/sgml/docbook1.sgml
+echo ""
+echo ""
 echo "Stylesheet1"
 echo "examples/xsl/sum1.xsl"
 echo ""
