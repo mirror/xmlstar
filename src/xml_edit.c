@@ -1,4 +1,4 @@
-/* $Id: xml_edit.c,v 1.9 2002/11/23 18:20:27 mgrouch Exp $ */
+/* $Id: xml_edit.c,v 1.8 2002/11/23 18:18:33 mgrouch Exp $ */
 
 #include <string.h>
 #include <stdio.h>
@@ -225,7 +225,7 @@ void xml_ed_delete(xmlDocPtr doc, char *str)
 #if defined(LIBXML_XPTR_ENABLED)
     }
 #endif
-    /*xmlXPathDebugDumpObject(stderr, res, 0);*/
+    xmlXPathDebugDumpObject(stderr, res, 0);
     if (res == NULL) {
         return;
     }
@@ -234,10 +234,9 @@ void xml_ed_delete(xmlDocPtr doc, char *str)
         {
             int i;
             xmlNodeSetPtr cur = res->nodesetval;
-            /*
             fprintf(stderr, "Object is a Node Set :\n");
             fprintf(stderr, "Set contains %d nodes:\n", cur->nodeNr);
-            */
+            
             for (i = 0; i < cur->nodeNr; i++) {
                 /*
                 fprintf(output, shift);
@@ -249,7 +248,7 @@ void xml_ed_delete(xmlDocPtr doc, char *str)
                  *  delete node
                  */
                  xmlUnlinkNode(cur->nodeTab[i]);
-                 /*fprintf(stderr, "unlinked\n");*/
+                 fprintf(stderr, "unlinked\n");
                  //xmlFreeNode(cur->nodeTab[i]);
             }
             /*
