@@ -1,0 +1,1 @@
+./xmlstarlet sel -t -v "//*[local-name()='query']" xsql/jobserve.xsql
