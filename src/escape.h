@@ -1,4 +1,4 @@
-/*  $Id: escape.h,v 1.1 2004/11/21 20:18:49 mgrouch Exp $  */
+/*  $Id: escape.h,v 1.2 2005/03/12 03:24:23 mgrouch Exp $  */
 
 #ifndef __ESCAPE_H
 #define __ESCAPE_H
@@ -33,7 +33,8 @@ typedef enum {
     XML_C14N_NORMALIZE_ATTR = 0,
     XML_C14N_NORMALIZE_COMMENT = 1,
     XML_C14N_NORMALIZE_PI = 2,
-    XML_C14N_NORMALIZE_TEXT = 3
+    XML_C14N_NORMALIZE_TEXT = 3,
+    XML_C14N_NORMALIZE_NOTHING = 4
 } xml_C14NNormalizationMode;
 
 extern xmlChar *xml_C11NNormalizeString(const xmlChar * input,

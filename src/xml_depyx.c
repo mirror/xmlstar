@@ -1,4 +1,4 @@
-/*  $Id: xml_depyx.c,v 1.7 2005/03/12 02:30:31 mgrouch Exp $  */
+/*  $Id: xml_depyx.c,v 1.8 2005/03/12 03:24:23 mgrouch Exp $  */
 
 /*
 
@@ -190,6 +190,22 @@ pyxDePyx(char *file)
                printf("<!DOCTYPE");
                pyxDecode(line+1, XML_C14N_NORMALIZE_TEXT);
                printf(">");
+               printf("\n");  /* is this correct? */
+           }
+           else if (line[0] == 'C')
+           {
+               /* comment */
+               printf("<!--");
+               pyxDecode(line+1, XML_C14N_NORMALIZE_TEXT);
+               printf("-->");
+               printf("\n");  /* is this correct? */
+           }
+           else if (line[0] == '[')
+           {
+               /* CDATA */
+               printf("<![CDATA[");
+               pyxDecode(line+1, XML_C14N_NORMALIZE_NOTHING);
+               printf("]]>");
                printf("\n");  /* is this correct? */
            }
            else if (line[0] == ')')

@@ -1,4 +1,4 @@
-/* $Id: xml_pyx.c,v 1.8 2005/03/12 02:30:33 mgrouch Exp $ */
+/* $Id: xml_pyx.c,v 1.9 2005/03/12 03:24:23 mgrouch Exp $ */
 
 /**
  *  Based on xmln from pyxie project
@@ -182,6 +182,21 @@ pyxExternalSubsetHandler(void *ctx ATTRIBUTE_UNUSED, const xmlChar *name,
         fprintf(stdout, " \"%s\"\n", SystemID);
 }
 
+static void
+pyxCommentHandler(void *ctx ATTRIBUTE_UNUSED, const xmlChar *value)
+{
+    fprintf(stdout,"C");
+    SanitizeData((const char *) value, xmlStrlen(value));
+    fprintf(stdout,"\n");
+}
+
+static void
+pyxCdataBlockHandler(void *ctx ATTRIBUTE_UNUSED, const xmlChar *value, int len)
+{
+    fprintf(stdout,"[");
+    SanitizeData((const char *) value, len);
+    fprintf(stdout,"\n");
+}
 
 static void
 pyxUsage()
@@ -215,6 +230,8 @@ pyx_process_file(const char *filename)
     xmlSAX_handler.reference = pyxExternalEntityReferenceHandler;
     xmlSAX_handler.unparsedEntityDecl = pyxUnparsedEntityDeclHandler;
     xmlSAX_handler.externalSubset = pyxExternalSubsetHandler;
+    xmlSAX_handler.comment = pyxCommentHandler;
+    xmlSAX_handler.cdataBlock = pyxCdataBlockHandler;
 
     ret = xmlSAXUserParseFile(&xmlSAX_handler, NULL, filename);
     xmlCleanupParser();
