@@ -136,6 +136,8 @@ where <action>
    -u or --update <xpath> -v (--value) <value>
 			  -x (--expr) <xpath>
 
+Currently only --delete, --move, and --rename are implemented.
+
 XMLStarlet is a command line toolkit to query/edit/check/transform
 XML documents (for more information see http://xmlstar.sourceforge.net/)
 
@@ -719,6 +721,60 @@ Result Output:
   <test_name>foo</test_name>
   <subtest>...</subtest>
 </test_output>
+
+
+Command:
+# Rename attributes
+xml ed -r "//*/@id" -v ID xml/tab-obj.xml
+Result Output:
+<?xml version="1.0"?>
+<xml>
+  <table>
+    <rec ID="1">
+      <numField>123</numField>
+      <stringField>String Value</stringField>
+      <object name="Obj1">
+        <property name="size">10</property>
+        <property name="type">Data</property>
+      </object>
+    </rec>
+    <rec ID="2">
+      <numField>346</numField>
+      <stringField>Text Value</stringField>
+    </rec>
+    <rec ID="3">
+      <numField>-23</numField>
+      <stringField>stringValue</stringField>
+    </rec>
+  </table>
+</xml>
+
+
+Command:
+# Rename elements
+xml ed -r "/xml/table/rec" -v record xml/tab-obj.xml
+Result Output:
+<?xml version="1.0"?>
+<xml>
+  <table>
+    <record id="1">
+      <numField>123</numField>
+      <stringField>String Value</stringField>
+      <object name="Obj1">
+        <property name="size">10</property>
+        <property name="type">Data</property>
+      </object>
+    </record>
+    <record id="2">
+      <numField>346</numField>
+      <stringField>Text Value</stringField>
+    </record>
+    <record id="3">
+      <numField>-23</numField>
+      <stringField>stringValue</stringField>
+    </record>
+  </table>
+</xml>
 
 
 Command:
