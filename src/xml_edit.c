@@ -1,4 +1,4 @@
-/*  $Id: xml_edit.c,v 1.44 2005/01/07 02:14:09 mgrouch Exp $  */
+/*  $Id: xml_edit.c,v 1.45 2005/01/08 00:07:03 mgrouch Exp $  */
 
 /*
 
@@ -1061,7 +1061,13 @@ edMain(int argc, char **argv)
     {
         xmlDocPtr doc = xmlParseFile("-");
 
-        if (!doc) exit(2);
+        if (!doc)
+        {
+            edCleanupNSArr(ns_arr);
+            xmlCleanupParser();
+            xmlCleanupGlobals();
+            exit(2);
+        }
 
         edProcess(doc, ops, ops_count);
 
@@ -1099,7 +1105,13 @@ edMain(int argc, char **argv)
     {
         xmlDocPtr doc = xmlParseFile(argv[n]);
 
-        if (!doc) exit(2);
+        if (!doc)
+        {
+            edCleanupNSArr(ns_arr);
+            xmlCleanupParser();
+            xmlCleanupGlobals();
+            exit(2);
+        }
 
         edProcess(doc, ops, ops_count);
 
