@@ -1,4 +1,4 @@
-/* $Id: xml_edit.c,v 1.4 2002/11/23 05:39:57 mgrouch Exp $ */
+/* $Id: xml_edit.c,v 1.5 2002/11/23 06:17:27 mgrouch Exp $ */
 
 #include <string.h>
 #include <stdio.h>
@@ -11,7 +11,6 @@
 #include <libxml/xinclude.h>
 #include <libxml/parserInternals.h>
 #include <libxml/uri.h>
-
 
 /*
    TODO:  
@@ -83,6 +82,7 @@ void edit_usage(int argc, char **argv)
 
 int xml_ed_process(xmlDocPtr doc, XmlEdAction* ops, int ops_count)
 {
+    int res = 0;
     int k;
     
     for (k = 0; k < ops_count; k++)
@@ -96,6 +96,8 @@ int xml_ed_process(xmlDocPtr doc, XmlEdAction* ops, int ops_count)
                 break;
         }
     }
+
+    return res;
 }
 
 int xml_edit(int argc, char **argv)
@@ -114,7 +116,7 @@ int xml_edit(int argc, char **argv)
             if (i >= argc) edit_usage(argc, argv);
             ops[j].op = XML_ED_DELETE;
             ops[j].arg1 = argv[i];
-            ops[j].arg1 = 0;
+            ops[j].arg2 = 0;
             ops[j].type = XML_UNDEFINED;
             j++;            
         }
@@ -126,20 +128,29 @@ int xml_edit(int argc, char **argv)
             ops[j].arg1 = argv[i];
             i++;
             if (i >= argc) edit_usage(argc, argv);
-            ops[j].arg1 = argv[i];
+            ops[j].arg2 = argv[i];
             ops[j].type = XML_UNDEFINED;
             j++;
         }
-        else if (argv[i][0] != '-')
+        else
         {
-            break;
+            if (argv[i][0] != '-')
+            {
+                break;
+            }
         }
 
         i++;
     }
 
-    ops_count = j;    
+    ops_count = j;
 
+    if (i >= argc)
+    {
+        xmlDocPtr doc = xmlParseFile("-");
+        xml_ed_process(doc, ops, ops_count);
+    }
+    
     for (n=i; n<argc; n++)
     {
         xmlDocPtr doc = xmlParseFile(argv[n]);

@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.21 2002/11/23 05:39:57 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.22 2002/11/23 06:19:31 mgrouch Exp $  */
 
 #include <string.h>
 #include <stdio.h>
@@ -215,9 +215,12 @@ int xml_select(int argc, char **argv)
                     i--;
                     break;
                 }
-                else if(argv[i][0] != '-')
+                else
                 {
-                   break;
+                    if(argv[i][0] != '-')
+                    {
+                        break;
+                    }
                 }
                 
                 i++;
