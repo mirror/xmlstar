@@ -1,4 +1,4 @@
-/* $Id: xml_pyx.c,v 1.6 2004/11/11 03:39:34 mgrouch Exp $ */
+/* $Id: xml_pyx.c,v 1.7 2005/03/12 02:05:06 mgrouch Exp $ */
 
 /**
  *  Based on xmln from pyxie project
@@ -86,19 +86,19 @@ pyxStartElement(void *userData, const xmlChar *name, const xmlChar **atts)
         for (p = atts; *p != NULL; p++);
 
         AttributeCount = (p - atts) >> 1; /* (name,value) pairs 
-					     so divide by two */
+                                           so divide by two */
         if (AttributeCount > 1)
             /* Sort the pairs based on the name part of the pair */
             qsort ((void *)atts,
-		    AttributeCount,
-		    sizeof(char *)*2,
-		    CompareAttributes);
+                    AttributeCount,
+                    sizeof(char *)*2,
+                    CompareAttributes);
 
         while (*atts) {
             /* Attribute Name */
             fprintf (stdout,"A%s ",*atts);
             atts++; /* Now pointing at value - can contain literal "\n" 
-		       so escape */
+                       so escape */
             SanitizeData((const char *) *atts, xmlStrlen(*atts));
             atts++;
             putchar('\n');
@@ -109,21 +109,21 @@ pyxStartElement(void *userData, const xmlChar *name, const xmlChar **atts)
 void
 pyxEndElement(void *userData, const xmlChar *name)
 {
-    fprintf (stdout,")%s\n",name);
+    fprintf(stdout,")%s\n",name);
 }
 
 void
 pyxCharacterData(void *userData, const xmlChar *s, int len)
 {
-    fprintf (stdout, "-");
-    SanitizeData ((const char *) s,len);
-    putchar ('\n');
+    fprintf(stdout, "-");
+    SanitizeData((const char *) s,len);
+    putchar('\n');
 }
 
 void
 pyxProcessingInstruction(void *userData, 
                          const xmlChar *target, 
-			 const xmlChar *data)
+                         const xmlChar *data)
 {
     fprintf(stdout,"?%s ",target);
     SanitizeData((const char *) data, xmlStrlen(data));
@@ -151,7 +151,7 @@ pyxNotationDeclHandler(void *userData,
 {
     fprintf(stdout, "N%s %s%s%s\n", (char*) notationName, (char*) systemId,
            (publicId == NULL? "": " "), 
-	   (publicId == NULL? "": (const char*) publicId));
+           (publicId == NULL? "": (const char*) publicId));
 }
 
 void
