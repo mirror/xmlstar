@@ -1,4 +1,4 @@
-/*  $Id: xml_ls.c,v 1.6 2003/12/17 06:26:01 mgrouch Exp $  */
+/*  $Id: xml_ls.c,v 1.7 2004/02/04 21:57:01 mgrouch Exp $  */
 
 /*
 
@@ -58,26 +58,26 @@ lsUsage(int argc, char **argv)
 char *
 get_file_type(mode_t mode)
 {
-if(S_ISREG(mode))
+    if(S_ISREG(mode))
 	return("f"); /* regular file */
-else if(S_ISDIR(mode))
+    else if(S_ISDIR(mode))
 	return("d"); /* directory */
-else if(S_ISCHR(mode))
+    else if(S_ISCHR(mode))
 	return("c"); /* character device */
-else if(S_ISBLK(mode))
+    else if(S_ISBLK(mode))
 	return("b"); /* block device */
-else if(S_ISFIFO(mode))
+    else if(S_ISFIFO(mode))
 	return("p"); /* fifo */
 #ifdef S_ISLNK
-else if(S_ISLNK(mode))
+    else if(S_ISLNK(mode))
 	return("l"); /* symbolic link */
 #endif
 #ifdef S_ISSOCK
-else if(S_ISSOCK(mode))
+    else if(S_ISSOCK(mode))
 	return("s"); /* socket */
 #endif
 
-return(NULL);
+    return(NULL);
 }
 
 char *
@@ -164,7 +164,7 @@ xml_print_dir(char* dir)
       for(k=0; k<(16-sz_len); k++) sp[k] = ' ';
       sp[16-sz_len] = '\0';
       
-      printf("<%s a=\"%s\" acc=\"%s\" mod=\"%s\" sz=\"%s\"%s n=\"%s\"/>\n",
+      printf("<%s p=\"%s\" a=\"%s\" m=\"%s\" s=\"%s\"%s n=\"%s\"/>\n",
               type, perm, last_acc, last_mod, sz, sp, d->d_name);
       i++;      
 
