@@ -1,0 +1,2 @@
+# Validate XML document against DTD
+./xmlstarlet val --dtd xml/foo.dtd xml/foo.xml 
