@@ -1,4 +1,4 @@
-/*  $Id: xml_validate.c,v 1.18 2003/02/20 07:21:42 mgrouch Exp $  */
+/*  $Id: xml_validate.c,v 1.19 2003/02/21 02:49:32 mgrouch Exp $  */
 
 /*
 
@@ -73,9 +73,12 @@ static const char validate_usage_str[] =
 "   -n or --none            - do not list files (return result code only)\n"
 "   -w or --well-formed     - check only if XML is well-formed (default)\n\n";
 
+#ifdef LIBXML_SCHEMAS_ENABLED
 static const char schema_notice[] =
 "NOTE: XML Schemas are not fully supported yet due to its incomplete\n" 
 "      support in libxml (see http://xmlsoft.org)\n\n";
+#endif
+
 /**
  *  display short help message
  */
@@ -85,7 +88,9 @@ valUsage(int argc, char **argv)
     extern const char more_info[];
     FILE* o = stderr;
     fprintf(o, validate_usage_str);
+#ifdef LIBXML_SCHEMAS_ENABLED
     fprintf(o, schema_notice);
+#endif
     fprintf(o, more_info);
     exit(1);
 }
@@ -237,9 +242,11 @@ valAgainstDtd(valOptionsPtr ops, char* dtdvalid, xmlDocPtr doc, char* filename)
     return result;
 }
 
-void foo (void *ctx,
-         const char *msg,
-         ...)
+/**
+ *  Do nothing function
+ */
+void
+foo(void *ctx, const char *msg, ...)
 { 
 }
 
@@ -327,26 +334,7 @@ valMain(int argc, char **argv)
         schema = xmlSchemaParse(ctxt);
         xmlSchemaFreeParserCtxt(ctxt);
         if (schema != NULL)
-        {  
-            ctxt2 = xmlSchemaNewValidCtxt(schema);
-            if (!ops.err)
-            {
-                xmlSchemaSetValidErrors(ctxt2,
-                    (xmlSchemaValidityErrorFunc) NULL,
-                    (xmlSchemaValidityWarningFunc) NULL,
-                    NULL);
-                xmlGenericError = foo;
-                xmlGenericErrorContext = NULL;
-                xmlInitParser();
-            }
-            else
-            {
-                xmlSchemaSetValidErrors(ctxt2,
-                    (xmlSchemaValidityErrorFunc) fprintf,
-                    (xmlSchemaValidityWarningFunc) fprintf,
-                    stderr);
-            }
-                
+        {                  
             for (i=start; i<argc; i++)
             {
                 xmlDocPtr doc;
@@ -354,6 +342,25 @@ valMain(int argc, char **argv)
 
                 ret = 0;
                 doc = NULL;
+
+                ctxt2 = xmlSchemaNewValidCtxt(schema);
+                if (!ops.err)
+                {
+                    xmlSchemaSetValidErrors(ctxt2,
+                        (xmlSchemaValidityErrorFunc) NULL,
+                        (xmlSchemaValidityWarningFunc) NULL,
+                        NULL);
+                    xmlGenericError = foo;
+                    xmlGenericErrorContext = NULL;
+                    xmlInitParser();
+                }
+                else
+                {
+                    xmlSchemaSetValidErrors(ctxt2,
+                        (xmlSchemaValidityErrorFunc) fprintf,
+                        (xmlSchemaValidityWarningFunc) fprintf,
+                        stderr);
+                }
 
                 if (!ops.err)
                 {
@@ -384,13 +391,14 @@ valMain(int argc, char **argv)
                 else
                     fprintf(stderr, "%s - invalid\n", argv[i]);
                 */
+
+                if (ctxt2 != NULL) xmlSchemaFreeValidCtxt(ctxt2);
             }
         }
         else
         {
             invalidFound = 2;
         }
-        if (ctxt2 != NULL) xmlSchemaFreeValidCtxt(ctxt2);
         if (schema != NULL) xmlSchemaFree(schema);
         xmlSchemaCleanupTypes();
         
