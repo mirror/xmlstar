@@ -1,4 +1,4 @@
-/*  $Id: xml_edit.c,v 1.18 2003/05/25 16:55:43 mgrouch Exp $  */
+/*  $Id: xml_edit.c,v 1.19 2003/05/25 18:16:33 mgrouch Exp $  */
 
 /*
 
@@ -102,7 +102,7 @@ static const char edit_usage_str[] =
 "   -r or --rename <xpath1> -v <new-name>\n"
 "   -u or --update <xpath> -v (--value) <value>\n"
                   "\t\t\t  -x (--expr) <xpath>\n\n"
-"Currently only --delete and --move are implemented\n\n";
+"Currently only --delete, --move, and --rename are implemented.\n\n";
 
 /*
    How to increment value of every attribute @weight?
@@ -233,7 +233,16 @@ edUsage(int argc, char **argv)
  *  'update' operation
  */
 void
-edUpdate(xmlDocPtr doc, char *loc, char *val, XmlNodeType type)
+edUpdate(xmlDocPtr doc, const char *loc, const char *val, XmlNodeType type)
+{
+    fprintf(stderr, "update is not implemented loc=%s val=%s type=%d\n", loc, val, type);
+}
+
+/**
+ *  'rename' operation
+ */
+void
+edRename(xmlDocPtr doc, char *loc, char *val, XmlNodeType type)
 {
     int xptr = 0;
     int expr = 0;
@@ -241,8 +250,6 @@ edUpdate(xmlDocPtr doc, char *loc, char *val, XmlNodeType type)
 
     xmlXPathObjectPtr res;
     xmlXPathContextPtr ctxt;
-
-    fprintf(stderr, "update not implemented loc=%s val=%s type=%d\n", loc, val, type);
 
 #if defined(LIBXML_XPTR_ENABLED)
     if (xptr)
@@ -290,8 +297,19 @@ edUpdate(xmlDocPtr doc, char *loc, char *val, XmlNodeType type)
             for (i = 0; i < cur->nodeNr; i++)
             {
                 /*
-                 *  update node
+                 *  rename node
                  */
+                if (cur->nodeTab[i]->type == XML_ATTRIBUTE_NODE)
+                {
+                    fprintf(stderr, "Node is an attribute: %s\n", cur->nodeTab[i]->name);
+                    xmlFree((xmlChar *) cur->nodeTab[i]->name);
+                    cur->nodeTab[i]->name = xmlStrdup((const xmlChar*) val);
+                }
+                else
+                {
+                    xmlFree((xmlChar *)cur->nodeTab[i]->name);
+                    cur->nodeTab[i]->name = xmlStrdup((const xmlChar*) val);
+                }
             }
             break;
         }
@@ -490,7 +508,6 @@ edMove(xmlDocPtr doc, char *from, char *to)
                  */
                 xmlUnlinkNode(cur->nodeTab[i]);
                 xmlAddChild(res_to->nodesetval->nodeTab[0], cur->nodeTab[i]);             
-                /* xmlFreeNode(cur->nodeTab[i]); ??? */
             }
             break;
         }
@@ -524,6 +541,8 @@ edProcess(xmlDocPtr doc, XmlEdAction* ops, int ops_count)
                 break;
             case XML_ED_UPDATE:
                 edUpdate(doc, ops[k].arg1, ops[k].arg2, ops[k].type);
+            case XML_ED_RENAME:
+                edRename(doc, ops[k].arg1, ops[k].arg2, ops[k].type);
                 break;
             default:
                 break;
@@ -591,6 +610,21 @@ edMain(int argc, char **argv)
             if (i >= argc) edUsage(argc, argv);
             ops[j].arg2 = argv[i];
 
+            j++;
+        }
+        else if (!strcmp(argv[i], "-r") || !strcmp(argv[i], "--rename"))
+        {
+            i++;
+            if (i >= argc) edUsage(argc, argv);
+            ops[j].type = XML_UNDEFINED;
+            ops[j].op = XML_ED_RENAME;
+            ops[j].arg1 = argv[i];
+            i++;
+            if (i >= argc) edUsage(argc, argv);
+            if (strcmp(argv[i], "-v") && strcmp(argv[i], "--value")) edUsage(argc, argv);
+            i++;
+            if (i >= argc) edUsage(argc, argv);
+            ops[j].arg2 = argv[i];
             j++;
         }
         else
