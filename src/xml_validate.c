@@ -1,4 +1,4 @@
-/*  $Id: xml_validate.c,v 1.34 2004/11/22 01:30:53 mgrouch Exp $  */
+/*  $Id: xml_validate.c,v 1.35 2004/11/22 01:41:06 mgrouch Exp $  */
 
 /*
 
@@ -55,7 +55,7 @@ typedef struct _valOptions {
     char *schema;             /* External Schema URL or file name */
     char *relaxng;            /* External Relax-NG Schema URL or file name */
     int   err;                /* Allow stderr messages */
-    int   embed;              /* Validate using embeded DTD/XSD (if any) */
+    int   embed;              /* Validate using embeded DTD */
     int   wellFormed;         /* Check if well formed only */
     int   listGood;           /* >0 list good, <0 list bad */
     int   show_val_res;       /* display file names and valid/invalid message */
@@ -77,7 +77,7 @@ static const char validate_usage_str_1[] =
 static const char validate_usage_str_2[] =
 #ifdef LIBXML_SCHEMAS_ENABLED
 "  -s or --xsd <xsd-file>     - validate against XSD schema\n"
-"  -E or --embed              - validate using embedded DTD/XSD (if any)\n"
+"  -E or --embed              - validate using embedded DTD\n"
 #endif
 #ifdef LIBXML_SCHEMAS_ENABLED
 "  -r or --relaxng <rng-file> - validate against Relax-NG schema\n"
@@ -572,7 +572,6 @@ valMain(int argc, char **argv)
         xmlRelaxNGCleanupTypes();
     }
 #endif
-#ifdef LIBXML_SCHEMAS_ENABLED
     else if (ops.embed)
     {
         int i;
@@ -621,7 +620,6 @@ valMain(int argc, char **argv)
             }
         }
     }
-#endif
     else if (ops.wellFormed)
     {
         int i;
