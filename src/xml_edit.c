@@ -1,4 +1,4 @@
-/* $Id: xml_edit.c,v 1.10 2002/11/23 21:16:33 mgrouch Exp $ */
+/*  $Id: xml_edit.c,v 1.11 2002/11/23 21:45:35 mgrouch Exp $  */
 
 #include <string.h>
 #include <stdio.h>

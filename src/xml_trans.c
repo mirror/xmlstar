@@ -1,4 +1,4 @@
-/*  $Id: xml_trans.c,v 1.10 2002/11/23 21:16:33 mgrouch Exp $  */
+/*  $Id: xml_trans.c,v 1.11 2002/11/23 21:45:35 mgrouch Exp $  */
 
 /*
  *  TODO:
@@ -56,11 +56,11 @@
 
 static const char trans_usage_str[] =
 "XMLStarlet Toolkit: Transform XML document(s) using XSLT\n"
-"Usage: xml tr <xsl-file> {-p <name>=<value> } [ <xml-file> ... ]\n"
+"Usage: xml tr <xsl-file> {-p <name>=<value>} [ <xml-file> ... ]\n"
 "where\n"
 "   <xsl-file>     - main XSLT stylesheet for transformation\n"
 "   <name>=<value> - name and value of the parameter passed to XSLT processor\n"
-"   <xml-file>     - input XML document file name (standard input is used if missing)\n\n";
+"   <xml-file>     - input XML document file name (stdin is used if missing)\n\n";
 
 void trans_usage(int argc, char **argv)
 {
@@ -259,11 +259,14 @@ int xml_trans(int argc, char **argv)
     xmlLineNumbersDefault(1);
 
     /*
-     * Register the EXSLT extensions and the test module
+     * Register the EXSLT extensions
      */
     exsltRegisterAll();
+    /*
+     * Register the test module
     xsltRegisterTestModule();
-
+    */
+    
     defaultEntityLoader = xmlGetExternalEntityLoader();
     xmlSetExternalEntityLoader(xslExternalEntityLoader);
 
