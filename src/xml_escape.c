@@ -1,4 +1,4 @@
-/*  $Id: xml_escape.c,v 1.9 2004/09/14 00:24:35 mgrouch Exp $  */
+/*  $Id: xml_escape.c,v 1.10 2004/11/21 20:18:49 mgrouch Exp $  */
 
 /*
 
@@ -40,6 +40,8 @@ THE SOFTWARE.
 #ifndef HAVE_STRDUP
 #include "strdup.h"
 #endif
+
+#include "escape.h"
 
 #define INSZ 4*1024
 
@@ -84,6 +86,121 @@ static struct xmlPredefinedChar xmlPredefinedCharValues[] = {
     { "amp", '&', 3 },
     { NULL, '\0', 0 }
 };
+
+/*
+ * Macro used to grow the current buffer.
+ */
+#define grow_BufferReentrant() { 					\
+    buffer_size *= 2;   						\
+    buffer = (xmlChar *)						\
+    		xmlRealloc(buffer, buffer_size * sizeof(xmlChar));	\
+    if (buffer == NULL) {       					\
+	fprintf(stderr, "growing buffer error");			\
+	abort();							\
+    }									\
+}
+
+/** 
+ * xml_C11NNormalizeString:
+ * @input: the input string
+ * @mode:  the normalization mode (attribute, comment, PI or text)
+ *
+ * Converts a string to a canonical (normalized) format. The code is stolen
+ * from xmlEncodeEntitiesReentrant(). Added normalization of \x09, \x0a, \x0A
+ * and the @mode parameter
+ *
+ * Returns a normalized string (caller is responsible for calling xmlFree())
+ * or NULL if an error occurs
+ */
+xmlChar *
+xml_C11NNormalizeString(const xmlChar * input,
+                         xml_C14NNormalizationMode mode)
+{
+    const xmlChar *cur = input;
+    xmlChar *buffer = NULL;
+    xmlChar *out = NULL;
+    int buffer_size = 0;
+
+    if (input == NULL)
+        return (NULL);
+
+    /*
+     * allocate an translation buffer.
+     */
+    buffer_size = 1000;
+    buffer = (xmlChar *) xmlMallocAtomic(buffer_size * sizeof(xmlChar));
+    if (buffer == NULL) {
+        fprintf(stderr, "allocating buffer error");
+        abort();
+    }
+    out = buffer;
+
+    while (*cur != '\0') {
+        if ((out - buffer) > (buffer_size - 10)) {
+            int indx = out - buffer;
+
+            grow_BufferReentrant();
+            out = &buffer[indx];
+        }
+
+        if ((*cur == '<') && ((mode == XML_C14N_NORMALIZE_ATTR) ||
+                              (mode == XML_C14N_NORMALIZE_TEXT))) {
+            *out++ = '&';
+            *out++ = 'l';
+            *out++ = 't';
+            *out++ = ';';
+        } else if ((*cur == '>') && (mode == XML_C14N_NORMALIZE_TEXT)) {
+            *out++ = '&';
+            *out++ = 'g';
+            *out++ = 't';
+            *out++ = ';';
+        } else if ((*cur == '&') && ((mode == XML_C14N_NORMALIZE_ATTR) ||
+                                     (mode == XML_C14N_NORMALIZE_TEXT))) {
+            *out++ = '&';
+            *out++ = 'a';
+            *out++ = 'm';
+            *out++ = 'p';
+            *out++ = ';';
+        } else if ((*cur == '"') && (mode == XML_C14N_NORMALIZE_ATTR)) {
+            *out++ = '&';
+            *out++ = 'q';
+            *out++ = 'u';
+            *out++ = 'o';
+            *out++ = 't';
+            *out++ = ';';
+        } else if ((*cur == '\x09') && (mode == XML_C14N_NORMALIZE_ATTR)) {
+            *out++ = '&';
+            *out++ = '#';
+            *out++ = 'x';
+            *out++ = '9';
+            *out++ = ';';
+        } else if ((*cur == '\x0A') && (mode == XML_C14N_NORMALIZE_ATTR)) {
+            *out++ = '&';
+            *out++ = '#';
+            *out++ = 'x';
+            *out++ = 'A';
+            *out++ = ';';
+        } else if ((*cur == '\x0D') && ((mode == XML_C14N_NORMALIZE_ATTR) ||
+                                        (mode == XML_C14N_NORMALIZE_TEXT) ||
+                                        (mode == XML_C14N_NORMALIZE_COMMENT) ||
+                                        (mode == XML_C14N_NORMALIZE_PI))) {
+            *out++ = '&';
+            *out++ = '#';
+            *out++ = 'x';
+            *out++ = 'D';
+            *out++ = ';';
+        } else {
+            /*
+             * Works because on UTF-8, all extended sequences cannot
+             * result in bytes in the ASCII range.
+             */
+            *out++ = *cur;
+        }
+        cur++;
+    }
+    *out++ = 0;
+    return (buffer);
+}
 
 /* TODO: CHECK THIS PROCEDURE IT'S PROB FULL OF BUGS */
 char *

@@ -1,10 +1,13 @@
-/*  $Id: trans.h,v 1.9 2003/12/17 06:26:01 mgrouch Exp $  */
+/*  $Id: trans.h,v 1.10 2004/11/21 20:18:49 mgrouch Exp $  */
+
+#ifndef __TRANS_H
+#define __TRANS_H
 
 /*
 
 XMLStarlet: Command Line Toolkit to query/edit/check/transform XML documents
 
-Copyright (c) 2002 Mikhail Grushinskiy.  All Rights Reserved.
+Copyright (c) 2002-2004 Mikhail Grushinskiy.  All Rights Reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -93,3 +96,5 @@ int xsltRun(xsltOptionsPtr ops, char* xsl,
 xmlParserInputPtr xsltExternalEntityLoader(const char *URL,
                                            const char *ID,
                                            xmlParserCtxtPtr ctxt);
+
+#endif /* __TRANS_H */

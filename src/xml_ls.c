@@ -1,4 +1,4 @@
-/*  $Id: xml_ls.c,v 1.11 2004/11/21 18:59:24 mgrouch Exp $  */
+/*  $Id: xml_ls.c,v 1.12 2004/11/21 20:18:49 mgrouch Exp $  */
 
 /*
 
@@ -26,6 +26,8 @@ THE SOFTWARE.
 
 */
 
+#include "config.h"
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
@@ -34,6 +36,11 @@ THE SOFTWARE.
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+
+#include <libxml/xmlmemory.h>
+#include <libxml/c14n.h>
+
+#include "escape.h"
 
 static const char ls_usage_str[] =
 "XMLStarlet Toolkit: List directory as XML\n"
@@ -139,6 +146,7 @@ xml_print_dir(char* dir)
    
    while((d = readdir(dirp)) != NULL)
    {
+      xmlChar *xml_str = NULL;
       char *type = NULL;
       char *perm = NULL;
       char  last_acc[20];
@@ -167,10 +175,12 @@ xml_print_dir(char* dir)
       sz_len = snprintf(sz, 15, "%u", (unsigned) stats.st_size);
       for(k=0; k<(16-sz_len); k++) sp[k] = ' ';
       sp[16-sz_len] = '\0';
-      
+
+      xml_str = xml_C11NNormalizeAttr((const xmlChar *) d->d_name);      
       printf("<%s p=\"%s\" a=\"%s\" m=\"%s\" s=\"%s\"%s n=\"%s\"/>\n",
-              type, perm, last_acc, last_mod, sz, sp, d->d_name);
-      i++;      
+              type, perm, last_acc, last_mod, sz, sp, xml_str);
+      i++;
+      xmlFree(xml_str);
 
    } /* end of for loop */
 
