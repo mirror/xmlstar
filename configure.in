@@ -40,11 +40,13 @@ AC_ARG_WITH(libxml-src,
         LIBXML_CFLAGS="-I$withval/include/libxml2 -I$withval/include/libxml -I$withval/include"
 )
 
-LIBXML_VERSION=`$LIBXML_PREFIX/bin/xml2-config --version | sed -e 's/\.//g' -e 's/^\(.\{3\}\).*/\1/'`
-if test "$LIBXML_VERSION" -lt 262; then
-        AC_MSG_ERROR(xmlstarlet need at least libxml2 version 2.6.2 (http://www.xmlsoft.org/))
+if test "x$LIBXML_SRC" = "x"
+then
+	LIBXML_VERSION=`$LIBXML_PREFIX/bin/xml2-config --version | sed -e 's/\.//g' -e 's/^\(.\{3\}\).*/\1/'`
+	if test "$LIBXML_VERSION" -lt 262; then
+        	AC_MSG_ERROR(xmlstarlet needs at least libxml2 version 2.6.2 (http://www.xmlsoft.org/))
+	fi
 fi
-
 
 dnl
 dnl The following parameters offer
