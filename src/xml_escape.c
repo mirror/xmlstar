@@ -1,4 +1,4 @@
-/*  $Id: xml_escape.c,v 1.1 2003/05/17 20:40:18 mgrouch Exp $  */
+/*  $Id: xml_escape.c,v 1.2 2003/05/17 22:15:47 mgrouch Exp $  */
 
 /*
 
@@ -39,6 +39,8 @@ THE SOFTWARE.
 #include <libxml/xmlIO.h>
 #include <libxml/parserInternals.h>
 
+#define INSZ 4*1024
+
 /*
  *  TODO:  1. stdin input
  *         2. exit values on errors
@@ -46,9 +48,11 @@ THE SOFTWARE.
 
 static const char escape_usage_str[] =
 "XMLStarlet Toolkit: %s special XML characters\n"
-"Usage: xml %s [<options>] <string>\n"
+"Usage: xml %s [<options>] [<string>]\n"
 "where <options> are\n"
-"   (currently none, TODO: to be added in future)\n"
+"   --help      - print usage\n"
+"   (TODO: more to be added in future)\n"
+"if <string> is missing stdin is used instead.\n"
 "\n";
 
 /**
@@ -153,31 +157,72 @@ int
 escMain(int argc, char **argv, int escape)
 {
     int ret = 0;
-    
+    int readStdIn = 0;
+        
     char* inp = NULL;
     xmlChar* outBuf = NULL;
     
-    if (argc <= 2) escUsage(argc, argv, escape);
+    if (argc < 2) escUsage(argc, argv, escape);
 
     inp = argv[2];
-    
-    if (escape)
+
+    if (argc > 2)
     {
-      outBuf = xmlEncodeEntitiesReentrant(NULL, (xmlChar*) inp);
-      if (outBuf)
-      {
-         fprintf(stdout, "%s\n", outBuf);
-         xmlFree(outBuf);
-      }
+        if (!strcmp(argv[2], "--help")) escUsage(argc, argv, escape);
+        if (!strcmp(argv[2], "-")) readStdIn = 1;
     }
     else
     {
-      outBuf = (xmlChar*) xml_unescape(inp);
-      if (outBuf)
-      {
-         fprintf(stdout, "%s\n", outBuf);
-         free(outBuf);
-      }
+        readStdIn = 1;        
+    }
+
+    if (readStdIn)
+    {
+       static char line[INSZ];
+
+       while (!feof(stdin))
+       {
+           if (fgets(line, INSZ - 1, stdin))
+           if (escape)
+           {
+               outBuf = xmlEncodeEntitiesReentrant(NULL, (xmlChar*) line);
+               if (outBuf)
+               {
+                   fprintf(stdout, "%s", outBuf);
+                   xmlFree(outBuf);
+               }
+           }
+           else
+           {
+               outBuf = (xmlChar*) xml_unescape(line);
+               if (outBuf)
+               {
+                   fprintf(stdout, "%s", outBuf);
+                   free(outBuf);
+               }
+           }
+       }
+       
+       return ret;
+    }
+    
+    if (escape)
+    {
+        outBuf = xmlEncodeEntitiesReentrant(NULL, (xmlChar*) inp);
+        if (outBuf)
+        {
+            fprintf(stdout, "%s\n", outBuf);
+            xmlFree(outBuf);
+        }
+    }
+    else
+    {
+        outBuf = (xmlChar*) xml_unescape(inp);
+        if (outBuf)
+        {
+            fprintf(stdout, "%s\n", outBuf);
+            free(outBuf);
+        }
     }
         
     return ret;
