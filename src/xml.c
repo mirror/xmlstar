@@ -1,4 +1,4 @@
-/* $Id: xml.c,v 1.7 2002/11/13 06:56:54 mgrouch Exp $ */
+/* $Id: xml.c,v 1.8 2002/11/13 19:10:23 mgrouch Exp $ */
 
 #include <string.h>
 #include <stdio.h>
@@ -42,6 +42,29 @@ void usage(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
-    usage(argc, argv);
-    exit(0);
+    int ret = 0;
+
+    if (argc <= 1) usage(argc, argv);
+    if (!strcmp(argv[1], "ed") || !strcmp(argv[1], "edit"))
+    {
+        ret = xml_edit(argc, argv);
+    } else
+    if (!strcmp(argv[1], "sel") || !strcmp(argv[1], "select"))
+    {
+        ret = xml_select(argc, argv);
+    } else
+    if (!strcmp(argv[1], "tr") || !strcmp(argv[1], "transform"))
+    {
+        ret = xml_trans(argc, argv);
+    } else
+    if (!strcmp(argv[1], "val") || !strcmp(argv[1], "validate"))
+    {
+        ret = xml_validate(argc, argv);
+    } else
+    {
+        usage(argc, argv);
+    }
+    
+    exit(ret);
 }
+

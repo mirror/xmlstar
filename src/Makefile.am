@@ -1,14 +1,16 @@
 INCLUDES = -I$(top_srcdir) -I$(top_srcdir)/src \
 	   -I$(top_builddir) -I$(top_builddir)/src \
-	   $(LIBXML_CFLAGS) $(CFLAGS)
+	   $(LIBXML_CFLAGS) $(LIBXSLT_CFLAGS) $(CFLAGS)
 
 bin_PROGRAMS = xml
 
-xml_SOURCES = xml.c
-xml_LDFLAGS =
+xml_SOURCES = xml_edit.c xml_select.c xml_trans.c xml_validate.c xml.c
+xml_LDFLAGS = 
 xml_DEPENDENCIES = $(DEPS)
 xml_LDADD = $(LDADDS)
 
+EXTRA_DIST = xml_edit.c xml_select.c xml_trans.c xml_validate.c xml.c
+
 LDADDS = \
-	 @LIBXML_LIBS@ $(EXTRA_LIBS)
+	 @LIBXML_LIBS@ @LIBXSLT_LIBS@ $(EXTRA_LIBS)
 
