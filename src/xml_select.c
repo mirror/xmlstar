@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.59 2003/12/17 06:26:01 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.60 2004/03/30 04:01:41 mgrouch Exp $  */
 
 /*
 
@@ -733,7 +733,7 @@ selMain(int argc, char **argv)
     xsltInitLibXml(&xsltOps);
 
     /* set parameters */
-    selParseNSArr(ns_arr, &nCount, start, argv+2);
+    selParseNSArr(ns_arr, &nCount, argc-start, argv+2);
     
     c = sizeof(xsl_buf);
     i = selPrepareXslt(xsl_buf, &c, &ops, ns_arr, start, argc, argv);
