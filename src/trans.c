@@ -1,4 +1,4 @@
-/*  $Id: trans.c,v 1.2 2002/11/26 02:47:20 mgrouch Exp $  */
+/*  $Id: trans.c,v 1.3 2002/11/26 04:02:45 mgrouch Exp $  */
 
 /*
  *  This code is based on xsltproc by Daniel Veillard (daniel@veillard.com)
@@ -31,12 +31,21 @@ xmlExternalEntityLoader defaultEntityLoader = NULL;
 void
 xsltInitOptions(xsltOptionsPtr ops)
 {
-    ops->xinclude = 0;
     ops->noval = 0;
     ops->nonet = 0;
-    ops->docbook = 0;
-    ops->html = 0;
     ops->show_extensions = 0;
+#ifdef LIBXML_XINCLUDE_ENABLED
+    ops->xinclude = 0;
+#endif
+#ifdef LIBXML_HTML_ENABLED
+    ops->html = 0;
+#endif
+#ifdef LIBXML_DOCB_ENABLED
+    ops->docbook = 0;
+#endif
+#ifdef LIBXML_CATALOG_ENABLED
+    ops->catalogs = 0;
+#endif
 }
 
 

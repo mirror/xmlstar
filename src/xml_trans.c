@@ -1,4 +1,4 @@
-/*  $Id: xml_trans.c,v 1.14 2002/11/26 02:47:20 mgrouch Exp $  */
+/*  $Id: xml_trans.c,v 1.15 2002/11/26 04:02:46 mgrouch Exp $  */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -35,13 +35,21 @@ static const char trans_usage_str[] =
 "   --show-ext      - show list of extensions\n"
 "   --noval         - do not validate against DTDs or schemas\n"
 "   --nonet         - refuse to fetch DTDs or entities over network\n"
+#ifdef LIBXML_XINCLUDE_ENABLED
 "   --xinclude      - do XInclude processing on document input\n"
+#endif
 "   --maxdepth val  - increase the maximum depth\n"
+#ifdef LIBXML_HTML_ENABLED
 "   --html          - input document(s) is(are) in HTML format\n"
+#endif
+#ifdef LIBXML_DOCB_ENABLED
 "   --docbook       - input document(s) is(are) in SGML docbook format\n"
+#endif
+#ifdef LIBXML_CATALOG_ENABLED
 "   --catalogs      - use SGML catalogs from $SGML_CATALOG_FILES\n"
 "                     otherwise XML Catalogs starting from\n"
 "                     file:///etc/xml/catalog are activated by default\n\n";
+#endif
 
 /**
  *  Display usage syntax
@@ -83,18 +91,24 @@ trParseOptions(xsltOptionsPtr ops, int argc, char **argv)
             {
                 ops->nonet = 1;
             }
+#ifdef LIBXML_XINCLUDE_ENABLED
             else if (!strcmp(argv[i], "--xinclude"))
             {
                 ops->xinclude = 1;
             }
+#endif
+#ifdef LIBXML_HTML_ENABLED
             else if (!strcmp(argv[i], "--html"))
             {
                 ops->html = 1;
             }
+#endif
+#ifdef LIBXML_DOCB_ENABLED
             else if (!strcmp(argv[i], "--docbook"))
             {
                 ops->docbook = 1;
             }
+#endif
             else if (!strcmp(argv[i], "--nonet"))
             {
                 ops->nonet = 1;
@@ -109,7 +123,7 @@ trParseOptions(xsltOptionsPtr ops, int argc, char **argv)
  *  Initialize LibXML
  */
 void
-trInitLibXml(void)
+trInitLibXml(xsltOptionsPtr ops)
 {
     /*
      * Initialize library memory
@@ -133,11 +147,35 @@ trInitLibXml(void)
     */
     xsltRegisterTestModule();
 
+    if (ops->show_extensions) xsltDebugDumpExtensions(stderr);
+
     /*
      * Register entity loader
      */
     defaultEntityLoader = xmlGetExternalEntityLoader();
     xmlSetExternalEntityLoader(xsltExternalEntityLoader);
+    if (ops->nonet) defaultEntityLoader = xmlNoNetExternalEntityLoader;
+    
+    if (ops->noval == 0)
+        xmlLoadExtDtdDefaultValue = XML_DETECT_IDS | XML_COMPLETE_ATTRS;
+    else
+        xmlLoadExtDtdDefaultValue = 0;
+
+#ifdef LIBXML_XINCLUDE_ENABLED
+    if (ops->xinclude)
+        xsltSetXIncludeDefault(1);
+#endif
+
+#ifdef LIBXML_CATALOG_ENABLED
+    if (ops->catalogs)
+    {
+        char *catalogs = getenv("SGML_CATALOG_FILES");
+        if (catalogs == NULL)
+            fprintf(stderr, "Variable $SGML_CATALOG_FILES not set\n");
+        else
+            xmlLoadCatalogs(catalogs);
+    }    
+#endif
 
     /*
      * Replace entities with their content.
@@ -173,7 +211,7 @@ trMain(int argc, char **argv)
 
     xsltInitOptions(&ops);
     trParseOptions(&ops, argc, argv);
-    trInitLibXml();
+    trInitLibXml(&ops);
 
     /* find xsl file name */
     for (i=2; i<argc; i++)

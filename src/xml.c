@@ -1,4 +1,4 @@
-/*  $Id: xml.c,v 1.16 2002/11/26 02:47:20 mgrouch Exp $  */
+/*  $Id: xml.c,v 1.17 2002/11/26 04:02:45 mgrouch Exp $  */
 
 /*
 
@@ -29,6 +29,11 @@ THE SOFTWARE.
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+extern int edMain(int argc, char **argv);
+extern int selMain(int argc, char **argv);
+extern int trMain(int argc, char **argv);
+extern int valMain(int argc, char **argv);
 
 static const char usage_str[] =
 "XMLStarlet Toolkit: Command line utilities for XML\n"
@@ -66,11 +71,6 @@ main(int argc, char **argv)
 {
     int ret = 0;
 
-    extern int edMain(int argc, char **argv);
-    extern int selMain(int argc, char **argv);
-    extern int trMain(int argc, char **argv);
-    extern int valMain(int argc, char **argv);
-    
     if (argc <= 1) usage(argc, argv);
 
     if (!strcmp(argv[1], "ed") || !strcmp(argv[1], "edit"))
