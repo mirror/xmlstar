@@ -1,4 +1,4 @@
-/*  $Id: xml_elem.c,v 1.11 2003/05/21 03:20:45 mgrouch Exp $  */
+/*  $Id: xml_elem.c,v 1.12 2003/05/30 04:59:35 mgrouch Exp $  */
 
 /*
 
@@ -204,7 +204,8 @@ elMain(int argc, char **argv)
         errorno = parse_xml_file("-");  
     else
     {
-        if (!strcmp(argv[2], "--help"))
+        if (!strcmp(argv[2], "--help") || !strcmp(argv[2], "-h") ||
+            !strcmp(argv[2], "-?") || !strcmp(argv[2], "-Z"))
         {
             elUsage(argc, argv);
         }
@@ -227,8 +228,12 @@ elMain(int argc, char **argv)
             sorted = array_create();
             errorno = parse_xml_file(inp_file);
         }
-        else
+        else if (argv[2][0] != '-')
+        {
             errorno = parse_xml_file(argv[2]);
+        }
+        else
+            elUsage(argc, argv);
     }
 
     if (sorted)
