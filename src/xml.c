@@ -1,4 +1,4 @@
-/*  $Id: xml.c,v 1.29 2003/05/17 20:40:18 mgrouch Exp $  */
+/*  $Id: xml.c,v 1.30 2003/05/21 03:11:21 mgrouch Exp $  */
 
 /*
 
@@ -39,6 +39,8 @@ extern int valMain(int argc, char **argv);
 extern int foMain(int argc, char **argv);
 extern int elMain(int argc, char **argv);
 extern int c14nMain(int argc, char **argv);
+extern int lsMain(int argc, char **argv);
+extern int escMain(int argc, char **argv, int escape);
 
 static const char usage_str[] =
 "XMLStarlet Toolkit: Command line utilities for XML\n"
@@ -51,6 +53,7 @@ static const char usage_str[] =
 "   fo    (or format)    - Format XML document(s)\n"
 "   el    (or elements)  - Display element structure of XML document\n"
 "   c14n  (or canonic)   - XML canonicalization\n"
+"   ls    (or list)      - List directory as XML\n"
 "   esc   (or escape)    - Escape special XML characters\n"
 "   unesc (or unescape)  - Unescape special XML characters\n"
 "<options> are:\n"
@@ -118,6 +121,10 @@ main(int argc, char **argv)
     else if (!strcmp(argv[1], "c14n") || !strcmp(argv[1], "canonic"))
     {
         ret = c14nMain(argc, argv);
+    }
+    else if (!strcmp(argv[1], "ls") || !strcmp(argv[1], "list"))
+    {
+        ret = lsMain(argc, argv);
     }
     else if (!strcmp(argv[1], "esc") || !strcmp(argv[1], "escape"))
     {
