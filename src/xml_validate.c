@@ -1,4 +1,4 @@
-/*  $Id: xml_validate.c,v 1.12 2003/02/18 23:46:08 mgrouch Exp $  */
+/*  $Id: xml_validate.c,v 1.13 2003/02/19 00:56:16 mgrouch Exp $  */
 
 /*
 
@@ -36,6 +36,11 @@ THE SOFTWARE.
 
 #include "trans.h"
 
+#ifdef LIBXML_SCHEMAS_ENABLED
+#include <libxml/xmlschemas.h>
+#include <libxml/xmlschemastypes.h>
+#endif
+
 /*
  *   TODO: Use cases
  *   1. find malfomed XML documents in a given set of XML files 
@@ -58,7 +63,9 @@ static const char validate_usage_str[] =
 "Usage: xml val <options> [ <xml-file> ... ]\n"
 "where <options>\n"
 "   -d or --dtd <dtd-file>  - validate against DTD\n"
+#ifdef LIBXML_SCHEMAS_ENABLED
 "   -s or --xsd <xsd-file>  - validate against schema\n"
+#endif
 "   -x or --xml-out         - print result as xml\n"
 "   -e or --err             - print verbose error messages on stderr\n"
 "   -b or --list-bad        - list only files which do not validate (default)\n"
@@ -243,9 +250,7 @@ valMain(int argc, char **argv)
     if (ops.dtd)
     {
         int i;
-/*
-        printf("validate against %s", ops.dtd);
-*/
+
         for (i=start; i<argc; i++)
         {
             xmlDocPtr doc;
@@ -279,10 +284,73 @@ valMain(int argc, char **argv)
             if (ret) invalidFound = 1;     
         }
     }
+#ifdef LIBXML_SCHEMAS_ENABLED
     else if (ops.schema)
     {
+        xmlSchemaPtr schema = NULL;
+        xmlSchemaParserCtxtPtr ctxt;
+        xmlSchemaValidCtxtPtr ctxt2;
+        int i;
+
         /* TODO: here */
+        printf("validate against %s\n", ops.schema);
+
+        ctxt = xmlSchemaNewParserCtxt(ops.schema);
+        /*
+        xmlSchemaSetParserErrors(ctxt,
+            (xmlSchemaValidityErrorFunc) fprintf,
+            (xmlSchemaValidityWarningFunc) fprintf,
+            stderr);
+        */
+        schema = xmlSchemaParse(ctxt);
+
+        ctxt2 = xmlSchemaNewValidCtxt(schema);
+        xmlSchemaSetValidErrors(ctxt2,
+            (xmlSchemaValidityErrorFunc) fprintf,
+            (xmlSchemaValidityWarningFunc) fprintf,
+            stderr);
+
+        for (i=start; i<argc; i++)
+        {
+            xmlDocPtr doc;
+            int ret;
+
+            ret = 0;
+            doc = NULL;
+
+            if (!ops.err)
+            {
+                xmlDefaultSAXHandlerInit();
+                xmlDefaultSAXHandler.error = NULL;
+                xmlDefaultSAXHandler.warning = NULL;
+            }
+
+            doc = xmlParseFile(argv[i]);
+            if (doc)
+            {
+                ret = xmlSchemaValidateDoc(ctxt2, doc);
+                xmlFreeDoc(doc);
+            }
+            else
+            {
+                ret = 1; /* Malformed XML or could not open file */
+                if (ops.listGood < 0)
+                {
+                    fprintf(stdout, "%s\n", argv[i]);
+                }
+            }
+            if (ret) invalidFound = 1;
+
+            if (ret == 0)
+                fprintf(stderr, "%s - validates\n", argv[i]);
+            else
+                fprintf(stderr, "%s - invalid\n", argv[i]);
+        }
+
+        xmlSchemaFreeValidCtxt(ctxt2);
+        xmlSchemaFreeParserCtxt(ctxt);
     }
+#endif
     else if (ops.wellFormed)
     {
         int i;
