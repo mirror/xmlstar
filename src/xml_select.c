@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.34 2002/12/01 23:28:07 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.35 2002/12/07 21:49:39 mgrouch Exp $  */
 
 /*
 
@@ -365,9 +365,6 @@ selMain(int argc, char **argv)
     {
         xmlChar *value;
 
-/*
-printf("%d %s\n", n, argv[n]);
-*/
         /*
          *  Pass input file name as predefined parameter 'inputFile'
          */

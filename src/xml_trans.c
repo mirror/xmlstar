@@ -1,4 +1,4 @@
-/*  $Id: xml_trans.c,v 1.24 2002/12/07 19:17:43 mgrouch Exp $  */
+/*  $Id: xml_trans.c,v 1.25 2002/12/07 21:49:39 mgrouch Exp $  */
 
 /*
 
@@ -191,19 +191,35 @@ trInitLibXml(xsltOptionsPtr ops)
     if (ops->show_extensions) xsltDebugDumpExtensions(stderr);
 
     /*
+     * Replace entities with their content.
+     */
+    xmlSubstituteEntitiesDefault(1);
+
+    /*
      * Register entity loader
      */
     defaultEntityLoader = xmlGetExternalEntityLoader();
     xmlSetExternalEntityLoader(xsltExternalEntityLoader);
     if (ops->nonet) defaultEntityLoader = xmlNoNetExternalEntityLoader;
+
+    xmlKeepBlanksDefault(1);
+    xmlPedanticParserDefault(0);
+
+    xmlGetWarningsDefaultValue = 1;
+    xmlDoValidityCheckingDefaultValue = 1;
+    xmlLoadExtDtdDefaultValue = 1;
     
     /*
      * DTD validation options
      */
     if (ops->noval == 0)
+    {
         xmlLoadExtDtdDefaultValue = XML_DETECT_IDS | XML_COMPLETE_ATTRS;
+    }
     else
+    {
         xmlLoadExtDtdDefaultValue = 0;
+    }
 
 #ifdef LIBXML_XINCLUDE_ENABLED
     /*
@@ -226,11 +242,6 @@ trInitLibXml(xsltOptionsPtr ops)
             xmlLoadCatalogs(catalogs);
     }    
 #endif
-
-    /*
-     * Replace entities with their content.
-     */
-    xmlSubstituteEntitiesDefault(1);
 }
 
 /**
