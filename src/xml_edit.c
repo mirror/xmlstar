@@ -1,4 +1,4 @@
-/* $Id: xml_edit.c,v 1.3 2002/11/23 05:20:57 mgrouch Exp $ */
+/* $Id: xml_edit.c,v 1.4 2002/11/23 05:39:57 mgrouch Exp $ */
 
 #include <string.h>
 #include <stdio.h>
@@ -52,16 +52,16 @@ XmlEdAction ops[MAX_XML_ED_OPS];
 
 static const char edit_usage_str[] =
 "XMLStarlet Toolkit: Edit XML document(s)\n"
-"Usage: xml ed { <action> }\n"
-"   where <action>\n"
-"     -d or --delete <xpath>\n"
-"     -i or --insert <xpath> -t (--type) elem|text|attr -v (--value) <value>\n"
-"     -a or --append <xpath> -t (--type) elem|text|attr -v (--value) <value>\n"
-"     -s or --subnode <xpath> -t (--type) elem|text|attr -v (--value) <value>\n"
-"     -m or --move   <xpath1> <xpath2>\n"
-"     -r or --rename <xpath1> -v <new-name>\n"
-"     -u or --update <xpath> -v (--value) <value>\n"
-"                            -x (--expr) <xpath>\n\n"
+"Usage: xml ed {<action>} [ <xml-file> ... ]\n"
+"where <action>\n"
+"   -d or --delete <xpath>\n"
+"   -i or --insert <xpath> -t (--type) elem|text|attr -v (--value) <value>\n"
+"   -a or --append <xpath> -t (--type) elem|text|attr -v (--value) <value>\n"
+"   -s or --subnode <xpath> -t (--type) elem|text|attr -v (--value) <value>\n"
+"   -m or --move <xpath1> <xpath2>\n"
+"   -r or --rename <xpath1> -v <new-name>\n"
+"   -u or --update <xpath> -v (--value) <value>\n"
+"                          -x (--expr) <xpath>\n\n"
 
 "XMLStarlet is a command line toolkit to query/edit/check/transform\n"
 "XML documents (for more information see http://xmlstar.sourceforge.net/)\n";

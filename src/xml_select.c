@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.20 2002/11/23 05:20:57 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.21 2002/11/23 05:39:57 mgrouch Exp $  */
 
 #include <string.h>
 #include <stdio.h>
@@ -42,7 +42,7 @@ extern const char *params[];
 
 static const char select_usage_str[] =
 "XMLStarlet Toolkit: Select from XML document(s)\n"
-"Usage: xml sel <global-options> {<template>} {<xml-file>}\n"
+"Usage: xml sel <global-options> {<template>} [ <xml-file> ... ]\n"
 "where\n"
 "  <global-options> - global options for selecting\n"
 "  <xml-file> - input XML document file name (stdin is used if missing)\n"
