@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.60 2004/03/30 04:01:41 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.61 2004/03/30 04:14:40 mgrouch Exp $  */
 
 /*
 
@@ -643,7 +643,10 @@ selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops, const char *ns_arr[],
     ns = 0;
     while(ns_arr[ns])
     {
-        c += sprintf(xsl_buf + c, "\n xmlns:%s=\"%s\"", ns_arr[ns], ns_arr[ns+1]);
+        if (strlen(ns_arr[ns]))
+           c += sprintf(xsl_buf + c, "\n xmlns:%s=\"%s\"", ns_arr[ns], ns_arr[ns+1]);
+        else
+           c += sprintf(xsl_buf + c, "\n xmlns=\"%s\"", ns_arr[ns+1]);
         ns += 2;
     }
     selCleanupNSArr(ns_arr);
