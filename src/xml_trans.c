@@ -1,4 +1,4 @@
-/*  $Id: xml_trans.c,v 1.2 2002/11/14 00:19:56 mgrouch Exp $  */
+/*  $Id: xml_trans.c,v 1.3 2002/11/15 02:02:54 mgrouch Exp $  */
 
 /*
  *  TODO:
@@ -73,7 +73,7 @@ void trans_usage(int argc, char **argv)
     fprintf(o, "XMLStarlet is a command line toolkit to query/edit/check/transform\n");
     fprintf(o, "XML documents (for more information see http://xmlstar.sourceforge.net/)\n\n");
     fprintf(o, "Current implementation uses libxslt from GNOME codebase as XSLT processor\n");
-    fprintf(o, "See http://xmlsoft.org/ for more details\n");
+    fprintf(o, "(see http://xmlsoft.org/ for more details)\n");
 
     if (dirc)
     {
