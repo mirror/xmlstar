@@ -103,6 +103,9 @@ AC_SUBST(LIBXML_CFLAGS)
 AC_SUBST(LIBXSLT_LIBS)
 AC_SUBST(LIBXSLT_CFLAGS)
 
+rm -f COPYING
+ln -s Copyright COPYING
+
 AC_OUTPUT([
 xmlstarlet.spec
 Makefile
