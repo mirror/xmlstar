@@ -64,10 +64,16 @@ AC_ARG_WITH(libxslt-libs-prefix,
 )
 
 AC_ARG_WITH(libxslt-src,
-        [  --with-libxml-src=[DIR]               For libxslt thats not installed yet (sets all three above)],
+        [  --with-libxml-src=[DIR]		For libxslt thats not installed yet (sets all three above)],
         LIBXSLT_SRC="$withval"
         LIBXSLT_LIBS="$withval/libxslt/.libs/libxslt.a $withval/libexslt/.libs/libexslt.a -lz -lm -lpthread"
         LIBXSLT_CFLAGS="-I$withval/libxslt -I$withval/libexslt -I$withval"
+)
+
+AC_ARG_WITH(libiconv-dir,
+        [  --with-libiconv-dir=[DIR]		For libiconv directory],
+        LIBICONV_DIR="$withval"
+        LIBICONV_LIBS="-L$LIBICONV_DIR -liconv"
 )
 
 dnl
@@ -125,10 +131,20 @@ case "${host}" in
       LIBXML_LIBS="${LIBXML_LIBS} -lsocket -lnsl"
       ;;
   *cygwin* )
-      LIBXML_LIBS="${LIBXML_LIBS} -liconv"
+      if test "x$LIBICONV_LIBS" = "x"
+      then
+          LIBXML_LIBS="${LIBXML_LIBS} ${LIBICONV_LIBS}"
+      else
+          LIBXML_LIBS="${LIBXML_LIBS} -liconv"
+      fi
       ;;
   *mac* )
-      LIBXML_LIBS="${LIBXML_LIBS} -liconv"
+      if test "x$LIBICONV_LIBS" = "x"
+      then
+          LIBXML_LIBS="${LIBXML_LIBS} ${LIBICONV_LIBS}"
+      else
+          LIBXML_LIBS="${LIBXML_LIBS} -liconv"
+      fi
       ;;
 esac
 
