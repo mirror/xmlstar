@@ -1,4 +1,4 @@
-/*  $Id: trans.c,v 1.15 2003/08/01 23:19:27 mgrouch Exp $  */
+/*  $Id: trans.c,v 1.16 2003/09/18 01:22:31 mgrouch Exp $  */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -211,6 +211,7 @@ xsltProcess(xsltOptionsPtr ops, xmlDocPtr doc, const char** params,
     {
         cur->omitXmlDeclaration = 1;
     }
+
 #ifdef LIBXML_XINCLUDE_ENABLED
     if (ops->xinclude) xmlXIncludeProcess(doc);
 #endif
