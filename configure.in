@@ -265,5 +265,6 @@ Makefile
 src/Makefile
 doc/Makefile
 solaris/package/sol8-sparc/pkginfo
+solaris/package/sol9-sparc/pkginfo
 ])
 
