@@ -1,0 +1,2 @@
+# Predefine namespaces for XPath expressions
+./xmlstarlet sel -N xsql=urn:oracle-xsql -t -v /xsql:query xsql/jobserve.xsql
