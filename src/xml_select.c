@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.8 2002/11/15 16:35:14 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.9 2002/11/16 01:53:45 mgrouch Exp $  */
 
 #include <string.h>
 #include <stdio.h>
@@ -31,16 +31,17 @@ void select_usage(int argc, char **argv)
 
     fprintf(o, "Syntax for templates: -t|--template <options>\n");
     fprintf(o, "where <options>\n");
-    fprintf(o, "  -p or --print <xpath>   - print value of XPATH expression\n");
-    fprintf(o, "  -s or --string <string> - print string literal\n");
-    fprintf(o, "  -o or --order <order>   - sort in order (used after -m)\n");
+    fprintf(o, "  -c or --copy-of <xpath>  - print copy of XPATH expression\n");
+    fprintf(o, "  -v or --value-of <xpath> - print value of XPATH expression\n");
+    fprintf(o, "  -o or --output <order>   - print string literal \n");
     fprintf(o, "  -n or --nl              - print new line\n");
+    fprintf(o, "  -s or --sort <order> - sort in order (used after -m)\n");
     fprintf(o, "  -m or --match <xpath>   - match XPATH expression\n");
     fprintf(o, "There can be multiple --match and --print options in a single template\n");
     fprintf(o, "Effect of applying command line templates can be illustrated with the following XSLT analogue\n\n");
 
-    fprintf(o, "xml sel -t -p \"xpath0\" -m \"xpath1\" -m \"xpath2\" -p \"xpath3\" \\\n");
-    fprintf(o, "          -t -m \"xpath4\" -p \"xpath5\"\n\n");
+    fprintf(o, "xml sel -t -c \"xpath0\" -m \"xpath1\" -m \"xpath2\" -v \"xpath3\" \\\n");
+    fprintf(o, "        -t -m \"xpath4\" -c \"xpath5\"\n\n");
 
     fprintf(o, "is equivalent to applying the following XSLT\n\n");
 
@@ -54,7 +55,7 @@ void select_usage(int argc, char **argv)
     fprintf(o, "  <xsl:copy-of select=\"xpath0\"/>\n");
     fprintf(o, "  <xsl:for-each select=\"xpath1\">\n");
     fprintf(o, "    <xsl:for-each select=\"xpath2\">\n");
-    fprintf(o, "      <xsl:copy-of select=\"xpath3\"/>\n");
+    fprintf(o, "      <xsl:value-of select=\"xpath3\"/>\n");
     fprintf(o, "    </xsl:for-each>\n");
     fprintf(o, "  </xsl:for-each>\n");
     fprintf(o, "</xsl:template>\n");
@@ -136,13 +137,19 @@ int xml_select(int argc, char **argv)
             m = 0;
             while(i < (argc - 1))
             {
-                if(!strcmp(argv[i], "-p") || !strcmp(argv[i], "--print"))
+                if(!strcmp(argv[i], "-c") || !strcmp(argv[i], "--copy-of"))
                 {
                     for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
                     c += sprintf(xsl_buf + c, "<xsl:copy-of select=\"%s\"/>\n", argv[i+1]);
                     i++;
                 }
-                else if(!strcmp(argv[i], "-s") || !strcmp(argv[i], "--string"))
+                else if(!strcmp(argv[i], "-v") || !strcmp(argv[i], "--value-of"))
+                {
+                    for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
+                    c += sprintf(xsl_buf + c, "<xsl:value-of select=\"%s\"/>\n", argv[i+1]);
+                    i++;
+                }
+                else if(!strcmp(argv[i], "-o") || !strcmp(argv[i], "--output"))
                 {
                     for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
                     c += sprintf(xsl_buf + c, "<xsl:value-of select=\"'%s'\"/>\n", argv[i+1]);

@@ -1,4 +1,4 @@
-/*  $Id: xml_trans.c,v 1.4 2002/11/15 16:35:14 mgrouch Exp $  */
+/*  $Id: xml_trans.c,v 1.5 2002/11/16 01:53:45 mgrouch Exp $  */
 
 /*
  *  TODO:
@@ -334,12 +334,23 @@ int xml_trans(int argc, char **argv)
             }
             xsltProcess(doc, cur, argv[i]);
         }
+
+        if (argc == 3)
+        {
+            /* stdio */
+            doc = xmlParseFile("-");
+            xsltProcess(doc, cur, "-");
+        }
     }
     if (cur != NULL)
         xsltFreeStylesheet(cur);
 
     for (i = 0; i < nbstrparams; i++)
         xmlFree(strparams[i]);
+
+    /*
+     *  Clean up
+     */
     
 done:
     xsltCleanupGlobals();
