@@ -1,4 +1,4 @@
-/*  $Id: xml_edit.c,v 1.31 2003/09/18 04:07:44 mgrouch Exp $  */
+/*  $Id: xml_edit.c,v 1.32 2003/11/04 21:40:15 mgrouch Exp $  */
 
 /*
 
@@ -595,16 +595,19 @@ edDelete(xmlDocPtr doc, char *str)
         {
             int i;
             xmlNodeSetPtr cur = res->nodesetval;
-            /*
-            fprintf(stderr, "Set contains %d nodes:\n", cur->nodeNr);
-            */
-            for (i = 0; i < cur->nodeNr; i++)
+            if (cur)
             {
                 /*
-                 *  delete node
-                 */
-                 xmlUnlinkNode(cur->nodeTab[i]);
-                 /* xmlFreeNode(cur->nodeTab[i]); ??? */
+                fprintf(stderr, "Set contains %d nodes:\n", cur->nodeNr);
+                */
+                for (i = 0; i < cur->nodeNr; i++)
+                {
+                    /*
+                     *  delete node
+                     */
+                    xmlUnlinkNode(cur->nodeTab[i]);
+                    /* xmlFreeNode(cur->nodeTab[i]); ??? */
+                }
             }
             break;
         }
