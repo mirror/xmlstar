@@ -1,5 +1,5 @@
 /*
- *  $Id: xml_C14N.c,v 1.8 2004/02/08 22:27:34 mgrouch Exp $
+ *  $Id: xml_C14N.c,v 1.9 2004/02/14 05:14:31 mgrouch Exp $
  *
  *  Canonical XML implementation test program
  *  (http://www.w3.org/TR/2001/REC-xml-c14n-20010315)
@@ -38,12 +38,16 @@ static const char c14n_usage_str_1[] =
 "where\n"
 "  <xml-file>   - input XML document file name (stdin is used if '-')\n"
 "  <xpath-file> - XML file containing XPath expression for\n"
-"                 exclusive XML canonicalization\n"
+"                 c14n XML canonicalization\n"
 "    Example:\n"
 "    <?xml version=\"1.0\"?>\n"
 "    <XPath xmlns:n0=\"http://a.example.com\" xmlns:n1=\"http://b.example\">\n"
 "    (//. | //@* | //namespace::*)[ancestor-or-self::n1:elem1]\n"
 "    </XPath>\n"
+"\n"
+"  <inclusive-ns-list> - the list of inclusive namespace prefixes\n"
+"                        (only for exclusive canonicalization)\n"
+"    Example: 'n1 n2'\n"
 "\n";
 
 static const char c14n_usage_str_2[] =
