@@ -1,0 +1,1 @@
+./xmlstarlet sel -B -t -m /xml/table/rec -c . -n xml/table.xml
