@@ -1,4 +1,4 @@
-/*  $Id: xml_ls.c,v 1.1 2003/05/21 03:11:22 mgrouch Exp $  */
+/*  $Id: xml_ls.c,v 1.2 2003/05/22 03:33:57 mgrouch Exp $  */
 
 /*
 
@@ -115,17 +115,15 @@ get_file_perms(mode_t mode)
 int
 xml_print_dir(char* dir)
 {
-   struct dirent ** files;
+   DIR *dirp;
+   struct dirent *d;
    struct stat stats;
-   int num_files = scandir(dir, &files, NULL, NULL /*sort*/);
-   int i = 0;
+   int i = 0, num_files = 0;
 
-   if(num_files < 0)
-   {
-      return num_files;
-   }
-
-   for(i = 0; i < num_files; i++)
+   if((dirp = opendir(dir)) == NULL)
+      return(-1);
+   
+   while((d = readdir(dirp)) != NULL)
    {
       char *type = NULL;
       char *perm = NULL;
@@ -136,9 +134,9 @@ xml_print_dir(char* dir)
       char  sp[16];
       int   k;
       
-      if(lstat(files[i]->d_name, &stats) != 0)
+      if(lstat(d->d_name, &stats) != 0)
       {
-        fprintf(stderr, "couldn't stat: %s\n", files[i]->d_name);
+        fprintf(stderr, "couldn't stat: %s\n", d->d_name);
       }
 
       type = get_file_type(stats.st_mode);
@@ -152,10 +150,12 @@ xml_print_dir(char* dir)
       sp[16-sz_len] = '\0';
       
       printf("<%s a=\"%s\" acc=\"%s\" mod=\"%s\" sz=\"%s\"%s n=\"%s\"/>\n",
-              type, perm, last_acc, last_mod, sz, sp, files[i]->d_name);
+              type, perm, last_acc, last_mod, sz, sp, d->d_name);
+      i++;      
 
    } /* end of for loop */
 
+   num_files = i;
    return num_files;
 }
 
