@@ -166,7 +166,7 @@
 
       <itemizedlist>
         <listitem>
-          <para>FreeBSD</para>
+          <para>FreeBSD/NetBSD</para>
         </listitem>
       </itemizedlist>
 
@@ -176,7 +176,76 @@
         </listitem>
       </itemizedlist>
 
+      <itemizedlist>
+        <listitem>
+          <para>AIX</para>
+        </listitem>
+      </itemizedlist>
+
       <para>You might be able to compile and make it on others too.</para>
+    </sect1>
+
+    <sect1>
+      <title id="s.1.4">Finding binary packages</title>
+
+      <para>Here is a list of sites where you can also find XmlStarlet binary
+      packages.</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><ulink
+          url="http://www.suse.com/us/private/products/suse_linux/prof/packages_professional/xmlstarlet.html">SuSE
+          Packages</ulink></para>
+        </listitem>
+      </itemizedlist>
+
+      <itemizedlist>
+        <listitem>
+          <para><ulink
+          url="http://linux01.gwdg.de/~pbleser/rpm-navigation.php?cat=%2FUtilities%2Fxmlstarlet/">SuSE
+          Guru's RPM Site</ulink></para>
+        </listitem>
+      </itemizedlist>
+
+      <itemizedlist>
+        <listitem>
+          <para><ulink
+          url="http://www.freebsd.org/cgi/ports.cgi?query=xmlstarlet&amp;stype=all">FreeBSD
+          Ports</ulink></para>
+        </listitem>
+      </itemizedlist>
+
+      <itemizedlist>
+        <listitem>
+          <para><ulink
+          url="http://www.freshports.org/textproc/xmlstarlet/">FreeBSD Fresh
+          Ports</ulink></para>
+        </listitem>
+      </itemizedlist>
+
+      <itemizedlist>
+        <listitem>
+          <para><ulink
+          url="http://fink.sourceforge.net/pdb/package.php/xmlstarlet">Mac OS
+          Fink</ulink></para>
+        </listitem>
+      </itemizedlist>
+
+      <itemizedlist>
+        <listitem>
+          <para><ulink
+          url="http://rpms.mandrakeclub.com/linux/rpm2html/search.php?query=xmlstarlet">Mandrake
+          RPMs</ulink></para>
+        </listitem>
+      </itemizedlist>
+
+      <itemizedlist>
+        <listitem>
+          <para><ulink
+          url="http://gentoo-portage.com/app-text/xmlstarlet">Gentoo
+          Portage</ulink></para>
+        </listitem>
+      </itemizedlist>
     </sect1>
   </chapter>
 
