@@ -1289,6 +1289,63 @@ XML documents (for more information see http://xmlstar.sourceforge.net/)
 </programlisting>
 
       <para>EXAMPLE</para>
+
+      <programlisting>xml pyx input.xml
+</programlisting>
+
+      <para>Input (input.xml)</para>
+
+      <programlisting>&lt;books&gt;
+&lt;book type='hardback'&gt;
+&lt;title&gt;Atlas Shrugged&lt;/title&gt;
+&lt;author&gt;Ayn Rand&lt;/author&gt;
+&lt;isbn id='1'&gt;0525934189&lt;/isbn&gt;
+&lt;/book&gt;
+&lt;/books&gt;</programlisting>
+
+      <para>Output</para>
+
+      <programlisting>(books
+-\n
+(book
+Atype hardback
+-\n
+(title
+-Atlas Shrugged
+)title
+-\n
+(author
+-Ayn Rand
+)author
+-\n
+(isbn
+Aid 1
+-0525934189
+)isbn
+-\n
+)book
+-\n
+)books</programlisting>
+
+      <para>PYX is a line oriented format for XML files which can be helpful
+      (and very efficient) when used in combination with regular line oriented
+      UNIX command such as sed, grep, awk.</para>
+
+      <para>EXAMPLE (Delete all attributes)</para>
+
+      <programlisting>xml pyx input.xml | grep -v  "^A" | xml depyx</programlisting>
+
+      <para>Output</para>
+
+      <programlisting>&lt;books&gt;
+&lt;book&gt;
+&lt;title&gt;Atlas Shrugged&lt;/title&gt;
+&lt;author&gt;Ayn Rand&lt;/author&gt;
+&lt;isbn&gt;0525934189&lt;/isbn&gt;
+&lt;/book&gt;
+&lt;/books&gt;</programlisting>
+
+      <para></para>
     </sect1>
 
     <sect1>
