@@ -3,6 +3,9 @@ AC_INIT(src/xml.c)
 VERSION=0.0.3
 PACKAGE=xmlstarlet
 
+AC_SUBST(VERSION)
+
+AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE($PACKAGE, $VERSION, no-define)
 AM_MAINTAINER_MODE
 
@@ -17,7 +20,7 @@ dnl
 LIBXML_PREFIX="/usr"
 AC_ARG_WITH(libxml-prefix,
         [  --with-libxml-prefix=[PFX]		Specify location of libxml],
-	LIBXML_PREFIX=$withval
+        LIBXML_PREFIX=$withval
 )
         
 AC_ARG_WITH(libxml-include-prefix,
@@ -27,7 +30,14 @@ AC_ARG_WITH(libxml-include-prefix,
 
 AC_ARG_WITH(libxml-libs-prefix,
         [  --with-libxml-libs-prefix=[PFX]	Specify location of libxml libs],
-        LIBXML_LIBS="$withval/libxml2.a -lz -lm -lsocket  -lnsl -lpthread"
+        LIBXML_LIBS="$withval/libxml2.a -lz -lm -lpthread"
+)
+
+AC_ARG_WITH(libxml-src,
+        [  --with-libxml-src=[DIR]               For libxml thats not installed yet (sets all three above)],
+        LIBXML_SRC="$withval"
+        LIBXML_LIBS="$withval/.libs/libxml2.a -lz -lm -lpthread"
+        LIBXML_CFLAGS="-I$withval/include/libxml2 -I$withval/include/libxml -I$withval/include"
 )
 
 dnl
@@ -51,6 +61,13 @@ AC_ARG_WITH(libxslt-libs-prefix,
         LIBXSLT_LIBS="$withval/libxslt.a $withval/libexslt.a -lz -lm -lpthread"
 )
 
+AC_ARG_WITH(libxslt-src,
+        [  --with-libxml-src=[DIR]               For libxslt thats not installed yet (sets all three above)],
+        LIBXSLT_SRC="$withval"
+        LIBXSLT_LIBS="$withval/libxslt/.libs/libxslt.a $withval/libexslt/.libs/libexslt.a -lz -lm -lpthread"
+        LIBXSLT_CFLAGS="-I$withval/libxslt -I$withval/libexslt -I$withval"
+)
+
 dnl
 dnl Check the environment
 dnl
@@ -60,6 +77,52 @@ AC_PROG_CC
 AC_STDC_HEADERS
 AC_ARG_PROGRAM
 dnl AM_PROG_LIBTOOL
+
+dnl
+dnl Math detection
+dnl
+
+AC_CHECK_HEADERS(sys/types.h sys/time.h stdlib.h unistd.h string.h)
+AC_CHECK_HEADERS(ieeefp.h nan.h math.h fp_class.h float.h ansidecl.h)
+AC_CHECK_HEADERS(sys/timeb.h time.h sys/stat.h stdarg.h)
+AC_CHECK_FUNCS(stat _stat)
+AC_CHECK_FUNC(isnan, , AC_CHECK_LIB(m, isnan,
+  [M_LIBS="-lm"; AC_DEFINE(HAVE_ISNAN)]))
+
+AC_CHECK_FUNC(isinf, , AC_CHECK_LIB(m, isinf,
+  [M_LIBS="-lm"; AC_DEFINE(HAVE_ISINF)]))
+
+AC_CHECK_FUNC(pow, , AC_CHECK_LIB(m, pow,
+  [M_LIBS="-lm"; AC_DEFINE(HAVE_POW)]))
+
+AC_CHECK_FUNC(floor, , AC_CHECK_LIB(m, floor,
+  [M_LIBS="-lm"; AC_DEFINE(HAVE_FLOOR)]))
+
+AC_CHECK_FUNC(fabs, , AC_CHECK_LIB(m, fabs,
+  [M_LIBS="-lm"; AC_DEFINE(HAVE_FABS)]))
+AC_CHECK_FUNCS(gettimeofday)
+AC_CHECK_FUNCS(mktime localtime asctime time gmtime ftime)
+
+dnl Checking the standard string functions availability
+AC_CHECK_FUNCS(printf sprintf fprintf snprintf vfprintf vsprintf vsnprintf sscanf,,
+               NEED_TRIO=1)
+dnl
+dnl Check for trio string functions
+dnl
+
+if test "${NEED_TRIO}" = "1" ; then
+    echo Reusing trio library for string functions
+    WITH_TRIO=1
+else
+    WITH_TRIO=0
+fi
+AC_SUBST(WITH_TRIO)
+
+case "${host}" in
+  *sun* )
+      LIBXML_LIBS="${CFLAGS} -lsocket -lnsl"
+esac
+
 
 AC_SUBST(CFLAGS)
 AC_SUBST(CPPFLAGS)
@@ -102,6 +165,10 @@ AC_SUBST(LIBXML_LIBS)
 AC_SUBST(LIBXML_CFLAGS)
 AC_SUBST(LIBXSLT_LIBS)
 AC_SUBST(LIBXSLT_CFLAGS)
+
+dnl for the spec file
+RELDATE=`date +'%a %b %e %Y'`
+AC_SUBST(RELDATE)
 
 rm -f COPYING
 ln -s Copyright COPYING
