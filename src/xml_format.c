@@ -1,4 +1,4 @@
-/*  $Id: xml_format.c,v 1.24 2005/01/07 02:17:02 mgrouch Exp $  */
+/*  $Id: xml_format.c,v 1.25 2005/01/07 02:33:40 mgrouch Exp $  */
 
 /*
 
@@ -154,7 +154,11 @@ foInitLibXml(foOptionsPtr ops)
     if (ops->indent)
     {
         xmlIndentTreeOutput = 1;
-        if (ops->indent_spaces > 0)
+        if (ops->indent_tab) 
+        {
+            xmlTreeIndentString = strdup("\t");
+        }
+        else if (ops->indent_spaces > 0)
         {
             int i;
             char *p;
@@ -163,7 +167,6 @@ foInitLibXml(foOptionsPtr ops)
             for (i=0; i<ops->indent_spaces; i++) p[i] = ' ';
             p[ops->indent_spaces] = 0;
         }
-        if (ops->indent_tab) xmlTreeIndentString = strdup("\t");
     }
     else
         xmlIndentTreeOutput = 0;
@@ -361,8 +364,10 @@ foProcess(foOptionsPtr ops, int start, int argc, char **argv)
 void
 foCleanup()
 {
-    xmlCleanupParser();
     if (xmlTreeIndentString) free((char *)xmlTreeIndentString);
+    xmlTreeIndentString = NULL;
+    
+    xmlCleanupParser();
 #if 0
     xmlMemoryDump();
 #endif
