@@ -1,4 +1,4 @@
-/*  $Id: xml_trans.c,v 1.25 2002/12/07 21:49:39 mgrouch Exp $  */
+/*  $Id: xml_trans.c,v 1.26 2002/12/07 21:55:38 mgrouch Exp $  */
 
 /*
 
@@ -206,7 +206,7 @@ trInitLibXml(xsltOptionsPtr ops)
     xmlPedanticParserDefault(0);
 
     xmlGetWarningsDefaultValue = 1;
-    xmlDoValidityCheckingDefaultValue = 1;
+    xmlDoValidityCheckingDefaultValue = 0;
     xmlLoadExtDtdDefaultValue = 1;
     
     /*
