@@ -1,4 +1,4 @@
-/*  $Id: xml_format.c,v 1.12 2003/08/06 17:41:04 mgrouch Exp $  */
+/*  $Id: xml_format.c,v 1.13 2003/08/06 17:52:06 mgrouch Exp $  */
 
 /*
 
@@ -170,7 +170,7 @@ foParseOptions(foOptionsPtr ops, int argc, char **argv)
             ops->indent = 0;
             i++;
         }
-        if (!strcmp(argv[i], "--encode") || !strcmp(argv[i], "-e"))
+        else if (!strcmp(argv[i], "--encode") || !strcmp(argv[i], "-e"))
         {
             i++;
             encoding = argv[i];
