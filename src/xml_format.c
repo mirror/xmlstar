@@ -1,4 +1,4 @@
-/*  $Id: xml_format.c,v 1.8 2002/12/08 04:01:47 mgrouch Exp $  */
+/*  $Id: xml_format.c,v 1.9 2002/12/09 02:29:45 mgrouch Exp $  */
 
 /*
 
@@ -46,15 +46,15 @@ THE SOFTWARE.
 #include <libxml/uri.h>
 
 /*
- *   TODO:
- *        1. Attribute formatting options (as every attribute on a new line)
- *        2. exit values on errors
+ *  TODO:  1. Attribute formatting options (as every attribute on a new line)
+ *         2. exit values on errors
  */
 
 typedef struct _foOptions {
     int indent;               /* Indent output */
     int indent_tab;           /* Indent output with tab */
     int indent_spaces;        /* Num spaces for indentation */
+    int omit_decl;            /* omit xml declaration */
 #ifdef LIBXML_HTML_ENABLED
     int html;                 /* inputs are in HTML format */
 #endif
@@ -66,11 +66,12 @@ static const char format_usage_str[] =
 "XMLStarlet Toolkit: Format XML document(s)\n"
 "Usage: xml fo [<options>] <xml-file>\n"
 "where <options> are\n"
+"   -n or --noindent            - do not indent\n"
 "   -t or --indent-tab          - indent output with tabulation\n"
 "   -s or --indent-spaces <num> - indent output with <num> spaces\n"
-"   -n or --noindent            - do not indent\n"
+"   -o or --omit-decl           - omit xml declaration <?xml version=\"1.0\"?>\n"
 #ifdef LIBXML_HTML_ENABLED
-"   --html                      - input is HTML\n"
+"   -H or --html                - input is HTML\n"
 #endif
 "   -h or --help                - print help\n\n";
 
@@ -96,6 +97,7 @@ foInitOptions(foOptionsPtr ops)
     ops->indent = 1;
     ops->indent_tab = 0;
     ops->indent_spaces = 2;
+    ops->omit_decl = 0;
 #ifdef LIBXML_HTML_ENABLED
     ops->html = 0;
 #endif
@@ -167,6 +169,11 @@ foParseOptions(foOptionsPtr ops, int argc, char **argv)
             ops->indent_tab = 1;
             i++;
         }
+        else if (!strcmp(argv[i], "--omit-decl") || !strcmp(argv[i], "-o"))
+        {
+            ops->omit_decl = 1;
+            i++;
+        }
         else if (!strcmp(argv[i], "--indent-spaces") || !strcmp(argv[i], "-s"))
         {
             int value;
@@ -184,7 +191,7 @@ foParseOptions(foOptionsPtr ops, int argc, char **argv)
             i++;
         }
 #ifdef LIBXML_HTML_ENABLED
-        else if (!strcmp(argv[i], "--html"))
+        else if (!strcmp(argv[i], "--html") || !strcmp(argv[i], "-H"))
         {
             ops->html = 1;
             i++;
@@ -236,8 +243,32 @@ foProcess(foOptionsPtr ops, int start, int argc, char **argv)
     else
 #endif
         doc = xmlParseFile(fileName);
-    xmlSaveFormatFile("-", doc, 1);
 
+    if (!ops->omit_decl)
+    {
+       xmlSaveFormatFile("-", doc, 1);
+    }
+    else
+    {
+        int format = 1;
+        int ret = 0;
+        const char *encoding = NULL;
+        xmlOutputBufferPtr buf = NULL;
+        xmlCharEncodingHandlerPtr handler = NULL;
+        buf = xmlOutputBufferCreateFile(stdout, handler);
+
+        if (doc->children != NULL)
+        {
+            xmlNodePtr child = doc->children;
+            while (child != NULL)
+            {
+                xmlNodeDumpOutput(buf, doc, child, 0, format, encoding);
+                xmlOutputBufferWriteString(buf, "\n");
+                child = child->next;
+            }
+        }
+        ret = xmlOutputBufferClose(buf);
+    }
     return ret;
 }
 

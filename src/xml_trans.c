@@ -1,4 +1,4 @@
-/*  $Id: xml_trans.c,v 1.28 2002/12/08 03:53:18 mgrouch Exp $  */
+/*  $Id: xml_trans.c,v 1.29 2002/12/09 02:29:45 mgrouch Exp $  */
 
 /*
 
@@ -51,7 +51,7 @@ static const char trans_usage_str[] =
 "   <xsl-file>      - main XSLT stylesheet for transformation\n"
 "   <xml-file>      - input XML document file name (stdin is used if missing)\n"
 "   <name>=<value>  - name and value of the parameter passed to XSLT processor\n"
-"   -p              - parameter is an XPATH expression (\"'string'\" to quote string)\n"
+"   -p              - parameter is XPATH expression (\"'string'\" to quote string)\n"
 "   -s              - parameter is a string literal\n"
 "<options> are:\n"
 "   --omit-decl     - omit xml declaration <?xml version=\"1.0\"?>\n"

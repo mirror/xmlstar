@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.38 2002/12/08 04:35:01 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.39 2002/12/09 02:29:45 mgrouch Exp $  */
 
 /*
 
@@ -187,7 +187,132 @@ selParseOptions(selOptionsPtr ops, int argc, char **argv)
         i++;
     }
 
-    return i-1;
+    return i;
+}
+
+/**
+ *  Prepare XSLT template based on command line options
+ *  Assumes start points to -t option
+ */
+int
+selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
+               int* lastTempl, int start, int argc, char **argv)
+{
+    int c, i, j, k, m, t;
+    int templateEmpty = 1;
+
+    c = *len;
+    i = start;
+    t = num;
+
+    if (strcmp(argv[i], "-t") && strcmp(argv[i], "--template"))
+    {
+        fprintf(stderr, "not at the beginning of template\n");
+        abort();
+    }
+
+    templateEmpty = 1;
+    c += sprintf(xsl_buf + c, "<xsl:template name=\"t%d\">\n", t);
+
+    i++;
+    m = 0;
+    while(i < (argc - 1))
+    {
+        if(!strcmp(argv[i], "-c") || !strcmp(argv[i], "--copy-of"))
+        {
+            templateEmpty = 0;
+            for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
+            c += sprintf(xsl_buf + c, "<xsl:copy-of select=\"%s\"/>\n", argv[i+1]);
+            i++;
+        }
+        else if(!strcmp(argv[i], "-v") || !strcmp(argv[i], "--value-of"))
+        {
+            templateEmpty = 0;
+            for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
+            c += sprintf(xsl_buf + c, "<xsl:value-of select=\"%s\"/>\n", argv[i+1]);
+            i++;
+        }
+        else if(!strcmp(argv[i], "-o") || !strcmp(argv[i], "--output"))
+        {
+            templateEmpty = 0;
+            for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
+            c += sprintf(xsl_buf + c, "<xsl:value-of select=\"'%s'\"/>\n", argv[i+1]);
+            i++;
+        }
+        else if(!strcmp(argv[i], "-f") || !strcmp(argv[i], "--inp-name"))
+        {
+            templateEmpty = 0;
+            for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
+            c += sprintf(xsl_buf + c, "<xsl:copy-of select=\"$inputFile\"/>\n");
+        }
+        else if(!strcmp(argv[i], "-n") || !strcmp(argv[i], "--nl"))
+        {
+            templateEmpty = 0;
+            for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
+            c += sprintf(xsl_buf + c, "<xsl:value-of select=\"'&#10;'\"/>\n");
+        }
+        else if(!strcmp(argv[i], "-m") || !strcmp(argv[i], "--match"))
+        {
+            templateEmpty = 0;
+            for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
+            c += sprintf(xsl_buf + c, "<xsl:for-each select=\"%s\">\n", argv[i+1]);
+            m++;
+            i++;
+        }
+        else if(!strcmp(argv[i], "-t") || !strcmp(argv[i], "--template"))
+        {
+            i--;
+            break;
+        }
+        else
+        {
+            if(argv[i][0] != '-')
+            {
+                break;
+            }
+        }
+
+        i++;
+    }
+/*
+    if((i < argc) && (!strcmp(argv[i], "-n") || !strcmp(argv[i], "--nl")))
+    {
+        for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
+        c += sprintf(xsl_buf + c, "<xsl:value-of select=\"'&#10;'\"/>\n");
+    }
+*/
+    for (k=0; k<m; k++)
+    {
+        for (j=k; j<m; j++) c += sprintf(xsl_buf + c, "  ");
+        c += sprintf(xsl_buf + c, "</xsl:for-each>\n");
+    }
+
+    if (templateEmpty)
+    {
+        fprintf(stderr, "error in arguments:");
+        fprintf(stderr, " -t or --template option must be followed by");
+        fprintf(stderr, " --match or other options\n");
+        exit(3);
+    }
+
+    c += sprintf(xsl_buf + c, "</xsl:template>\n");
+
+    *len = c;
+
+    if (i >= argc)
+    {
+        *lastTempl = 1;
+        return i-1;
+    }
+    if (argv[i][0] != '-')
+    {
+        *lastTempl = 1;
+        return i;
+    }
+
+    /* return index of the beginning of the next template or input file name */
+    i++;
+    return i;
 }
 
 /**
@@ -241,109 +366,20 @@ selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops,
     {
         fprintf(stderr, "error in arguments:");
         fprintf(stderr, " no -t or --template options found\n");
-        /*selUsage(argc, argv);*/
         exit(2);
     }
-    
+        
     t = 0;
-    i = 2;
+    i = start;
     while(i < argc)
     {
         if(!strcmp(argv[i], "-t") || !strcmp(argv[i], "--template"))
         {
-            templateEmpty = 1;
+            int lastTempl = 0;
             t++;
-            c += sprintf(xsl_buf + c, "<xsl:template name=\"t%d\">\n", t);
-
-            i++;
-            m = 0;
-            while(i < (argc - 1))
-            {
-                if(!strcmp(argv[i], "-c") || !strcmp(argv[i], "--copy-of"))
-                {
-                    templateEmpty = 0;
-                    for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
-                    c += sprintf(xsl_buf + c, "<xsl:copy-of select=\"%s\"/>\n", argv[i+1]);
-                    i++;
-                }
-                else if(!strcmp(argv[i], "-v") || !strcmp(argv[i], "--value-of"))
-                {
-                    templateEmpty = 0;
-                    for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
-                    c += sprintf(xsl_buf + c, "<xsl:value-of select=\"%s\"/>\n", argv[i+1]);
-                    i++;
-                }
-                else if(!strcmp(argv[i], "-o") || !strcmp(argv[i], "--output"))
-                {
-                    templateEmpty = 0;
-                    for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
-                    c += sprintf(xsl_buf + c, "<xsl:value-of select=\"'%s'\"/>\n", argv[i+1]);
-                    i++;
-                }
-                else if(!strcmp(argv[i], "-f") || !strcmp(argv[i], "--inp-name"))
-                {
-                    templateEmpty = 0;
-                    for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
-                    c += sprintf(xsl_buf + c, "<xsl:copy-of select=\"$inputFile\"/>\n");
-                }
-                else if(!strcmp(argv[i], "-n") || !strcmp(argv[i], "--nl"))
-                {
-                    templateEmpty = 0;
-                    for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
-                    c += sprintf(xsl_buf + c, "<xsl:value-of select=\"'&#10;'\"/>\n");
-                }
-                else if(!strcmp(argv[i], "-m") || !strcmp(argv[i], "--match"))
-                {
-                    templateEmpty = 0;
-                    for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
-                    c += sprintf(xsl_buf + c, "<xsl:for-each select=\"%s\">\n", argv[i+1]);
-                    m++;
-                    i++;
-                }
-                else if(!strcmp(argv[i], "-t") || !strcmp(argv[i], "--template"))
-                {
-                    i--;
-                    break;
-                }
-                else
-                {
-                    if(argv[i][0] != '-')
-                    {
-                        break;
-                    }
-                }
-
-                i++;
-            }
-/*
-            if((i < argc) && (!strcmp(argv[i], "-n") || !strcmp(argv[i], "--nl")))
-            {
-                for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
-                c += sprintf(xsl_buf + c, "<xsl:value-of select=\"'&#10;'\"/>\n");
-            }
-*/
-            for (k=0; k<m; k++)
-            {
-                for (j=k; j<m; j++) c += sprintf(xsl_buf + c, "  ");
-                c += sprintf(xsl_buf + c, "</xsl:for-each>\n");
-            }
-
-            if (templateEmpty)
-            {
-                fprintf(stderr, "error in arguments:");
-                fprintf(stderr, " -t or --template option must be followed by");
-                fprintf(stderr, " --match or other options\n");
-                /*selUsage(argc, argv);*/
-                exit(3);
-            }
-            
-            c += sprintf(xsl_buf + c, "</xsl:template>\n");
+            i = selGenTemplate(xsl_buf, &c, ops, t, &lastTempl, i, argc, argv);
+            if (lastTempl) break;
         }
-
-        if (i >= argc) break;
-        if (argv[i][0] != '-') break;
-
-        i++;
     }
 
     c += sprintf(xsl_buf + c, "</xsl:stylesheet>\n");
@@ -372,10 +408,14 @@ selMain(int argc, char **argv)
     xsltOps.noblanks = ops.noblanks;    
     xsltInitLibXml(&xsltOps);
 
-    c = sizeof(xsl_buf);    
+    c = sizeof(xsl_buf);
     i = selPrepareXslt(xsl_buf, &c, &ops, start, argc, argv);
     
-    if (ops.printXSLT) fprintf(stdout, "%s", xsl_buf);
+    if (ops.printXSLT)
+    {
+        fprintf(stdout, "%s", xsl_buf);
+        exit(0);
+    }
     
     for (n=i; n<argc; n++)
     {

@@ -1,4 +1,4 @@
-/*  $Id: xml.c,v 1.21 2002/12/08 03:53:18 mgrouch Exp $  */
+/*  $Id: xml.c,v 1.22 2002/12/09 02:29:45 mgrouch Exp $  */
 
 /*
 
@@ -40,10 +40,10 @@ static const char usage_str[] =
 "XMLStarlet Toolkit: Command line utilities for XML\n"
 "Usage: xml [<options>] <command> [<cmd-options>]\n"
 "where <command> is one of:\n"
-"   ed   (or edit)      - Edit XML document(s)\n"
-"   sel  (or select)    - Select data or query XML document(s)\n"
-"   tr   (or transform) - Transform XML document(s)\n"
-"   val  (or validate)  - Validate XML document(s)\n"
+"   ed   (or edit)      - Edit/Update XML document(s)\n"
+"   sel  (or select)    - Select data or query XML document(s) (XPATH, etc)\n"
+"   tr   (or transform) - Transform XML document(s) using XSLT\n"
+"   val  (or validate)  - Validate XML document(s) (well-formed/DTD/XSD)\n"
 "   fo   (or format)    - Format XML document(s)\n"
 "<options> are:\n"
 "   --version           - show version\n"
