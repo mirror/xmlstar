@@ -722,6 +722,14 @@ Result Output:
 
 
 Command:
+# Validate against XSD schema
+xml val -b -s xsd/table.xsd xml/table.xml xml/tab-obj.xml 2>/dev/null; echo $?
+Result Output:
+xml/tab-obj.xml
+1
+
+
+Command:
 # xsl:copy-of in xml sel command
 xml sel -B -t -m /xml/table/rec -c . -n xml/table.xml
 Result Output:
