@@ -1,4 +1,4 @@
-/*  $Id: xml_format.c,v 1.7 2002/12/07 19:17:43 mgrouch Exp $  */
+/*  $Id: xml_format.c,v 1.8 2002/12/08 04:01:47 mgrouch Exp $  */
 
 /*
 
@@ -223,7 +223,7 @@ foProcess(foOptionsPtr ops, int start, int argc, char **argv)
     xmlDocPtr doc = NULL;
     char *fileName = "-";
 
-    if ((start < argc) && (argv[start][0] != '-') &&
+    if ((start > 1) && (start < argc) && (argv[start][0] != '-') &&
         strcmp(argv[start-1], "--indent-spaces") &&
         strcmp(argv[start-1], "-s"))
     {
@@ -264,7 +264,7 @@ foMain(int argc, char **argv)
     int start;
     static foOptions ops;
 
-    if (argc <=2) foUsage(argc, argv);
+    if (argc <=1) foUsage(argc, argv);
     foInitOptions(&ops);
     start = foParseOptions(&ops, argc, argv);
     if (argc-start > 1) foUsage(argc, argv);
