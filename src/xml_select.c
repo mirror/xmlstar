@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.48 2003/04/18 00:09:24 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.49 2003/04/18 19:39:54 mgrouch Exp $  */
 
 /*
 
@@ -525,7 +525,14 @@ selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops,
 
     c += sprintf(xsl_buf, "<?xml version=\"1.0\"?>\n");
     c += sprintf(xsl_buf + c,
-      "<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">\n");
+      "<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"");
+    c += sprintf(xsl_buf + c, "\n xmlns:exslt=\"http://exslt.org/common\" extension-element-prefixes=\"exsl\"");
+    c += sprintf(xsl_buf + c, "\n xmlns:math=\"http://exslt.org/math\" extension-element-prefixes=\"math\" exclude-result-prefixes=\"math\"");
+    c += sprintf(xsl_buf + c, "\n xmlns:date=\"http://exslt.org/dates-and-times\" extension-element-prefixes=\"date\"");
+    c += sprintf(xsl_buf + c, "\n xmlns:func=\"http://exslt.org/functions\" extension-element-prefixes=\"func\"");
+    c += sprintf(xsl_buf + c, "\n xmlns:set=\"http://exslt.org/sets\" extension-element-prefixes=\"set\"");
+    c += sprintf(xsl_buf + c, "\n xmlns:str=\"http://exslt.org/strings\" extension-element-prefixes=\"str\" exclude-result-prefixes=\"str\"");
+    c += sprintf(xsl_buf + c, ">\n");
 
     if (ops->no_omit_decl) c += sprintf(xsl_buf + c, "<xsl:output omit-xml-declaration=\"no\"");
     else c += sprintf(xsl_buf + c, "<xsl:output omit-xml-declaration=\"yes\"");
