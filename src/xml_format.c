@@ -1,4 +1,4 @@
-/*  $Id: xml_format.c,v 1.1 2002/12/02 04:52:32 mgrouch Exp $  */
+/*  $Id: xml_format.c,v 1.2 2002/12/07 05:08:16 mgrouch Exp $  */
 
 /*
 
@@ -46,7 +46,7 @@ THE SOFTWARE.
 #include <libxml/uri.h>
 
 /*
-   TODO:
+    TODO:
  */
 
 typedef struct _foOptions {
@@ -118,8 +118,17 @@ foInitLibXml(foOptionsPtr ops)
     if (ops->indent)
     {
         xmlIndentTreeOutput = 1;
-        xmlTreeIndentString = "  ";
-        if (ops->indent_tab) xmlTreeIndentString = "\t";        
+        xmlTreeIndentString = NULL;
+        if (ops->indent_spaces > 0)
+        {
+            int i;
+            char *p;
+            p = malloc(ops->indent_spaces + 1);
+            xmlTreeIndentString = p;
+            for (i=0; i<ops->indent_spaces; i++) p[i] = ' ';
+            p[ops->indent_spaces] = 0;
+        }
+        if (ops->indent_tab) xmlTreeIndentString = strdup("\t");
     }
     else
         xmlIndentTreeOutput = 0;
@@ -134,17 +143,41 @@ foParseOptions(foOptionsPtr ops, int argc, char **argv)
     int i;
 
     i = 2;
-    while((i < argc) && (strcmp(argv[i], "-t")) && strcmp(argv[i], "--template"))
+    while(i < argc)
     {
         if (!strcmp(argv[i], "--noindent"))
         {
             ops->indent = 0;
         }
-        if (!strcmp(argv[i], "--indent-tab"))
+        else if (!strcmp(argv[i], "--indent-tab"))
         {
             ops->indent_tab = 1;
         }
+        else if (!strcmp(argv[i], "--indent-spaces"))
+        {
+            int value;
+            i++;
+            if (i >= argc) foUsage(argc, argv);
+            if (sscanf(argv[i], "%d", &value) == 1)
+            {
+                if (value > 0) ops->indent_spaces = value;
+            }
+            else
+            {
+                foUsage(argc, argv);
+            }
+            ops->indent_tab = 0;
+        }
         else if (!strcmp(argv[i], "--help"))
+        {
+            foUsage(argc, argv);
+        }
+        else if (!strcmp(argv[i], "-"))
+        {
+            i++;
+            break;
+        }
+        else if (argv[i][0] == '-')
         {
             foUsage(argc, argv);
         }
@@ -162,9 +195,15 @@ foProcess(foOptionsPtr ops, int start, int argc, char **argv)
 {
     int ret = 0;
     xmlDocPtr doc = NULL;
-    
-    doc = xmlParseFile("-");
+    char *fileName = "-";
 
+    if ((start < argc) && (argv[start][0] != '-') &&
+        strcmp(argv[start-1], "--indent-spaces"))
+    {
+        fileName = argv[start];   
+    }
+    
+    doc = xmlParseFile(fileName);
     xmlSaveFormatFile("-", doc, 1);
 
     return ret;
@@ -177,6 +216,7 @@ void
 foCleanup()
 {
     xmlCleanupParser();
+    free((char*) xmlTreeIndentString);
 #if 0
     xmlMemoryDump();
 #endif
@@ -192,6 +232,7 @@ foMain(int argc, char **argv)
     int start;
     static foOptions ops;
 
+    if (argc <=2) foUsage(argc, argv);
     foInitOptions(&ops);
     start = foParseOptions(&ops, argc, argv);
     foInitLibXml(&ops);
