@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.50 2003/04/18 21:15:14 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.51 2003/04/18 22:08:33 mgrouch Exp $  */
 
 /*
 
@@ -526,18 +526,20 @@ selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops,
     c += sprintf(xsl_buf, "<?xml version=\"1.0\"?>\n");
     c += sprintf(xsl_buf + c,
       "<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"");
-    c += sprintf(xsl_buf + c, "\n xmlns:exslt=\"http://exslt.org/common\" extension-element-prefixes=\"exsl\"");
-    c += sprintf(xsl_buf + c, "\n xmlns:math=\"http://exslt.org/math\" extension-element-prefixes=\"math\" exclude-result-prefixes=\"math\"");
-    c += sprintf(xsl_buf + c, "\n xmlns:date=\"http://exslt.org/dates-and-times\" extension-element-prefixes=\"date\"");
-    c += sprintf(xsl_buf + c, "\n xmlns:func=\"http://exslt.org/functions\" extension-element-prefixes=\"func\"");
-    c += sprintf(xsl_buf + c, "\n xmlns:set=\"http://exslt.org/sets\" extension-element-prefixes=\"set\"");
-    c += sprintf(xsl_buf + c, "\n xmlns:str=\"http://exslt.org/strings\" extension-element-prefixes=\"str\" exclude-result-prefixes=\"str\"");
-    c += sprintf(xsl_buf + c, "\n xmlns:dyn=\"http://exslt.org/dynamic\" extension-element-prefixes=\"dyn\"");
-    c += sprintf(xsl_buf + c, "\n xmlns:saxon=\"http://icl.com/saxon\" extension-element-prefixes=\"saxon\"");
-    c += sprintf(xsl_buf + c, "\n xmlns:xalanredirect=\"org.apache.xalan.xslt.extensions.Redirect\" extension-element-prefixes=\"xalanredirect\"");
-    c += sprintf(xsl_buf + c, "\n xmlns:xt=\"http://www.jclark.com/xt\" extension-element-prefixes=\"xt\"");
-    c += sprintf(xsl_buf + c, "\n xmlns:libxslt=\"http://xmlsoft.org/XSLT/namespace\" extension-element-prefixes=\"libxslt\"");
-    c += sprintf(xsl_buf + c, "\n xmlns:test=\"http://xmlsoft.org/XSLT/\" extension-element-prefixes=\"test\"");
+    c += sprintf(xsl_buf + c, "\n xmlns:exslt=\"http://exslt.org/common\"");
+    c += sprintf(xsl_buf + c, "\n xmlns:math=\"http://exslt.org/math\"");
+    c += sprintf(xsl_buf + c, "\n xmlns:date=\"http://exslt.org/dates-and-times\"");
+    c += sprintf(xsl_buf + c, "\n xmlns:func=\"http://exslt.org/functions\"");
+    c += sprintf(xsl_buf + c, "\n xmlns:set=\"http://exslt.org/sets\"");
+    c += sprintf(xsl_buf + c, "\n xmlns:str=\"http://exslt.org/strings\"");
+    c += sprintf(xsl_buf + c, "\n xmlns:dyn=\"http://exslt.org/dynamic\"");
+    c += sprintf(xsl_buf + c, "\n xmlns:saxon=\"http://icl.com/saxon\"");
+    c += sprintf(xsl_buf + c, "\n xmlns:xalanredirect=\"org.apache.xalan.xslt.extensions.Redirect\"");
+    c += sprintf(xsl_buf + c, "\n xmlns:xt=\"http://www.jclark.com/xt\"");
+    c += sprintf(xsl_buf + c, "\n xmlns:libxslt=\"http://xmlsoft.org/XSLT/namespace\"");
+    c += sprintf(xsl_buf + c, "\n xmlns:test=\"http://xmlsoft.org/XSLT/\"");
+    c += sprintf(xsl_buf + c, "\n extension-element-prefixes=\"exsl math date func set str dyn saxon xalanredirect xt libxslt test\"");
+    c += sprintf(xsl_buf + c, "\n exclude-result-prefixes=\"math str\"");
     c += sprintf(xsl_buf + c, ">\n");
 
     if (ops->no_omit_decl) c += sprintf(xsl_buf + c, "<xsl:output omit-xml-declaration=\"no\"");
