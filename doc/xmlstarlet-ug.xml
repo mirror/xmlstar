@@ -593,7 +593,8 @@ Current implementation uses libxslt from GNOME codebase as XSLT processor
  xmlns:xt="http://www.jclark.com/xt"
  xmlns:libxslt="http://xmlsoft.org/XSLT/namespace"
  xmlns:test="http://xmlsoft.org/XSLT/"
- extension-element-prefixes="exslt math date func set str dyn saxon xalanredirect xt libxslt test"
+ extension-element-prefixes=
+   "exslt math date func set str dyn saxon xalanredirect xt libxslt test"
  exclude-result-prefixes="math str"&gt;
 &lt;xsl:output omit-xml-declaration="yes" indent="no"/&gt;
 &lt;xsl:param name="inputFile"&gt;-&lt;/xsl:param&gt;
@@ -717,7 +718,8 @@ xml/tab-obj.xml 41</programlisting>
 
       <para>Query XML document and produce sorted text table</para>
 
-      <programlisting>xml sel -T -t -m /xml/table/rec -s D:N:- "@id" -v "concat(@id,'|',numField,'|',stringField)" -n xml/table.xml</programlisting>
+      <programlisting>xml sel -T -t -m /xml/table/rec -s D:N:- "@id" \
+  -v "concat(@id,'|',numField,'|',stringField)" -n xml/table.xml</programlisting>
 
       <para>Result Output:</para>
 
@@ -735,7 +737,8 @@ xml/tab-obj.xml 41</programlisting>
 &lt;/xsl:template&gt;
 &lt;xsl:template name="t1"&gt;
   &lt;xsl:for-each select="/xml/table/rec"&gt;
-    &lt;xsl:sort order="descending" data-type="number" case-order="upper-first" select="@id"/&gt;
+    &lt;xsl:sort order="descending" data-type="number" 
+      case-order="upper-first" select="@id"/&gt;
     &lt;xsl:value-of select="concat(@id,'|',numField,'|',stringField)"/&gt;
     &lt;xsl:value-of select="'&amp;#10;'"/&gt;
   &lt;/xsl:for-each&gt;
@@ -1457,7 +1460,7 @@ Aid 1
 
       <para>Here is an article which describes how PYX format can be used to
       grep XML. <ulink
-	      url="http://www-106.ibm.com/developerworks/xml/library/x-matters17.html">http://www-106.ibm.com/developerworks/xml/library/x-matters17.html</ulink></para>
+      url="http://www-106.ibm.com/developerworks/xml/library/x-matters17.html">http://www-106.ibm.com/developerworks/xml/library/x-matters17.html</ulink></para>
     </sect1>
 
     <sect1>
@@ -1540,11 +1543,9 @@ XML documents (for more information see http://xmlstar.sourceforge.net/)
       <para>Output</para>
 
       <programlisting>&lt;xml&gt;
-&lt;d a="rwxr-xr-x" acc="2004.02.13 00:06:03" mod="2004.02.13 00:06:00" sz="4096"  n="."/&gt;
-&lt;d a="rwxr-xr-x" acc="2004.02.12 23:54:35" mod="2004.02.13 00:00:09" sz="4096"  n=".."/&gt;
-&lt;f a="rw-r--r--" acc="2004.02.12 23:54:58" mod="2004.02.12 23:54:58" sz="0"     n="resume.xml"/&gt;
-&lt;f a="rw-r--r--" acc="2004.02.12 23:54:58" mod="2004.02.12 23:54:58" sz="0"     n="resume-2004.xml"/&gt;
-&lt;d a="rwxr-xr-x" acc="2004.02.13 00:04:52" mod="2004.02.13 00:04:52" sz="4096"  n="old-resumes"/&gt;
+&lt;d p="rwxrwxrwx" a="20050107T050740Z" m="20050107T050740Z" s="0"  n="old-resume"/&gt;
+&lt;f p="rw-rw-rw-" a="20050107T045941Z" m="20050107T045941Z" s="12" n="resume.2old"/&gt;
+&lt;f p="rw-rw-rw-" a="20050107T045924Z" m="20050107T045924Z" s="81" n="resume.xml"/&gt;
 &lt;/xml&gt;
 </programlisting>
     </sect1>
@@ -1607,7 +1608,8 @@ XML documents (for more information see http://xmlstar.sourceforge.net/)
 &lt;/doc&gt;
 </programlisting></para>
 
-      <para>Command:<programlisting>xml ed -N N="http://www.c.com/xyz" -d '//N:*' ns2.xml | sed -e 's/ xmlns.*=".*"//g'</programlisting></para>
+      <para>Command:<programlisting>xml ed -N N="http://www.c.com/xyz" -d '//N:*' ns2.xml | \
+  sed -e 's/ xmlns.*=".*"//g'</programlisting></para>
 
       <para>Output<programlisting>&lt;doc&gt;
   &lt;A&gt;test&lt;/A&gt;
@@ -1649,7 +1651,8 @@ XML documents (for more information see http://xmlstar.sourceforge.net/)
       command:</para>
 
       <para><programlisting># Query XML document and produce sorted text table
-xml sel -T -t -m /xml/table/rec -s D:N:- "@id" -v "concat(@id,'|',numField,'|',stringField)" -n xml/table.xml
+xml sel -T -t -m /xml/table/rec -s D:N:- "@id" \
+   -v "concat(@id,'|',numField,'|',stringField)" -n xml/table.xml
 </programlisting></para>
 
       <para><programlisting>&lt;xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"&gt;
@@ -1660,7 +1663,8 @@ xml sel -T -t -m /xml/table/rec -s D:N:- "@id" -v "concat(@id,'|',numField,'|',s
 &lt;/xsl:template&gt;
 &lt;xsl:template name="t1"&gt;
   &lt;xsl:for-each select="/xml/table/rec"&gt;
-    &lt;xsl:sort order="descending" data-type="number" case-order="upper-first" select="@id"/&gt;
+    &lt;xsl:sort order="descending" data-type="number" 
+      case-order="upper-first" select="@id"/&gt;
     &lt;xsl:value-of select="concat(@id,'|',numField,'|',stringField)"/&gt;
     &lt;xsl:value-of select="'&amp;#10;'"/&gt;
   &lt;/xsl:for-each&gt;
