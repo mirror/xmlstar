@@ -1,4 +1,4 @@
-/*  $Id: trans.c,v 1.18 2004/11/21 23:40:40 mgrouch Exp $  */
+/*  $Id: trans.c,v 1.19 2004/11/22 02:28:21 mgrouch Exp $  */
 
 #include "config.h"
 #include "trans.h"
@@ -274,12 +274,14 @@ int xsltRun(xsltOptionsPtr ops, char* xsl, const char** params,
 {
     xsltStylesheetPtr cur = NULL;
     xmlDocPtr doc, style;
-    int i;
+    int i, options = 0;
 
+    options = XML_PARSE_DTDATTR;
+     
     /*
      * Compile XSLT Sylesheet
      */
-    style = xmlParseFile((const char *) xsl);
+    style = xmlReadFile((const char *) xsl, NULL, options);
     if (style == NULL)
     {
         fprintf(stderr,  "cannot parse %s\n", xsl);
@@ -300,7 +302,7 @@ int xsltRun(xsltOptionsPtr ops, char* xsl, const char** params,
             }            
             for (i=0; i<count; i++) 
             {
-                style = xmlParseFile((const char *) docs[i]);
+                style = xmlReadFile((const char *) docs[i], NULL, options);
                 if (style == NULL)
                 {
                     fprintf(stderr, "cannot parse %s\n", docs[i]);
@@ -357,7 +359,7 @@ int xsltRun(xsltOptionsPtr ops, char* xsl, const char** params,
             else
 #endif
             {
-                doc = xmlParseFile(docs[i]);
+                doc = xmlReadFile((const char *) docs[i], NULL, options);
             }
 
             if (doc == NULL)
@@ -377,7 +379,7 @@ int xsltRun(xsltOptionsPtr ops, char* xsl, const char** params,
             if (ops->html) doc = htmlParseFile("-", NULL);
             else
 #endif
-                doc = xmlParseFile("-");
+                doc = xmlReadFile("-", NULL, options);
             xsltProcess(ops, doc, params, cur, "-");
         }
     }
