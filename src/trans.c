@@ -1,9 +1,4 @@
-/*  $Id: trans.c,v 1.3 2002/11/26 04:02:45 mgrouch Exp $  */
-
-/*
- *  This code is based on xsltproc by Daniel Veillard (daniel@veillard.com)
- *  (see also http://xmlsoft.org/)
- */
+/*  $Id: trans.c,v 1.4 2002/11/26 05:32:18 mgrouch Exp $  */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -11,19 +6,24 @@
 
 #include "trans.h"
 
-/* TODO */
+/*
+ *  This code is based on xsltproc by Daniel Veillard (daniel@veillard.com)
+ *  (see also http://xmlsoft.org/)
+ */
 
+
+/* TODO: Stylesheet parameters */
 const char *params[MAX_PARAMETERS + 1];
 int nbparams = 0;
 xmlChar *strparams[MAX_PARAMETERS + 1];
 int nbstrparams = 0;
 xmlChar *paths[MAX_PATHS + 1];
 int nbpaths = 0;
-const char *output = NULL;
+const char *output = NULL; /* file name to save output */
 int errorno = 0;
 
-xmlExternalEntityLoader defaultEntityLoader = NULL;
 
+xmlExternalEntityLoader defaultEntityLoader = NULL;
 
 /**
  *  Initialize global command line options
@@ -48,8 +48,6 @@ xsltInitOptions(xsltOptionsPtr ops)
 #endif
 }
 
-
-
 /**
  *  Entity loader
  */
@@ -72,8 +70,7 @@ xsltExternalEntityLoader(const char *URL, const char *ID, xmlParserCtxtPtr ctxt)
         ret = defaultEntityLoader(URL, ID, ctxt);
         if (ret != NULL)
         {
-            if (warning != NULL)
-                ctxt->sax->warning = warning;
+            if (warning != NULL) ctxt->sax->warning = warning;
             return(ret);
         }
     }
@@ -93,8 +90,7 @@ xsltExternalEntityLoader(const char *URL, const char *ID, xmlParserCtxtPtr ctxt)
             xmlFree(newURL);
             if (ret != NULL)
             {
-                if (warning != NULL)
-                    ctxt->sax->warning = warning;
+                if (warning != NULL) ctxt->sax->warning = warning;
                 return(ret);
             }
         }
@@ -123,10 +119,7 @@ xsltProcess(xsltOptionsPtr ops, xmlDocPtr doc, xsltStylesheetPtr cur,
     xsltTransformContextPtr ctxt;
 
 #ifdef LIBXML_XINCLUDE_ENABLED
-    if (ops->xinclude)
-    {
-        xmlXIncludeProcess(doc);
-    }
+    if (ops->xinclude) xmlXIncludeProcess(doc);
 #endif
     if (output == NULL)
     {
@@ -158,10 +151,9 @@ xsltProcess(xsltOptionsPtr ops, xmlDocPtr doc, xsltStylesheetPtr cur,
             }
             else
             {
-                fprintf(stderr,
-                           "Unsupported non standard output %s\n",
-                            cur->method);
-                    errorno = 7;
+                fprintf(stderr, "unsupported non standard output %s\n",
+                        cur->method);
+                errorno = 7;
             }
         }
 
@@ -222,10 +214,8 @@ xsltRun(xsltOptionsPtr ops, char* xsl, int count, char **docs)
                 errorno = 5;
                 goto done;
             }
-            if (cur->indent == 1)
-                xmlIndentTreeOutput = 1;
-            else
-                xmlIndentTreeOutput = 0;
+            if (cur->indent == 1) xmlIndentTreeOutput = 1;
+            else xmlIndentTreeOutput = 0;
         }
         else
         {
@@ -250,13 +240,11 @@ xsltRun(xsltOptionsPtr ops, char* xsl, int count, char **docs)
         {
             doc = NULL;
 #ifdef LIBXML_HTML_ENABLED
-            if (ops->html)
-                doc = htmlParseFile(docs[i], NULL);
+            if (ops->html) doc = htmlParseFile(docs[i], NULL);
             else
 #endif
 #ifdef LIBXML_DOCB_ENABLED
-            if (ops->docbook)
-                doc = docbParseFile(docs[i], NULL);
+            if (ops->docbook) doc = docbParseFile(docs[i], NULL);
             else
 #endif
                 doc = xmlParseFile(docs[i]);
@@ -271,21 +259,26 @@ xsltRun(xsltOptionsPtr ops, char* xsl, int count, char **docs)
 
         if (count == 0)
         {
-            /* stdio */
-            doc = xmlParseFile("-");
+            /* stdin */
+            doc = NULL;
+#ifdef LIBXML_HTML_ENABLED
+            if (ops->html) doc = htmlParseFile("-", NULL);
+            else
+#endif
+#ifdef LIBXML_DOCB_ENABLED
+            if (ops->docbook) doc = docbParseFile("-", NULL);
+            else
+#endif
+                doc = xmlParseFile("-");
             xsltProcess(ops, doc, cur, "-");
         }
     }
 
-    if (cur != NULL)
-        xsltFreeStylesheet(cur);
-
-    for (i = 0; i < nbstrparams; i++)
-        xmlFree(strparams[i]);
-
     /*
      *  Clean up
      */
+    if (cur != NULL) xsltFreeStylesheet(cur);
+    for (i = 0; i < nbstrparams; i++) xmlFree(strparams[i]);
 
 done:
     return(errorno);

@@ -1,4 +1,4 @@
-/*  $Id: trans.h,v 1.3 2002/11/26 04:02:45 mgrouch Exp $  */
+/*  $Id: trans.h,v 1.4 2002/11/26 05:32:18 mgrouch Exp $  */
 
 #include <libxml/xmlmemory.h>
 #include <libxml/debugXML.h>
@@ -50,15 +50,16 @@ typedef xsltOptions *xsltOptionsPtr;
 
 extern xmlExternalEntityLoader defaultEntityLoader;
 
+/* TODO */
 extern const char *params[MAX_PARAMETERS + 1];
 extern int nbparams;
 extern xmlChar *strparams[MAX_PARAMETERS + 1];
 extern int nbstrparams;
-
 /*
 extern xmlChar *paths[MAX_PATHS + 1];
 extern int nbpaths;
 */
+
 extern int errorno;
 
 xmlParserInputPtr xsltExternalEntityLoader(const char *URL, const char *ID, xmlParserCtxtPtr ctxt);

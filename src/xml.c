@@ -1,4 +1,4 @@
-/*  $Id: xml.c,v 1.17 2002/11/26 04:02:45 mgrouch Exp $  */
+/*  $Id: xml.c,v 1.18 2002/11/26 05:32:18 mgrouch Exp $  */
 
 /*
 
@@ -57,6 +57,9 @@ const char libxslt_more_info[] =
 "Current implementation uses libxslt from GNOME codebase as XSLT processor\n"
 "(see http://xmlsoft.org/ for more details)\n";
 
+/**
+ *  Display usage syntax
+ */
 void
 usage(int argc, char **argv)
 {
@@ -66,6 +69,9 @@ usage(int argc, char **argv)
     exit(1);
 }  
 
+/**
+ *  This is the main function
+ */
 int
 main(int argc, char **argv)
 {
