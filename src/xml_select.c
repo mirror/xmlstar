@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.66 2005/01/07 00:29:35 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.67 2005/01/07 02:02:13 mgrouch Exp $  */
 
 /*
 
@@ -818,7 +818,7 @@ selMain(int argc, char **argv)
         if (doc != NULL) {
             xsltProcess(&xsltOps, doc, params, cur, "-");
         }
-        /* xsltFreeStylesheet(cur); */
+        xsltFreeStylesheet(cur);
     }
 
     /* 
