@@ -1,4 +1,4 @@
-/*  $Id: xml_format.c,v 1.13 2003/08/06 17:52:06 mgrouch Exp $  */
+/*  $Id: xml_format.c,v 1.14 2003/09/02 03:13:48 mgrouch Exp $  */
 
 /*
 
@@ -72,7 +72,7 @@ static const char format_usage_str[] =
 "   -s or --indent-spaces <num> - indent output with <num> spaces\n"
 "   -o or --omit-decl           - omit xml declaration <?xml version=\"1.0\"?>\n"
 "   -R or --recover             - try to recover what is parsable\n"
-"   -e or --encode              - output in the given encoding (utf-8, unicode...)\n"
+"   -e or --encode <encoding>   - output in the given encoding (utf-8, unicode...)\n"
 #ifdef LIBXML_HTML_ENABLED
 "   -H or --html                - input is HTML\n"
 #endif
