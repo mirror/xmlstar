@@ -1,1 +1,1 @@
-./xmlstarlet sel -T -t -m /xml/table/rec/object -f -n xml/table.xml xml/tab-obj.xml
+./xmlstarlet sel -t -m //object -f xml/table.xml xml/tab-obj.xml
