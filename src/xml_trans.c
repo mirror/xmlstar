@@ -1,4 +1,4 @@
-/*  $Id: xml_trans.c,v 1.5 2002/11/16 01:53:45 mgrouch Exp $  */
+/*  $Id: xml_trans.c,v 1.6 2002/11/16 02:37:25 mgrouch Exp $  */
 
 /*
  *  TODO:
@@ -150,7 +150,7 @@ xslExternalEntityLoader(const char *URL, const char *ID,
     return(NULL);
 }
 
-static void
+void
 xsltProcess(xmlDocPtr doc, xsltStylesheetPtr cur, const char *filename)
 {
     xmlDocPtr res;

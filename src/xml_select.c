@@ -1,8 +1,26 @@
-/*  $Id: xml_select.c,v 1.9 2002/11/16 01:53:45 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.10 2002/11/16 02:37:25 mgrouch Exp $  */
 
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include <libxml/xmlmemory.h>
+#include <libxml/debugXML.h>
+#include <libxml/xmlIO.h>
+#include <libxml/HTMLtree.h>
+#include <libxml/xinclude.h>
+#include <libxml/parserInternals.h>
+#include <libxml/uri.h>
+
+#include <libxslt/xslt.h>
+#include <libxslt/xsltInternals.h>
+#include <libxslt/transform.h>
+#include <libxslt/xsltutils.h>
+#include <libxslt/extensions.h>
+#if 0
+#include <libxslt/security.h>
+#endif
+
 
 /*
  *  TODO:
@@ -88,11 +106,12 @@ void select_usage(int argc, char **argv)
  */
 
 
+static int printXSLT = 0;
+static int out_text = 0;
 
 int xml_select(int argc, char **argv)
 {
     int c, i, j, k, m, t;
-    int out_text = 1;
   
     if (argc <= 2) select_usage(argc, argv);
 
@@ -100,6 +119,26 @@ int xml_select(int argc, char **argv)
     fprintf(stderr, "SELECT\n");
     fprintf(stderr, "Sample: ./xml sel -t -p \"'--------'\" -m \"/xml/*\" -p \"position()\" -t -p \"count(/xml/*)\" -p \"'------FINISH-----'\"\n");
 #endif
+
+
+    /*
+     *   Parse global options
+     */
+     
+    i = 2;
+    while((i < argc) && (strcmp(argv[i], "-t")) && strcmp(argv[i], "--template"))
+    {
+        if (!strcmp(argv[i], "-C"))
+        {
+            printXSLT = 1;
+        }
+        else if (!strcmp(argv[i], "-T"))
+        {
+            out_text = 1;
+        }
+        i++;  
+    }
+
 
     xsl_buf[0] = 0;
     c = 0;
@@ -194,6 +233,20 @@ int xml_select(int argc, char **argv)
     }
     
     c += sprintf(xsl_buf + c, "</xsl:stylesheet>\n");
-    fprintf(stdout, "%s", xsl_buf);
+
+    if (printXSLT) fprintf(stdout, "%s", xsl_buf);
+
+    /*
+     *  Parse XSLT stylesheet
+     */
+
+    {
+        xmlDocPtr style = xmlParseMemory(xsl_buf, c);
+        xsltStylesheetPtr cur = xsltParseStylesheetDoc(style);
+        xmlDocPtr doc = xmlParseFile("-");
+        xsltProcess(doc, cur, "-");
+//        xsltFreeStylesheet(cur);
+    }
+        
     return 0;
 }  
