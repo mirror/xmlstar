@@ -1,4 +1,4 @@
-/*  $Id: xml_trans.c,v 1.37 2004/11/21 23:40:40 mgrouch Exp $  */
+/*  $Id: xml_trans.c,v 1.38 2005/01/07 02:40:59 mgrouch Exp $  */
 
 /*
 
@@ -248,6 +248,7 @@ trParseParams(const char** params, int* plen,
                     value = xmlStrcat(value, string);
                     value = xmlStrcat(value, (const xmlChar *)"\"");
                 }
+                xmlFree(string);
 
                 if (*plen >= MAX_PARAMETERS)
                 {
