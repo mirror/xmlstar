@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.27 2002/11/26 05:32:19 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.28 2002/11/27 00:09:17 mgrouch Exp $  */
 
 /*
 
@@ -116,8 +116,10 @@ static int out_text = 0;
 
 int selMain(int argc, char **argv)
 {
-    xsltOptions ops;
+    static xsltOptions ops;
+    static const char *params[2 * MAX_PARAMETERS + 1];
     int c, i, j, k, m, n, t;
+    int nbparams;
   
     if (argc <= 2) selUsage(argc, argv);
 
@@ -246,8 +248,6 @@ int selMain(int argc, char **argv)
             c += sprintf(xsl_buf + c, "</xsl:template>\n");
         }
 
-        /* printf("%s\n", argv[i]); */
-
         if (argv[i][0] != '-') break;
         
         i++;
@@ -272,8 +272,6 @@ int selMain(int argc, char **argv)
         value = xmlStrcat((xmlChar *)value, (const xmlChar *)"'");
         params[1] = (char *) value;
 
-        /* printf("%s\n", argv[n]); */
-
         /*
          *  Parse XSLT stylesheet
          */
@@ -281,7 +279,7 @@ int selMain(int argc, char **argv)
             xmlDocPtr style = xmlParseMemory(xsl_buf, c);
             xsltStylesheetPtr cur = xsltParseStylesheetDoc(style);
             xmlDocPtr doc = xmlParseFile(argv[n]);
-            xsltProcess(&ops, doc, cur, argv[n]);
+            xsltProcess(&ops, doc, params, cur, argv[n]);
             xsltFreeStylesheet(cur);
         }
     }
@@ -295,7 +293,7 @@ int selMain(int argc, char **argv)
         xmlDocPtr style = xmlParseMemory(xsl_buf, c);
         xsltStylesheetPtr cur = xsltParseStylesheetDoc(style);
         xmlDocPtr doc = xmlParseFile("-");
-        xsltProcess(&ops, doc, cur, "-");
+        xsltProcess(&ops, doc, params, cur, "-");
         /* xsltFreeStylesheet(cur); */
     }
         

@@ -1,4 +1,4 @@
-/*  $Id: trans.c,v 1.4 2002/11/26 05:32:18 mgrouch Exp $  */
+/*  $Id: trans.c,v 1.5 2002/11/27 00:09:17 mgrouch Exp $  */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -11,17 +11,12 @@
  *  (see also http://xmlsoft.org/)
  */
 
-
-/* TODO: Stylesheet parameters */
-const char *params[MAX_PARAMETERS + 1];
-int nbparams = 0;
-xmlChar *strparams[MAX_PARAMETERS + 1];
-int nbstrparams = 0;
+/* TODO */
 xmlChar *paths[MAX_PATHS + 1];
 int nbpaths = 0;
-const char *output = NULL; /* file name to save output */
-int errorno = 0;
 
+const char *output = NULL;          /* file name to save output */
+int errorno = 0;
 
 xmlExternalEntityLoader defaultEntityLoader = NULL;
 
@@ -75,7 +70,8 @@ xsltExternalEntityLoader(const char *URL, const char *ID, xmlParserCtxtPtr ctxt)
         }
     }
 
-    /* TODO ??? */
+    /* preload resources */
+    /* TODO */
     for (i = 0; i < nbpaths; i++)
     {
         xmlChar *newURL;
@@ -112,8 +108,8 @@ xsltExternalEntityLoader(const char *URL, const char *ID, xmlParserCtxtPtr ctxt)
  *  Run stylesheet on XML document
  */
 void
-xsltProcess(xsltOptionsPtr ops, xmlDocPtr doc, xsltStylesheetPtr cur,
-           const char *filename)
+xsltProcess(xsltOptionsPtr ops, xmlDocPtr doc, const char** params,
+            xsltStylesheetPtr cur, const char *filename)
 {
     xmlDocPtr res;
     xsltTransformContextPtr ctxt;
@@ -178,8 +174,9 @@ xsltProcess(xsltOptionsPtr ops, xmlDocPtr doc, xsltStylesheetPtr cur,
 /**
  *  run XSLT on documents
  */
-int
-xsltRun(xsltOptionsPtr ops, char* xsl, int count, char **docs)
+
+int xsltRun(xsltOptionsPtr ops, char* xsl, const char** params,
+            int count, char **docs)
 {
     xsltStylesheetPtr cur = NULL;
     xmlDocPtr doc, style;
@@ -201,7 +198,7 @@ xsltRun(xsltOptionsPtr ops, char* xsl, int count, char **docs)
         if (cur != NULL)
         {
              /* it is an embedded stylesheet */
-             for (i=0; i<count; i++) xsltProcess(ops, style, cur, docs[i]);
+             for (i=0; i<count; i++) xsltProcess(ops, style, params, cur, docs[i]);
              xsltFreeStylesheet(cur);
              goto done;
         }
@@ -254,7 +251,7 @@ xsltRun(xsltOptionsPtr ops, char* xsl, int count, char **docs)
                 errorno = 6;
                 continue;
             }
-            xsltProcess(ops, doc, cur, docs[i]);
+            xsltProcess(ops, doc, params, cur, docs[i]);
         }
 
         if (count == 0)
@@ -270,7 +267,7 @@ xsltRun(xsltOptionsPtr ops, char* xsl, int count, char **docs)
             else
 #endif
                 doc = xmlParseFile("-");
-            xsltProcess(ops, doc, cur, "-");
+            xsltProcess(ops, doc, params, cur, "-");
         }
     }
 
@@ -278,7 +275,6 @@ xsltRun(xsltOptionsPtr ops, char* xsl, int count, char **docs)
      *  Clean up
      */
     if (cur != NULL) xsltFreeStylesheet(cur);
-    for (i = 0; i < nbstrparams; i++) xmlFree(strparams[i]);
 
 done:
     return(errorno);

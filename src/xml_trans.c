@@ -1,4 +1,4 @@
-/*  $Id: xml_trans.c,v 1.17 2002/11/26 05:32:19 mgrouch Exp $  */
+/*  $Id: xml_trans.c,v 1.18 2002/11/27 00:09:18 mgrouch Exp $  */
 
 /*
 
@@ -95,12 +95,12 @@ trUsage(int argc, char **argv)
 /**
  *  Parse global command line options
  */
-void
+int
 trParseOptions(xsltOptionsPtr ops, int argc, char **argv)
 {
     int i;
     
-    if (argc <= 2) return;
+    if (argc <= 2) return argc;
     for (i=2; i<argc; i++)
     {
         if (argv[i][0] == '-')
@@ -151,6 +151,8 @@ trParseOptions(xsltOptionsPtr ops, int argc, char **argv)
         else
             break;
     }
+
+    return i;
 }
 
 /**
@@ -190,17 +192,26 @@ trInitLibXml(xsltOptionsPtr ops)
     xmlSetExternalEntityLoader(xsltExternalEntityLoader);
     if (ops->nonet) defaultEntityLoader = xmlNoNetExternalEntityLoader;
     
+    /*
+     * DTD validation options
+     */
     if (ops->noval == 0)
         xmlLoadExtDtdDefaultValue = XML_DETECT_IDS | XML_COMPLETE_ATTRS;
     else
         xmlLoadExtDtdDefaultValue = 0;
 
 #ifdef LIBXML_XINCLUDE_ENABLED
+    /*
+     * enable XInclude
+     */
     if (ops->xinclude)
         xsltSetXIncludeDefault(1);
 #endif
 
 #ifdef LIBXML_CATALOG_ENABLED
+    /*
+     * enable SGML catalogs
+     */
     if (ops->catalogs)
     {
         char *catalogs = getenv("SGML_CATALOG_FILES");
@@ -231,33 +242,148 @@ trCleanup()
 }
 
 /**
+ *  Parse command line for XSLT parameters
+ */
+int
+trParseParams(const char** params, int* plen,
+              int count, char **argv)
+{
+    int i;
+    *plen = 0;
+    params[0] = 0;
+
+    for (i=0; i<count; i++)
+    {
+        if (argv[i][0] == '-')
+        {
+            if (!strcmp(argv[i], "-p"))
+            {
+                int j;
+                xmlChar *name, *value;
+                
+                i++;
+                if (i >= count) trUsage(0, NULL);
+
+                for(j=0; argv[i][j] && (argv[i][j] != '='); j++);
+                if (argv[i][j] != '=') trUsage(0, NULL);
+                
+                name = xmlStrndup((const xmlChar *) argv[i], j);
+                value = xmlStrdup((const xmlChar *) argv[i]+j+1);
+
+                if (*plen >= MAX_PARAMETERS)
+                {
+                    fprintf(stderr, "too many params increase MAX_PARAMETERS\n");
+                    exit(2);
+                }
+
+                params[*plen] = (char *)name;
+                (*plen)++;
+                params[*plen] = (char *)value;
+                (*plen)++;                
+                params[*plen] = 0;
+            }
+            else if (!strcmp(argv[i], "-s"))
+            {
+                int j, len;
+                const xmlChar *string;
+                xmlChar *name, *value;
+
+                i++;
+                if (i >= count) trUsage(0, NULL);
+
+                for(j=0; argv[i][j] && (argv[i][j] != '='); j++);
+                if (argv[i][j] != '=') trUsage(0, NULL);
+
+                name = xmlStrndup((const xmlChar *)argv[i], j);
+                string = xmlStrdup((const xmlChar *)argv[i]+j+1);
+
+                len = xmlStrlen(string);
+                if (xmlStrchr(string, '"'))
+                {
+                    if (xmlStrchr(string, '\''))
+                    {
+                        fprintf(stderr,
+                            "string parameter contains both quote and double-quotes\n");
+                        exit(8);
+                    }
+                    value = xmlStrdup((const xmlChar *)"'");
+                    value = xmlStrcat(value, string);
+                    value = xmlStrcat(value, (const xmlChar *)"'");
+                }
+                else
+                {
+                    value = xmlStrdup((const xmlChar *)"\"");
+                    value = xmlStrcat(value, string);
+                    value = xmlStrcat(value, (const xmlChar *)"\"");
+                }
+
+                if (*plen >= MAX_PARAMETERS)
+                {
+                    fprintf(stderr, "too many params increase MAX_PARAMETERS\n");
+                    exit(2);
+                }
+
+                params[*plen] = (char *)name;
+                (*plen)++;
+                params[*plen] = (char *)value;
+                (*plen)++;
+                params[*plen] = 0;
+            }
+        }
+        else
+            break;
+    }
+
+    return i;    
+}
+
+/**
+ *  Cleanup memory aloocated by XSLT parameters
+ */
+void
+trCleanupParams(const char **xsltParams)
+{
+    const char **p = xsltParams;
+
+    while (*p)
+    {
+        xmlFree((char *)*p);
+        p++;
+    }
+}
+
+/**
  *  This is the main function for 'tr' option
  */
 int
 trMain(int argc, char **argv)
 {
-    xsltOptions ops;
+    static xsltOptions ops;
+    static const char *xsltParams[2 * MAX_PARAMETERS + 1];
 
     int errorno = 0;
-    int i;
+    int start, xslt_ind;
+    int pCount;
     
     if (argc <= 2) trUsage(argc, argv);
 
     xsltInitOptions(&ops);
-    trParseOptions(&ops, argc, argv);
+    start = trParseOptions(&ops, argc, argv);
+    xslt_ind = start;
     trInitLibXml(&ops);
 
-    /* find xsl file name */
-    for (i=2; i<argc; i++)
-        if (argv[i][0] != '-') break;
-
     /* set parameters */
-    /* TODO */
-        
+    start += trParseParams(xsltParams, &pCount, argc-start-1, argv+start+1);
+                            
     /* run transformation */
-    errorno = xsltRun(&ops, argv[i], argc-i-1, argv+i+1);
+    errorno = xsltRun(&ops, argv[xslt_ind], xsltParams,
+                      argc-start-1, argv+start+1);
 
+    /*printf("p=%d s=%d\n", pCount, sCount);*/
+    
+    /* free resources */
+    trCleanupParams(xsltParams);
     trCleanup();
     
-    return(errorno);                                                
+    return errorno;                                                
 }
