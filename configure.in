@@ -19,6 +19,8 @@ LIBXML_PREFIX="/usr"
 AC_ARG_WITH(libxml-prefix,
         [  --with-libxml-prefix=[PFX]		Specify location of libxml],
         LIBXML_PREFIX=$withval
+        LIBXML_CFLAGS="-I$withval/include/libxml2 -I$withval/include/libxml"
+        LIBXML_LIBS="$withval/lib/libxml2.a -lz -lm -lpthread"
 )
         
 AC_ARG_WITH(libxml-include-prefix,
@@ -47,6 +49,8 @@ LIBXSLT_PREFIX="/usr"
 AC_ARG_WITH(libxslt-prefix,
         [  --with-libxslt-prefix=[PFX]		Specify location of libxslt],
 	LIBXSLT_PREFIX=$withval
+        LIBXSLT_CFLAGS="-I$withval/include/libxslt -I$withval/include/libexslt"
+        LIBXSLT_LIBS="$withval/lib/libxslt.a $withval/lib/libexslt.a -lz -lm -lpthread"
 )
         
 AC_ARG_WITH(libxslt-include-prefix,
@@ -119,6 +123,10 @@ AC_SUBST(WITH_TRIO)
 case "${host}" in
   *sun* )
       LIBXML_LIBS="${LIBXML_LIBS} -lsocket -lnsl"
+      ;;
+  *cygwin* )
+      LIBXML_LIBS="${LIBXML_LIBS} -liconv"
+      ;;
 esac
 
 AC_SUBST(CFLAGS)
@@ -146,7 +154,7 @@ dnl Set LIBXSLT include path
 dnl
 if test "x$LIBXSLT_CFLAGS" = "x"
 then
-	LIBXSLT_CFLAGS="-I${LIBXSLT_PREFIX}/include/libxslt -I${LIBXSLT_PREFIX}/include/libiexslt"
+	LIBXSLT_CFLAGS="-I${LIBXSLT_PREFIX}/include/libxslt -I${LIBXSLT_PREFIX}/include/libexslt"
 fi
 
 dnl
