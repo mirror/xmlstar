@@ -1,4 +1,4 @@
-/*  $Id: xml_elem.c,v 1.3 2003/04/23 03:17:10 mgrouch Exp $  */
+/*  $Id: xml_elem.c,v 1.4 2003/04/23 03:35:17 mgrouch Exp $  */
 
 /*
 
@@ -74,6 +74,7 @@ void elStartElement(void *user_data, const xmlChar *name, const xmlChar **attrs)
 {
     if (*curXPath != (char)0) strcat(curXPath, "/");
     strcat(curXPath, (char*) name);
+    fprintf(stdout, "%s\n", curXPath);
 }
 
 /**
@@ -81,7 +82,6 @@ void elStartElement(void *user_data, const xmlChar *name, const xmlChar **attrs)
  */
 void elEndElement(void *user_data, const xmlChar *name)
 {
-    fprintf(stdout, "%s\n", curXPath);
     *(curXPath + strlen(curXPath) - strlen((char*) name) - 1) = '\0';
 }
 
