@@ -208,7 +208,15 @@ XML documents (for more information see http://xmlstar.sourceforge.net/)
 
 
 
-7. Examples:
+7. Displaying structure of XML documents
+====================================================
+
+xml val --help
+warning: failed to load external entity "--help"
+
+
+
+8. Examples:
 ====================================================
 
 Input1
