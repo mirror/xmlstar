@@ -1,4 +1,4 @@
-/*  $Id: xml_validate.c,v 1.31 2004/09/10 02:02:21 mgrouch Exp $  */
+/*  $Id: xml_validate.c,v 1.32 2004/11/11 03:39:34 mgrouch Exp $  */
 
 /*
 
@@ -63,7 +63,7 @@ typedef struct _valOptions {
 typedef valOptions *valOptionsPtr;
 
 /*
- * usage string chunk : 509 char min on ISO C90
+ * usage string chunk : 509 char max on ISO C90
  */
 static const char validate_usage_str_1[] =
 "XMLStarlet Toolkit: Validate XML document(s)\n"

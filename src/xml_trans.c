@@ -1,4 +1,4 @@
-/*  $Id: xml_trans.c,v 1.35 2004/09/10 02:02:21 mgrouch Exp $  */
+/*  $Id: xml_trans.c,v 1.36 2004/11/11 03:39:34 mgrouch Exp $  */
 
 /*
 
@@ -43,7 +43,7 @@ THE SOFTWARE.
  */
 
 /*
- * usage string chunk : 509 char min on ISO C90
+ * usage string chunk : 509 char max on ISO C90
  */
 static const char trans_usage_str_1[] =
 "XMLStarlet Toolkit: Transform XML document(s) using XSLT\n"

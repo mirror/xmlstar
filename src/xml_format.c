@@ -1,4 +1,4 @@
-/*  $Id: xml_format.c,v 1.22 2004/09/10 02:02:21 mgrouch Exp $  */
+/*  $Id: xml_format.c,v 1.23 2004/11/11 03:39:34 mgrouch Exp $  */
 
 /*
 
@@ -68,7 +68,7 @@ typedef struct _foOptions {
 typedef foOptions *foOptionsPtr;
 
 /*
- * usage string chunk : 509 char min on ISO C90
+ * usage string chunk : 509 char max on ISO C90
  */
 static const char format_usage_str_1[] =
 "XMLStarlet Toolkit: Format XML document\n"

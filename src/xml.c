@@ -1,4 +1,4 @@
-/*  $Id: xml.c,v 1.36 2004/09/10 02:02:21 mgrouch Exp $  */
+/*  $Id: xml.c,v 1.37 2004/11/11 03:39:34 mgrouch Exp $  */
 
 /*
 
@@ -45,7 +45,7 @@ extern int depyxMain(int argc, char **argv);
 extern int escMain(int argc, char **argv, int escape);
 
 /* 
- * usage string chunk : 509 char min on ISO C90
+ * usage string chunk : 509 char max on ISO C90
  */
 static const char usage_str_1[] = 
 "XMLStarlet Toolkit: Command line utilities for XML\n"

@@ -1,4 +1,4 @@
-/*  $Id: xml_edit.c,v 1.41 2004/09/10 02:02:21 mgrouch Exp $  */
+/*  $Id: xml_edit.c,v 1.42 2004/11/11 03:39:34 mgrouch Exp $  */
 
 /*
 
@@ -104,7 +104,7 @@ int ops_count = 0;
 static XmlEdAction ops[MAX_XML_ED_OPS];
 
 /*
- * usage string chunk : 509 char min on ISO C90
+ * usage string chunk : 509 char max on ISO C90
  */
 static const char edit_usage_str_1[] =
 "XMLStarlet Toolkit: Edit XML document(s)\n"

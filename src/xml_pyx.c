@@ -1,4 +1,4 @@
-/* $Id: xml_pyx.c,v 1.5 2004/09/10 02:02:21 mgrouch Exp $ */
+/* $Id: xml_pyx.c,v 1.6 2004/11/11 03:39:34 mgrouch Exp $ */
 
 /**
  *  Based on xmln from pyxie project
@@ -19,7 +19,7 @@
 #include <libxml/parser.h>
 
 /*
- * usage string chunk : 509 char min on ISO C90
+ * usage string chunk : 509 char max on ISO C90
  */
 static const char pyx_usage_str_1[] =
 "XMLStarlet Toolkit: Convert XML into PYX format (based on ESIS - ISO 8879)\n"
