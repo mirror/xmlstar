@@ -1,4 +1,4 @@
-/*  $Id: xml_depyx.c,v 1.1 2003/08/19 23:24:21 mgrouch Exp $  */
+/*  $Id: xml_depyx.c,v 1.2 2003/08/22 19:42:42 mgrouch Exp $  */
 
 /*
 
@@ -178,8 +178,12 @@ int
 depyxMain(int argc, char **argv)
 {
    int ret;
-   
-   if (argc == 3)
+
+   if ((argc >= 3) && (!strcmp(argv[2], "-h") || !strcmp(argv[2], "--help")))
+   {
+       depyxUsage(argc, argv);
+   }
+   else if (argc == 3)
    {
        ret = pyxDePyx(argv[2]);
    }
@@ -196,3 +200,4 @@ depyxMain(int argc, char **argv)
 
    return ret;
 }
+
