@@ -1,4 +1,4 @@
-/*  $Id: xml_format.c,v 1.17 2003/11/05 02:49:44 mgrouch Exp $  */
+/*  $Id: xml_format.c,v 1.18 2003/11/05 03:11:49 mgrouch Exp $  */
 
 /*
 
@@ -75,6 +75,8 @@ static const char format_usage_str[] =
 "   -o or --omit-decl           - omit xml declaration <?xml version=\"1.0\"?>\n"
 "   -R or --recover             - try to recover what is parsable\n"
 "   -D or --dropdtd             - remove the DOCTYPE of the input docs\n"
+"   -C or --nocdata             - replace cdata section with text nodes\n"
+"   -N or --nsclean             - remove redundant namespace declarations\n"
 "   -e or --encode <encoding>   - output in the given encoding (utf-8, unicode...)\n"
 #ifdef LIBXML_HTML_ENABLED
 "   -H or --html                - input is HTML\n"
@@ -201,6 +203,16 @@ foParseOptions(foOptionsPtr ops, int argc, char **argv)
             ops->recovery = 1;
 	    ops->options |= XML_PARSE_RECOVER;
             i++;
+        }
+        else if (!strcmp(argv[i], "--nocdata") || !strcmp(argv[i], "-C"))
+        {
+            ops->options |= XML_PARSE_NOCDATA;
+	    i++;
+        }
+        else if (!strcmp(argv[i], "--nsclean") || !strcmp(argv[i], "-N"))
+        {
+            ops->options |= XML_PARSE_NSCLEAN;
+	    i++;
         }
         else if (!strcmp(argv[i], "--indent-spaces") || !strcmp(argv[i], "-s"))
         {
