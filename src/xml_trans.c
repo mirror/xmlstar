@@ -1,4 +1,4 @@
-/*  $Id: xml_trans.c,v 1.11 2002/11/23 21:45:35 mgrouch Exp $  */
+/*  $Id: xml_trans.c,v 1.12 2002/11/23 23:45:06 mgrouch Exp $  */
 
 /*
  *  TODO:
@@ -12,11 +12,6 @@
  *        8. check embedded stylesheet support
  */
 
-/*
- *  This code is based on xsltproc by Daniel Veillard (daniel@veillard.com)
- *  (see also http://xmlsoft.org/)
- */
-
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -25,44 +20,31 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <libxml/xmlmemory.h>
-#include <libxml/debugXML.h>
-#include <libxml/xmlIO.h>
-#include <libxml/HTMLtree.h>
-#include <libxml/xinclude.h>
-#include <libxml/parserInternals.h>
-#include <libxml/uri.h>
-
-#include <libxslt/xslt.h>
-#include <libxslt/xsltInternals.h>
-#include <libxslt/transform.h>
-#include <libxslt/xsltutils.h>
-#include <libxslt/extensions.h>
-#if 0
-#include <libxslt/security.h>
-#endif
-
-#include <libexslt/exslt.h>
-
-#ifdef LIBXML_DOCB_ENABLED
-#include <libxml/DOCBparser.h>
-#endif
-#ifdef LIBXML_XINCLUDE_ENABLED
-#include <libxml/xinclude.h>
-#endif
-
-#define MAX_PARAMETERS 256
-#define MAX_PATHS 256
+#include "trans.h"
 
 static const char trans_usage_str[] =
 "XMLStarlet Toolkit: Transform XML document(s) using XSLT\n"
-"Usage: xml tr <xsl-file> {-p <name>=<value>} [ <xml-file> ... ]\n"
+"Usage: xml tr [<options>] <xsl-file> {-p|-s <name>=<value>} [ <xml-file> ... ]\n"
 "where\n"
-"   <xsl-file>     - main XSLT stylesheet for transformation\n"
-"   <name>=<value> - name and value of the parameter passed to XSLT processor\n"
-"   <xml-file>     - input XML document file name (stdin is used if missing)\n\n";
+"   <xsl-file>      - main XSLT stylesheet for transformation\n"
+"   <xml-file>      - input XML document file name (stdin is used if missing)\n"
+"   <name>=<value>  - name and value of the parameter passed to XSLT processor\n"
+"   -p              - parameter is an XPATH expression (\"'string'\" to quote string)\n"
+"   -s              - parameter is a string literal\n"
+"<options> are:\n"
+"   --show-ext      - show list of extensions\n"
+"   --noval         - do not validate against DTDs or schemas\n"
+"   --nonet         - refuse to fetch DTDs or entities over network\n"
+"   --xinclude      - do XInclude processing on document input\n"
+"   --maxdepth val  - increase the maximum depth\n"
+"   --html          - input document(s) is(are) in HTML format\n"
+"   --docbook       - input document(s) is(are) in SGML docbook format\n"
+"   --catalogs      - use SGML catalogs from $SGML_CATALOG_FILES\n"
+"                     otherwise XML Catalogs starting from\n"
+"                     file:///etc/xml/catalog are activated by default\n\n";
 
-void trans_usage(int argc, char **argv)
+void
+trans_usage(int argc, char **argv)
 {
     extern const char more_info[];
     extern const char libxslt_more_info[];
@@ -73,176 +55,12 @@ void trans_usage(int argc, char **argv)
     exit(1);
 }
 
-static int debug = 0;
 /*
-static int dumpextensions = 0;
-static int novalid = 0;
-*/
-static int noout = 0;
-#ifdef LIBXML_DOCB_ENABLED
-static int docbook = 0;
-#endif
-#ifdef LIBXML_HTML_ENABLED
-static int html = 0;
-#endif
-#ifdef LIBXML_XINCLUDE_ENABLED
-static int xinclude = 0;
-#endif
-static int profile = 0;
-
-const char *params[MAX_PARAMETERS + 1];
-int nbparams = 0;
-static xmlChar *strparams[MAX_PARAMETERS + 1];
-static int nbstrparams = 0;
-static xmlChar *paths[MAX_PATHS + 1];
-static int nbpaths = 0;
-static const char *output = NULL;
-static int errorno = 0;
-
-/*
-static const char *writesubtree = NULL;
-*/
-
-xmlExternalEntityLoader defaultEntityLoader = NULL;
-
-static xmlParserInputPtr
-xslExternalEntityLoader(const char *URL, const char *ID,
-                        xmlParserCtxtPtr ctxt)
-{
-    xmlParserInputPtr ret;
-    warningSAXFunc warning = NULL;
-
-    int i;
-
-    if ((ctxt != NULL) && (ctxt->sax != NULL)) {
-        warning = ctxt->sax->warning;
-        ctxt->sax->warning = NULL;
-    }
-
-    if (defaultEntityLoader != NULL) {
-        ret = defaultEntityLoader(URL, ID, ctxt);
-        if (ret != NULL) {
-            if (warning != NULL)
-                ctxt->sax->warning = warning;
-            return(ret);
-        }
-    }
-    for (i = 0;i < nbpaths;i++) {
-        xmlChar *newURL;
-        int len;
-
-        len = xmlStrlen(paths[i]) + xmlStrlen(BAD_CAST URL) + 5;
-        newURL = xmlMalloc(len);
-        if (newURL != NULL) {
-            snprintf((char *) newURL, len, "%s/%s", paths[i], URL);
-            ret = defaultEntityLoader((const char *)newURL, ID, ctxt);
-            xmlFree(newURL);
-            if (ret != NULL) {
-                if (warning != NULL)
-                    ctxt->sax->warning = warning;
-                return(ret);
-            }
-        }
-    }
-    if (warning != NULL) {
-        ctxt->sax->warning = warning;
-        if (URL != NULL)
-            warning(ctxt, "failed to load external entity \"%s\"\n", URL);
-        else if (ID != NULL)
-            warning(ctxt, "failed to load external entity \"%s\"\n", ID);
-    }
-    return(NULL);
-}
-
-void
-xsltProcess(xmlDocPtr doc, xsltStylesheetPtr cur, const char *filename)
-{
-    xmlDocPtr res;
-    xsltTransformContextPtr ctxt;
-
-#ifdef LIBXML_XINCLUDE_ENABLED
-    if (xinclude) {
-        xmlXIncludeProcess(doc);
-    }
-#endif
-    if (output == NULL) {
-        ctxt = xsltNewTransformContext(cur, doc);
-        if (ctxt == NULL)
-            return;
-        if (profile) {
-            res = xsltApplyStylesheetUser(cur, doc, params, NULL,
-                                          stderr, ctxt);
-        } else {
-            res = xsltApplyStylesheetUser(cur, doc, params, NULL,
-                                          NULL, ctxt);
-        }
-        if (ctxt->state == XSLT_STATE_ERROR)
-            errorno = 9;
-        if (ctxt->state == XSLT_STATE_STOPPED)
-            errorno = 10;
-        xsltFreeTransformContext(ctxt);
-        xmlFreeDoc(doc);
-        if (res == NULL) {
-            fprintf(stderr, "no result for %s\n", filename);
-            return;
-        }
-        if (noout) {
-            xmlFreeDoc(res);
-            return;
-        }
-
-#ifdef LIBXML_DEBUG_ENABLED
-        if (debug)
-            xmlDebugDumpDocument(stdout, res);
-        else {
-#endif
-            if (cur->methodURI == NULL) {
-                xsltSaveResultToFile(stdout, res, cur);                
-            } else {
-                if (xmlStrEqual
-                    (cur->method, (const xmlChar *) "xhtml")) {
-                    fprintf(stderr, "non standard output xhtml\n");
-                    xsltSaveResultToFile(stdout, res, cur);
-                } else {
-                    fprintf(stderr,
-                            "Unsupported non standard output %s\n",
-                            cur->method);
-                    errorno = 7;
-                }
-            }
-#ifdef LIBXML_DEBUG_ENABLED
-        }
-#endif
-        xmlFreeDoc(res);
-    }
-    else {
-        int ret;
-        
-        ctxt = xsltNewTransformContext(cur, doc);
-        if (ctxt == NULL)
-            return;
-/*
-        if (profile) {
-            ret = xsltRunStylesheetUser(cur, doc, params, output,
-                                        NULL, NULL, stderr, ctxt);
-        } else {
-            ret = xsltRunStylesheetUser(cur, doc, params, output,
-                                        NULL, NULL, stderr, ctxt);
-        }
-*/
-        ret = xsltRunStylesheet(cur, doc, params, output, NULL, NULL);
-        if (ctxt->state == XSLT_STATE_ERROR)
-            errorno = 9;
-        xsltFreeTransformContext(ctxt);
-        xmlFreeDoc(doc);
-    }
-}
-
-/*
- * This is like main() function for 'tr' option
+ *  This is  main function for 'tr' option
  */
 
-int xml_trans(int argc, char **argv)
+int
+xml_trans(int argc, char **argv)
 {
     xsltStylesheetPtr cur = NULL;
     xmlDocPtr doc, style;
@@ -327,12 +145,12 @@ int xml_trans(int argc, char **argv)
         for (i=3; i < argc; i++) {
             doc = NULL;
 #ifdef LIBXML_HTML_ENABLED
-            if (html)
+            if (transOpts.html)
                 doc = htmlParseFile(argv[i], NULL);
             else
 #endif
 #ifdef LIBXML_DOCB_ENABLED
-            if (docbook)
+            if (transOpts.docbook)
                 doc = docbParseFile(argv[i], NULL);
             else
 #endif

@@ -1,4 +1,4 @@
-/*  $Id: xml.c,v 1.14 2002/11/23 21:45:35 mgrouch Exp $  */
+/*  $Id: xml.c,v 1.15 2002/11/23 23:45:05 mgrouch Exp $  */
 
 /*
 
@@ -32,12 +32,15 @@ THE SOFTWARE.
 
 static const char usage_str[] =
 "XMLStarlet Toolkit: Command line utilities for XML\n"
-"Usage: xml <command> [<options>]\n"
+"Usage: xml [<options>] <command> [<cmd-options>]\n"
 "where <command> is one of:\n"
 "   ed   (or edit)      - Edit XML document(s)\n"
 "   sel  (or select)    - Select data or query XML document(s)\n"
 "   tr   (or transform) - Transform XML document(s)\n"
 "   val  (or validate)  - Validate XML document(s)\n"
+"<options> are:\n"
+"   --version           - show version\n"
+"   --help              - show help\n"
 "Type: xml <command> --help <ENTER> for command help\n\n";
 
 const char more_info[] =
@@ -49,7 +52,8 @@ const char libxslt_more_info[] =
 "Current implementation uses libxslt from GNOME codebase as XSLT processor\n"
 "(see http://xmlsoft.org/ for more details)\n";
 
-void usage(int argc, char **argv)
+void
+usage(int argc, char **argv)
 {
     FILE* o = stderr;
     fprintf(o, usage_str);
@@ -57,7 +61,8 @@ void usage(int argc, char **argv)
     exit(1);
 }  
 
-int main(int argc, char **argv)
+int
+main(int argc, char **argv)
 {
     int ret = 0;
 
@@ -83,6 +88,11 @@ int main(int argc, char **argv)
     else if (!strcmp(argv[1], "val") || !strcmp(argv[1], "validate"))
     {
         ret = xml_validate(argc, argv);
+    }
+    else if (!strcmp(argv[1], "--version"))
+    {
+        fprintf(stdout, "0.0.1\n");  /* TODO */
+        ret = 0;
     }
     else
     {
