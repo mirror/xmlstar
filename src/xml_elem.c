@@ -1,4 +1,4 @@
-/*  $Id: xml_elem.c,v 1.21 2004/11/11 04:28:59 mgrouch Exp $  */
+/*  $Id: xml_elem.c,v 1.22 2004/11/21 21:16:19 mgrouch Exp $  */
 
 /*
 
@@ -33,10 +33,12 @@ THE SOFTWARE.
 #include <string.h>
 
 #include "binsert.h"
+#include "escape.h"
 
 #ifndef HAVE_STRDUP
 #include "strdup.h"
 #endif
+
 
 /* TODO:
 
@@ -68,7 +70,7 @@ static const char elem_usage_str[] =
 "Usage: xml el [<options>] <xml-file>\n"
 "where\n"
 "  <xml-file> - input XML document file name (stdin is used if missing)\n"
-"  <options>:\n"
+"  <options> is one of:\n"
 "  -a    - show attributes as well\n"
 "  -v    - show attributes and their values\n"
 "  -u    - print out sorted unique lines\n"
@@ -122,14 +124,26 @@ void elStartElement(void *user_data, const xmlChar *name, const xmlChar **attrs)
     else if (elOps.show_attr_and_val)
     {
         const xmlChar **p = attrs;
+        xmlChar *xml_str = NULL;
         
         fprintf(stdout, "%s", curXPath);
         if (attrs) fprintf(stdout, "[");
         while (p && *p)
         {
             if (p != attrs) fprintf(stdout, " and ");
-            fprintf(stdout, "@%s=\'%s\'", *p, *(p+1));
+            
+            /*xml_str = xml_C11NNormalizeAttr((const xmlChar *) *(p+1));*/
+            xml_str = xmlStrdup((const xmlChar *) *(p+1));
+            if (xmlStrchr(xml_str, '\''))
+            {
+                fprintf(stdout, "@%s=&quot;%s&quot;", *p, xml_str);
+            }
+            else
+            {
+                fprintf(stdout, "@%s=\'%s\'", *p, xml_str);
+            }
             p += 2;
+            xmlFree(xml_str);
         }
         if (attrs) fprintf(stdout, "]");
         fprintf(stdout, "\n");
@@ -142,7 +156,7 @@ void elStartElement(void *user_data, const xmlChar *name, const xmlChar **attrs)
             { 
                 int idx;
                 tmpXPath = strdup(curXPath);
-	    
+    
                 idx = array_binary_insert(sorted, tmpXPath);
                 if (idx < 0)
                 {
@@ -150,7 +164,7 @@ void elStartElement(void *user_data, const xmlChar *name, const xmlChar **attrs)
                    tmpXPath = NULL;
                 }
             }
-	}
+        }
         else fprintf(stdout, "%s\n", curXPath);
     }
 }
