@@ -179,6 +179,12 @@
       <title id="s.2.1">Installation on Linux</title>
 
       <para>Execute the following command as root<programlisting>rpm -i xmlstarlet-x.x.x-1.i386.rpm</programlisting></para>
+
+      <para>where x.x.x indicates package version.</para>
+
+      <para>You can use <ulink
+      url="http://fr2.rpmfind.net/linux/rpm2html/search.php?query=xmlstarlet&#38;system=&#38;arch=">http://rpmfind.net</ulink>
+      to search for RPM appropriate for your distribution.</para>
     </sect1>
 
     <sect1>
@@ -186,6 +192,14 @@
 
       <para>Execute the following commands as root<programlisting>gunzip xmlstarlet-x.x.x-sol8-sparc-local.gz
 pkgadd -d xmlstarlet-x.x.x-sol8-sparc-local all</programlisting></para>
+    </sect1>
+
+    <sect1>
+      <title id="s.2.2">Installation on MacOS X</title>
+
+      <para>XmlStarlet is available on MacOS in Fink. <ulink
+      url="http://fink.sourceforge.net/pdb/package.php/xmlstarlet">See
+      fink.sourceforge.net</ulink></para>
     </sect1>
 
     <sect1>
@@ -436,6 +450,315 @@ XML documents (for more information see http://xmlstar.sourceforge.net/)
 Current implementation uses libxslt from GNOME codebase as XSLT processor
 (see http://xmlsoft.org/ for more details)
 </programlisting>
+
+      <para>&#39;select&#39; option allows you basically avoid writting XSLT
+      stylesheet to perform some queries on XML documents. I.e. various
+      combinations of command line parameters will let you to generate XSLT
+      stylesheet and apply in to XML documents with a single command line.
+      Very often you do not really care what XSLT was created for you
+      &#39;select&#39; command, but in those cases when you do; you can always
+      use -C or --comp switch which will let you see exactly which XSLT is
+      applied to your input.</para>
+
+      <para>&#39;select&#39; option supports many EXSLT functions in XPath
+      expressions.</para>
+
+      <para>Here are few examples which will help to understand how &#39;xml
+      select&#39; works:</para>
+
+      <para>EXAMPLE:</para>
+
+      <para>Count elements matching XPath expression:</para>
+
+      <para></para>
+
+      <programlisting>xml sel -t -v &#34;count(/xml/table/rec/numField)&#34; table.xml</programlisting>
+
+      <para>Input (table.xml):</para>
+
+      <programlisting>&#60;xml&#62;
+  &#60;table&#62;
+    &#60;rec id=&#34;1&#34;&#62;
+      &#60;numField&#62;123&#60;/numField&#62;
+      &#60;stringField&#62;String Value&#60;/stringField&#62;
+    &#60;/rec&#62;
+    &#60;rec id=&#34;2&#34;&#62;
+      &#60;numField&#62;346&#60;/numField&#62;
+      &#60;stringField&#62;Text Value&#60;/stringField&#62;
+    &#60;/rec&#62;
+    &#60;rec id=&#34;3&#34;&#62;
+      &#60;numField&#62;-23&#60;/numField&#62;
+      &#60;stringField&#62;stringValue&#60;/stringField&#62;
+    &#60;/rec&#62;
+  &#60;/table&#62;
+&#60;/xml&#62;</programlisting>
+
+      <para>Output:</para>
+
+      <programlisting>3
+</programlisting>
+
+      <para>Let&#39;s take a close look what it did internally. For that we
+      will use &#39;-C&#39; option</para>
+
+      <programlisting>$ xml sel -C -t -v &#34;count(/xml/table/rec/numField)&#34;
+&#60;?xml version=&#34;1.0&#34;?&#62;
+&#60;xsl:stylesheet version=&#34;1.0&#34; xmlns:xsl=&#34;http://www.w3.org/1999/XSL/Transform&#34;
+ xmlns:exslt=&#34;http://exslt.org/common&#34;
+ xmlns:math=&#34;http://exslt.org/math&#34;
+ xmlns:date=&#34;http://exslt.org/dates-and-times&#34;
+ xmlns:func=&#34;http://exslt.org/functions&#34;
+ xmlns:set=&#34;http://exslt.org/sets&#34;
+ xmlns:str=&#34;http://exslt.org/strings&#34;
+ xmlns:dyn=&#34;http://exslt.org/dynamic&#34;
+ xmlns:saxon=&#34;http://icl.com/saxon&#34;
+ xmlns:xalanredirect=&#34;org.apache.xalan.xslt.extensions.Redirect&#34;
+ xmlns:xt=&#34;http://www.jclark.com/xt&#34;
+ xmlns:libxslt=&#34;http://xmlsoft.org/XSLT/namespace&#34;
+ xmlns:test=&#34;http://xmlsoft.org/XSLT/&#34;
+ extension-element-prefixes=&#34;exslt math date func set str dyn saxon xalanredirect xt libxslt test&#34;
+ exclude-result-prefixes=&#34;math str&#34;&#62;
+&#60;xsl:output omit-xml-declaration=&#34;yes&#34; indent=&#34;no&#34;/&#62;
+&#60;xsl:param name=&#34;inputFile&#34;&#62;-&#60;/xsl:param&#62;
+&#60;xsl:template match=&#34;/&#34;&#62;
+  &#60;xsl:call-template name=&#34;t1&#34;/&#62;
+&#60;/xsl:template&#62;
+&#60;xsl:template name=&#34;t1&#34;&#62;
+  &#60;xsl:value-of select=&#34;count(/xml/table/rec/numField)&#34;/&#62;
+&#60;/xsl:template&#62;
+&#60;/xsl:stylesheet&#62;</programlisting>
+
+      <para>Ignoring some XSLT stuff to make it brief:</para>
+
+      <programlisting>&#60;xsl:stylesheet version=&#34;1.0&#34; xmlns:xsl=&#34;http://www.w3.org/1999/XSL/Transform&#34;&#62;
+&#60;xsl:output omit-xml-declaration=&#34;yes&#34; indent=&#34;no&#34;/&#62;
+&#60;xsl:param name=&#34;inputFile&#34;&#62;-&#60;/xsl:param&#62;
+&#60;xsl:template match=&#34;/&#34;&#62;
+  &#60;xsl:call-template name=&#34;t1&#34;/&#62;
+&#60;/xsl:template&#62;
+&#60;xsl:template name=&#34;t1&#34;&#62;
+  &#60;xsl:value-of select=&#34;count(/xml/table/rec/numField)&#34;/&#62;
+&#60;/xsl:template&#62;
+&#60;/xsl:stylesheet&#62;</programlisting>
+
+      <para>Every -t option is mapped into XSLT template. Options after
+      &#39;-t&#39; are mapped into XSLT elements:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>-v to &#60;xsl:value-of&#62;</para>
+        </listitem>
+
+        <listitem>
+          <para>-c to &#60;xsl:copy-of&#62;</para>
+        </listitem>
+
+        <listitem>
+          <para>-e to &#60;xsl:element&#62;</para>
+        </listitem>
+
+        <listitem>
+          <para>-a to &#60;xsl:attribute&#62;</para>
+        </listitem>
+
+        <listitem>
+          <para>-s to &#60;xsl:sort&#62;</para>
+        </listitem>
+
+        <listitem>
+          <para>-m to &#60;xsl:for-each&#62;</para>
+        </listitem>
+
+        <listitem>
+          <para>-i to &#60;xsl:if&#62;</para>
+        </listitem>
+
+        <listitem>
+          <para>and so on</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>By default subsequent options (for instance: -m) will result in
+      nested corresponding XSLT elements (&#60;xsl:for-each&#62; for
+      &#39;-m&#39;). To break this nesting you would have to put &#39;-b&#39;
+      or &#39;--break&#39; after first &#39;-m&#39;.</para>
+
+      <para>Below are few more examples:</para>
+
+      <para>EXAMPLE</para>
+
+      <para>Count all nodes in XML documents. Print input name and node count
+      after it.</para>
+
+      <programlisting>xml sel -t -f -o &#34; &#34; -v &#34;count(//node())&#34; xml/table.xml xml/tab-obj.xml</programlisting>
+
+      <para>Output:</para>
+
+      <programlisting>xml/table.xml 32
+xml/tab-obj.xml 41</programlisting>
+
+      <para></para>
+
+      <para>EXAMPLE</para>
+
+      <para>Find XML files matching XPath expression (containing
+      &#39;object&#39; element)</para>
+
+      <programlisting>xml sel -t -m //object -f xml/table.xml xml/tab-obj.xml</programlisting>
+
+      <para>Result output:</para>
+
+      <programlisting>xml/tab-obj.xml</programlisting>
+
+      <para></para>
+
+      <para>EXAMPLE</para>
+
+      <para>Calculate EXSLT (XSLT extentions) XPath value</para>
+
+      <programlisting>echo &#34;&#60;x/&#62;&#34; | xml sel -t -v &#34;math:abs(-1000)&#34;</programlisting>
+
+      <para>Result output:</para>
+
+      <programlisting>1000</programlisting>
+
+      <para></para>
+
+      <para>EXAMPLE</para>
+
+      <para>Adding elements and attributes using command line &#39;xml
+      sel&#39;</para>
+
+      <programlisting>echo &#34;&#60;x/&#62;&#34; | xml sel -t -m / -e xml -e child -a data -o value</programlisting>
+
+      <para>Result Output:</para>
+
+      <programlisting>&#60;xml&#62;&#60;child data=&#34;value&#34;/&#62;&#60;/xml&#62;</programlisting>
+
+      <para></para>
+
+      <para>EXAMPLE</para>
+
+      <para>Query XML document and produce sorted text table</para>
+
+      <programlisting>xml sel -T -t -m /xml/table/rec -s D:N:- &#34;@id&#34; -v &#34;concat(@id,&#39;|&#39;,numField,&#39;|&#39;,stringField)&#34; -n xml/table.xml</programlisting>
+
+      <para>Result Output:</para>
+
+      <programlisting>3|-23|stringValue
+2|346|Text Value
+1|123|String Value</programlisting>
+
+      <para>Equivalent stylesheet</para>
+
+      <programlisting>&#60;xsl:stylesheet version=&#34;1.0&#34; xmlns:xsl=&#34;http://www.w3.org/1999/XSL/Transform&#34;&#62;
+&#60;xsl:output omit-xml-declaration=&#34;yes&#34; indent=&#34;no&#34; method=&#34;text&#34;/&#62;
+&#60;xsl:param name=&#34;inputFile&#34;&#62;-&#60;/xsl:param&#62;
+&#60;xsl:template match=&#34;/&#34;&#62;
+  &#60;xsl:call-template name=&#34;t1&#34;/&#62;
+&#60;/xsl:template&#62;
+&#60;xsl:template name=&#34;t1&#34;&#62;
+  &#60;xsl:for-each select=&#34;/xml/table/rec&#34;&#62;
+    &#60;xsl:sort order=&#34;descending&#34; data-type=&#34;number&#34; case-order=&#34;upper-first&#34; select=&#34;@id&#34;/&#62;
+    &#60;xsl:value-of select=&#34;concat(@id,&#39;|&#39;,numField,&#39;|&#39;,stringField)&#34;/&#62;
+    &#60;xsl:value-of select=&#34;&#39;&#38;#10;&#39;&#34;/&#62;
+  &#60;/xsl:for-each&#62;
+&#60;/xsl:template&#62;
+&#60;/xsl:stylesheet&#62;</programlisting>
+
+      <para></para>
+
+      <para>EXAMPLE</para>
+
+      <para>Predefine namespaces for XPath expressions</para>
+
+      <programlisting>xml sel -N xsql=urn:oracle-xsql -t -v /xsql:query xsql/jobserve.xsql</programlisting>
+
+      <para>Input (xsql/jobserve.xsql)</para>
+
+      <programlisting>$ cat xsql/jobserve.xsql
+&#60;?xml version=&#34;1.0&#34;?&#62;
+&#60;?xml-stylesheet type=&#34;text/xsl&#34; href=&#34;jobserve.xsl&#34;?&#62;
+&#60;xsql:query connection=&#34;jobs&#34; xmlns:xsql=&#34;urn:oracle-xsql&#34; max-rows=&#34;5&#34;&#62;
+  SELECT substr(title,1,26) short_title, title, location, skills
+  FROM job
+  WHERE UPPER(title) LIKE &#39;%ORACLE%&#39;
+  ORDER BY first_posted DESC
+&#60;/xsql:query&#62;</programlisting>
+
+      <para>Result output</para>
+
+      <programlisting>  SELECT substr(title,1,26) short_title, title, location, skills
+  FROM job
+  WHERE UPPER(title) LIKE &#39;%ORACLE%&#39;
+  ORDER BY first_posted DESC
+</programlisting>
+
+      <para></para>
+
+      <para>EXAMPLE</para>
+
+      <para>Print structure of XML element using xml sel (advanced XPath
+      expressions and xml sel command usage) </para>
+
+      <programlisting>xml sel -T -t -m &#39;//*&#39; \
+-m &#39;ancestor-or-self::*&#39; -v &#39;name()&#39; -i &#39;not(position()=last())&#39; -o . -b -b -n \
+xml/structure.xml</programlisting>
+
+      <para>Input (xml/structure.xml)</para>
+
+      <programlisting>&#60;a1&#62;
+  &#60;a11&#62;
+    &#60;a111&#62;
+      &#60;a1111/&#62;
+    &#60;/a111&#62;
+    &#60;a112&#62;
+      &#60;a1121/&#62;
+    &#60;/a112&#62;
+  &#60;/a11&#62;
+  &#60;a12/&#62;
+  &#60;a13&#62;
+    &#60;a131/&#62;
+  &#60;/a13&#62;
+&#60;/a1&#62;</programlisting>
+
+      <para>Result Output:</para>
+
+      <programlisting>a1
+a1.a11
+a1.a11.a111
+a1.a11.a111.a1111
+a1.a11.a112
+a1.a11.a112.a1121
+a1.a12
+a1.a13
+a1.a13.a131</programlisting>
+
+      <para>This example is a good demonstration of nesting control. Here is
+      corresponding XSLT:</para>
+
+      <programlisting>&#60;xsl:stylesheet version=&#34;1.0&#34; xmlns:xsl=&#34;http://www.w3.org/1999/XSL/Transform&#34;&#62;
+&#60;xsl:output omit-xml-declaration=&#34;yes&#34; indent=&#34;no&#34; method=&#34;text&#34;/&#62;
+&#60;xsl:param name=&#34;inputFile&#34;&#62;-&#60;/xsl:param&#62;
+&#60;xsl:template match=&#34;/&#34;&#62;
+  &#60;xsl:call-template name=&#34;t1&#34;/&#62;
+&#60;/xsl:template&#62;
+&#60;xsl:template name=&#34;t1&#34;&#62;
+  &#60;xsl:for-each select=&#34;//*&#34;&#62;
+    &#60;xsl:for-each select=&#34;ancestor-or-self::*&#34;&#62;
+      &#60;xsl:value-of select=&#34;name()&#34;/&#62;
+      &#60;xsl:if test=&#34;not(position()=last())&#34;&#62;
+        &#60;xsl:value-of select=&#34;&#39;.&#39;&#34;/&#62;
+      &#60;/xsl:if&#62;
+    &#60;/xsl:for-each&#62;
+    &#60;xsl:value-of select=&#34;&#39;&#38;#10;&#39;&#34;/&#62;
+  &#60;/xsl:for-each&#62;
+&#60;/xsl:template&#62;
+&#60;/xsl:stylesheet&#62;</programlisting>
+
+      <para></para>
+
+      <para></para>
 
       <para></para>
     </sect1>
