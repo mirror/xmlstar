@@ -1,4 +1,4 @@
-/*  $Id: xml_trans.c,v 1.21 2002/11/30 22:00:15 mgrouch Exp $  */
+/*  $Id: xml_trans.c,v 1.22 2002/12/05 22:19:33 mgrouch Exp $  */
 
 /*
 
@@ -101,7 +101,11 @@ trParseOptions(xsltOptionsPtr ops, int argc, char **argv)
     {
         if (argv[i][0] == '-')
         {
-            if (!strcmp(argv[i], "--show-ext"))
+            if (!strcmp(argv[i], "--help"))
+            {
+                trUsage(argc, argv);
+            }
+            else if (!strcmp(argv[i], "--show-ext"))
             {
                 ops->show_extensions = 1;
             }

@@ -1,4 +1,4 @@
-/*  $Id: xml_edit.c,v 1.15 2002/12/02 02:03:44 mgrouch Exp $  */
+/*  $Id: xml_edit.c,v 1.16 2002/12/05 22:19:32 mgrouch Exp $  */
 
 /*
 
@@ -496,6 +496,7 @@ edMain(int argc, char **argv)
     int i, j, n;
 
     if (argc < 3) edUsage(argc, argv);
+    if (!strcmp(argv[2], "--help")) edUsage(argc, argv);
     
     /*
      *  Parse command line and fill array of operations
