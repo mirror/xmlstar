@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.6 2002/11/15 04:19:25 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.7 2002/11/15 05:00:05 mgrouch Exp $  */
 
 #include <string.h>
 #include <stdio.h>
@@ -105,6 +105,7 @@ void select_usage(int argc, char **argv)
 int xml_select(int argc, char **argv)
 {
     int c, i, j, k, m, t;
+    int out_text = 1;
   
     if (argc <= 2) select_usage(argc, argv);
 
@@ -118,8 +119,10 @@ int xml_select(int argc, char **argv)
     
     c += sprintf(xsl_buf, "<?xml version=\"1.0\"?>\n");
     c += sprintf(xsl_buf + c, "<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">\n");
+    if (out_text) c += sprintf(xsl_buf + c, "<xsl:output method=\"text\"/>\n");
 
-    c += sprintf(xsl_buf + c, "<xsl:template match=\"/\">\n");       
+    c += sprintf(xsl_buf + c, "<xsl:template match=\"/\">\n");
+    if (!out_text) c += sprintf(xsl_buf + c, "<xml-select>\n");
     t = 0;
     i = 2;
     while(i < argc)
@@ -131,6 +134,7 @@ int xml_select(int argc, char **argv)
         }
         i++;  
     }
+    if (!out_text) c += sprintf(xsl_buf + c, "</xml-select>\n");
     c += sprintf(xsl_buf + c, "</xsl:template>\n");
    
     t = 0;
