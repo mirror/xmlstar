@@ -1,4 +1,4 @@
-/*  $Id: xml_format.c,v 1.2 2002/12/07 05:08:16 mgrouch Exp $  */
+/*  $Id: xml_format.c,v 1.3 2002/12/07 05:31:27 mgrouch Exp $  */
 
 /*
 
@@ -47,6 +47,7 @@ THE SOFTWARE.
 
 /*
     TODO:
+         1. Attribute formatting options (as every attribute on a new line)
  */
 
 typedef struct _foOptions {
@@ -148,10 +149,12 @@ foParseOptions(foOptionsPtr ops, int argc, char **argv)
         if (!strcmp(argv[i], "--noindent"))
         {
             ops->indent = 0;
+            i++;
         }
         else if (!strcmp(argv[i], "--indent-tab"))
         {
             ops->indent_tab = 1;
+            i++;
         }
         else if (!strcmp(argv[i], "--indent-spaces"))
         {
@@ -167,6 +170,7 @@ foParseOptions(foOptionsPtr ops, int argc, char **argv)
                 foUsage(argc, argv);
             }
             ops->indent_tab = 0;
+            i++;
         }
         else if (!strcmp(argv[i], "--help"))
         {
@@ -181,7 +185,11 @@ foParseOptions(foOptionsPtr ops, int argc, char **argv)
         {
             foUsage(argc, argv);
         }
-        i++;
+        else
+        {
+            i++;
+            break;
+        }
     }
 
     return i-1;
@@ -235,6 +243,7 @@ foMain(int argc, char **argv)
     if (argc <=2) foUsage(argc, argv);
     foInitOptions(&ops);
     start = foParseOptions(&ops, argc, argv);
+    if (argc-start > 1) foUsage(argc, argv);
     foInitLibXml(&ops);
     ret = foProcess(&ops, start, argc, argv);
     foCleanup();
