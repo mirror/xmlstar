@@ -1,4 +1,4 @@
-/*  $Id: xml_elem.c,v 1.16 2004/08/24 23:22:05 mgrouch Exp $  */
+/*  $Id: xml_elem.c,v 1.17 2004/09/10 01:42:42 mgrouch Exp $  */
 
 /*
 
@@ -25,6 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 */
+
+#include "config.h"
 
 #include <libxml/parser.h>
 #include <stdlib.h>

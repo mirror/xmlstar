@@ -1,4 +1,4 @@
-/* $Id: strdup.c,v 1.1 2003/12/17 06:26:01 mgrouch Exp $ */ 
+/* $Id: strdup.c,v 1.2 2004/09/10 01:42:42 mgrouch Exp $ */ 
 
 /*
 
@@ -26,6 +26,10 @@ THE SOFTWARE.
 
 */
 
+#include "config.h"
+
+#ifndef HAVE_STRDUP
+
 #include <stdlib.h>
 #include <string.h>
 #include "strdup.h"
@@ -52,3 +56,4 @@ strdup(const char *cur)
 	memcpy(ret, cur, len);
 	return (ret);
 }
+#endif
