@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.54 2003/05/24 00:18:57 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.55 2003/05/24 01:27:31 mgrouch Exp $  */
 
 /*
 
@@ -78,6 +78,7 @@ static const char select_usage_str[] =
 "  -B or --noblanks   - remove insignificant spaces from XML tree\n"
 "  -N <name>=<value>  - predefine namespaces (name without \'xmlns:\')\n"
 "                       ex: xsql=urn:oracle-xsql\n"
+"                       Multiple -N options are allowed.\n"
 "  --net              - allow fetch DTDs or entities over network\n"
 "  --help             - display help\n\n"
 
@@ -210,6 +211,21 @@ selParseNSArr(const char** ns_arr, int* plen,
     }
 
     return i;
+}
+
+/**
+ *  Cleanup memory allocated by namespaces arguments
+ */
+void
+selCleanupNSArr(const char **ns_arr)
+{
+    const char **p = ns_arr;
+
+    while (*p)
+    {
+        xmlFree((char *)*p);
+        p++;
+    }
 }
 
 /**
@@ -606,6 +622,8 @@ selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops, const char *ns_arr[],
         c += sprintf(xsl_buf + c, "\n xmlns:%s=\"%s\"", ns_arr[ns], ns_arr[ns+1]);
         ns += 2;
     }
+    selCleanupNSArr(ns_arr);
+    
     c += sprintf(xsl_buf + c, "\n extension-element-prefixes=\"exslt math date func set str dyn saxon xalanredirect xt libxslt test\"");
     c += sprintf(xsl_buf + c, "\n exclude-result-prefixes=\"math str\"");
 
