@@ -1,4 +1,4 @@
 1. xml ed option is highly incomplete
-2. --nonet option for xml sel
+2. --net option for xml sel
 3. How about XUpdate? (see http://www.xmldb.org/)
-
+4. just do grep TODO src/*.c and you'll figure it out

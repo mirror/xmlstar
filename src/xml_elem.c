@@ -1,4 +1,4 @@
-/*  $Id: xml_elem.c,v 1.4 2003/04/23 03:35:17 mgrouch Exp $  */
+/*  $Id: xml_elem.c,v 1.5 2003/04/23 17:09:04 mgrouch Exp $  */
 
 /*
 
@@ -35,23 +35,36 @@ THE SOFTWARE.
       xml el <xml-file> | sort | uniq
       Maintain sorted array and do binary insertion
 
-   2. Option to display attributes values as well
-      Ex:
-      /xml/elem[attr1="val1" and attr2="val2"]
+   2. Option to display this only for nodes matching
+      an XPATH expression
+
+      -p <xpath>
+
+      so it will be able to deal with subtrees as well
 
    3. Use stdin if input file is missing         
 
 */
+
+typedef struct _elOptions {
+    int show_attr;            /* show attributes */
+    int show_attr_and_val;    /* show attributes and values */
+} etOptions;
+
 
 static const char elem_usage_str[] =
 "XMLStarlet Toolkit: Display element structure of XML document\n"
 "Usage: xml el [<options>] <xml-file>\n"
 "where\n"
 "   <xml-file> - input XML document file name (stdin is used if missing)\n"
-"   <options>  - currently none (to be enhanced later)\n"
+"   <options>:\n"
+"   -a  - show attributes as well\n"
+"   -v  - show attributes and their values\n"
 "\n";
 
 static xmlSAXHandler xmlSAX_handler;
+static etOptions elOps;
+
 static char curXPath[4*1024]; /* TODO: do not hardcode */
 
 /**
@@ -74,7 +87,39 @@ void elStartElement(void *user_data, const xmlChar *name, const xmlChar **attrs)
 {
     if (*curXPath != (char)0) strcat(curXPath, "/");
     strcat(curXPath, (char*) name);
-    fprintf(stdout, "%s\n", curXPath);
+
+    if (elOps.show_attr)
+    {
+        const xmlChar **p = attrs;
+        if (!attrs) fprintf(stdout, "%s\n", curXPath);
+        else
+        {
+            while (p && *p)
+            {
+                fprintf(stdout, "%s@%s\n", curXPath, *p);
+                p += 2;
+            }
+        }
+    }
+    else if (elOps.show_attr_and_val)
+    {
+        const xmlChar **p = attrs;
+        
+        fprintf(stdout, "%s", curXPath);
+        if (attrs) fprintf(stdout, "[");
+        while (p && *p)
+        {
+            if (p != attrs) fprintf(stdout, " and ");
+            fprintf(stdout, "@%s=\"%s\"", *p, *(p+1));
+            p += 2;
+        }
+        if (attrs) fprintf(stdout, "]");
+        fprintf(stdout, "\n");
+    }
+    else
+    {
+        fprintf(stdout, "%s\n", curXPath);
+    }
 }
 
 /**
@@ -112,20 +157,47 @@ parse_xml_file(const char *filename)
 }
 
 /**
+ *  Initialize options values
+ */
+void
+elInitOptions(etOptions *ops)
+{
+    ops->show_attr = 0;  
+    ops->show_attr_and_val = 0;
+}
+
+/**
  *  This is the main function for 'el' option
  */
 int
 elMain(int argc, char **argv)
 {
     int errorno = 0;
+    char* inp_file = "-";
 
     if (argc <= 1) elUsage(argc, argv);
 
+    elInitOptions(&elOps);
+    
     /* TODO: more options to be added */
     if (argc == 2)
         errorno = parse_xml_file("-");  
     else
-        errorno = parse_xml_file(argv[2]);
-    
+    {
+        if (!strcmp(argv[2], "-a"))
+        {
+            elOps.show_attr = 1;
+            if (argc >= 4) inp_file = argv[3];
+            errorno = parse_xml_file(inp_file);
+        }
+        else if (!strcmp(argv[2], "-v"))
+        {
+            elOps.show_attr_and_val = 1;
+            if (argc >= 4) inp_file = argv[3];
+            errorno = parse_xml_file(inp_file);
+        }
+        else
+            errorno = parse_xml_file(argv[2]);
+    }
     return errorno;
 }

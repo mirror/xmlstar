@@ -1,0 +1,1 @@
+./xmlstarlet el -a ./xml/tab-obj.xml
