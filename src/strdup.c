@@ -1,4 +1,4 @@
-/* $Id: strdup.c,v 1.2 2004/09/10 01:42:42 mgrouch Exp $ */ 
+/* $Id: strdup.c,v 1.3 2004/09/14 00:28:57 mgrouch Exp $ */ 
 
 /*
 
@@ -56,4 +56,7 @@ strdup(const char *cur)
 	memcpy(ret, cur, len);
 	return (ret);
 }
+#else
+void dummy() {}
 #endif
+
