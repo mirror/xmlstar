@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.14 2002/11/19 04:59:26 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.15 2002/11/19 06:03:40 mgrouch Exp $  */
 
 #include <string.h>
 #include <stdio.h>
@@ -221,7 +221,7 @@ int xml_select(int argc, char **argv)
                 }
                 else if(!strcmp(argv[i], "-t") || !strcmp(argv[i], "--template"))
                 {
-                    i--;
+                    //i--;
                     break;
                 }
                 

@@ -1,0 +1,23 @@
+#!/bin/sh
+
+DIR=`pwd`
+
+TESTS="count1 look1 sum1 table1 table2"
+
+cd ../examples
+
+for i in $TESTS
+do
+    ./${i} > /tmp/xmlstarlet.$$
+    diff /tmp/xmlstarlet.$$ results/${i}.out
+    if [ $? != "0" ]
+    then
+	    echo "test $i - FAILED"
+    else
+	    echo "test $i - success"
+    fi
+    rm -f /tmp/xmlstarlet.$$
+done
+
+cd ${DIR}
+
