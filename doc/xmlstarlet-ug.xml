@@ -195,7 +195,7 @@ pkgadd -d xmlstarlet-x.x.x-sol8-sparc-local all</programlisting></para>
     </sect1>
 
     <sect1>
-      <title id="s.2.2">Installation on MacOS X</title>
+      <title id="s.2.3">Installation on MacOS X</title>
 
       <para>XmlStarlet is available on MacOS in Fink. <ulink
       url="http://fink.sourceforge.net/pdb/package.php/xmlstarlet">See
@@ -203,7 +203,7 @@ pkgadd -d xmlstarlet-x.x.x-sol8-sparc-local all</programlisting></para>
     </sect1>
 
     <sect1>
-      <title id="s.2.3">Installation on Windows</title>
+      <title id="s.2.4">Installation on Windows</title>
 
       <para>Unzip the file xmlstarlet-x.x.x-win32.zip to some directory. To
       take advantage of UNIX shell scripting you might want to run XmlStarlet
