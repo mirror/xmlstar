@@ -1,4 +1,4 @@
-/*  $Id: xml_edit.c,v 1.24 2003/05/28 18:43:12 mgrouch Exp $  */
+/*  $Id: xml_edit.c,v 1.25 2003/05/28 19:04:39 mgrouch Exp $  */
 
 /*
 
@@ -204,7 +204,8 @@ edUpdate(xmlDocPtr doc, const char *loc, const char *val, XmlNodeType type)
  *  'insert' operation
  */
 void
-edInsert(xmlDocPtr doc, const char *loc, const char *val, const char *name, XmlNodeType type)
+edInsert(xmlDocPtr doc, const char *loc, const char *val, const char *name,
+         XmlNodeType type, int append)
 {
     int xptr = 0;
     int expr = 0;
@@ -265,12 +266,18 @@ edInsert(xmlDocPtr doc, const char *loc, const char *val, const char *name, XmlN
                 else if (type == XML_ELEM)
                 {
                     xmlNodePtr node = xmlNewDocNode(doc, NULL /* TODO: NS */, BAD_CAST name, BAD_CAST val);
-                    xmlAddPrevSibling(cur->nodeTab[i], node);
+                    if (append)
+                        xmlAddNextSibling(cur->nodeTab[i], node);
+                    else                    
+                        xmlAddPrevSibling(cur->nodeTab[i], node);
                 }
                 else if (type == XML_TEXT)
                 {
                     xmlNodePtr node = xmlNewDocText(doc, BAD_CAST val);
-                    xmlAddPrevSibling(cur->nodeTab[i], node);
+                    if (append)
+                        xmlAddNextSibling(cur->nodeTab[i], node);
+                    else
+                        xmlAddPrevSibling(cur->nodeTab[i], node);
                 }
             }
             break;
@@ -589,7 +596,10 @@ edProcess(xmlDocPtr doc, XmlEdAction* ops, int ops_count)
                 edRename(doc, ops[k].arg1, ops[k].arg2, ops[k].type);
                 break;
             case XML_ED_INSERT:
-                edInsert(doc, ops[k].arg1, ops[k].arg2, ops[k].arg3, ops[k].type);
+                edInsert(doc, ops[k].arg1, ops[k].arg2, ops[k].arg3, ops[k].type, 0);
+                break;
+            case XML_ED_APPEND:
+                edInsert(doc, ops[k].arg1, ops[k].arg2, ops[k].arg3, ops[k].type, 1);
                 break;
             default:
                 break;
@@ -680,6 +690,45 @@ edMain(int argc, char **argv)
             if (i >= argc) edUsage(argc, argv);
             ops[j].type = XML_UNDEFINED;
             ops[j].op = XML_ED_INSERT;
+            ops[j].arg1 = argv[i];
+            i++;
+            if (i >= argc) edUsage(argc, argv);
+            if (strcmp(argv[i], "-t") && strcmp(argv[i], "--type")) edUsage(argc, argv);
+            i++;
+            if (i >= argc) edUsage(argc, argv);
+            if (!strcmp(argv[i], "elem"))
+            {
+                ops[j].type = XML_ELEM;
+            }
+            else if (!strcmp(argv[i], "attr"))
+            {
+                ops[j].type = XML_ATTR;
+            }
+            else if (!strcmp(argv[i], "text"))
+            {
+                ops[j].type = XML_TEXT;
+            }
+            else edUsage(argc, argv);
+            i++;
+            if (i >= argc) edUsage(argc, argv);
+            if (strcmp(argv[i], "-n") && strcmp(argv[i], "--name")) edUsage(argc, argv);
+            i++;
+            if (i >= argc) edUsage(argc, argv);
+            ops[j].arg3 = argv[i];
+            i++;
+            if (i >= argc) edUsage(argc, argv);
+            if (strcmp(argv[i], "-v") && strcmp(argv[i], "--value")) edUsage(argc, argv);
+            i++;
+            if (i >= argc) edUsage(argc, argv);
+            ops[j].arg2 = argv[i];
+            j++;
+        }
+        else if (!strcmp(argv[i], "-a") || !strcmp(argv[i], "--append"))
+        {
+            i++;
+            if (i >= argc) edUsage(argc, argv);
+            ops[j].type = XML_UNDEFINED;
+            ops[j].op = XML_ED_APPEND;
             ops[j].arg1 = argv[i];
             i++;
             if (i >= argc) edUsage(argc, argv);
