@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.45 2003/03/19 23:55:44 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.46 2003/03/22 23:15:12 mgrouch Exp $  */
 
 /*
 
@@ -97,7 +97,9 @@ static const char select_usage_str[] =
 "  -n or --nl               - print new line\n"
 "  -f or --inp-name         - print input file name (or URL)\n"
 "  -m or --match <xpath>    - match XPATH expression\n"
-"  -e or --end              - break nesting\n"
+"  -i or --if <test-xpath>  - check condition xsl:if test=\"test-xpath\"\n"
+"  -e or --elem <name>      - print out element xsl:elem name=\"name\"\n"
+"  -b or --break            - break nesting\n"
 "  -s or --sort op xpath    - sort in order (used after -m) where\n"
 "  op is X:Y:Z, \n"
 "      X is A - for order=\"ascending\"\n"
@@ -212,6 +214,7 @@ selParseOptions(selOptionsPtr ops, int argc, char **argv)
 
 #define STK_MATCH 'm'
 #define STK_IF    'i'
+#define STK_ELEM  'e'
 
 /**
  *  Prepare XSLT template based on command line options
@@ -221,7 +224,7 @@ int
 selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
                int* lastTempl, int start, int argc, char **argv)
 {
-    int c, i, j, k, m, t;
+    int c, i, j, /*k,*/ m, t;
     int templateEmpty = 1;
     int nextTempl = 0;
 
@@ -295,22 +298,35 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
             for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
             c += sprintf(xsl_buf + c, "<xsl:value-of select=\"'&#10;'\"/>\n");
         }
-        else if(!strcmp(argv[i], "-e") || !strcmp(argv[i], "--end"))
+        else if(!strcmp(argv[i], "-i") || !strcmp(argv[i], "--if"))
         {
-            while(!stack_isEmpty(stack))
+            templateEmpty = 0;
+            if ((i+1) >= argc)
             {
-                StackItem itm;
-
-                for (j=0; j<stack_depth(stack); j++) c += sprintf(xsl_buf + c, "  ");
-                itm = stack_pop(stack);
-                if (itm == STK_MATCH)
-                {
-                    c += sprintf(xsl_buf + c, "</xsl:for-each>\n");
-                    m--;
-                }
-                else if (itm == STK_IF) c += sprintf(xsl_buf + c, "</xsl:if>\n");
-                /* printf("%c\n", itm); */
+                fprintf(stderr, "-i option requires argument\n");
+                stack_free(stack);
+                exit (1);
             }
+            for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
+            c += sprintf(xsl_buf + c, "<xsl:if test=\"%s\">\n", argv[i+1]);
+            stack_push(stack, STK_IF);
+            m++;
+            i++;
+        }
+        else if(!strcmp(argv[i], "-e") || !strcmp(argv[i], "--elem"))
+        {
+            templateEmpty = 0;
+            if ((i+1) >= argc)
+            {
+                fprintf(stderr, "-e option requires argument\n");
+                stack_free(stack);
+                exit (1);
+            }
+            for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
+            c += sprintf(xsl_buf + c, "<xsl:element name=\"%s\">\n", argv[i+1]);
+            stack_push(stack, STK_ELEM);
+            m++;
+            i++;
         }
         else if(!strcmp(argv[i], "-m") || !strcmp(argv[i], "--match"))
         {
@@ -374,6 +390,32 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
             i--;
             break;
         }
+        else if(!strcmp(argv[i], "-b") || !strcmp(argv[i], "--break"))
+        {
+            if(!stack_isEmpty(stack))
+            {
+                StackItem itm;
+
+                for (j=0; j<stack_depth(stack); j++) c += sprintf(xsl_buf + c, "  ");
+                itm = stack_pop(stack);
+                if (itm == STK_MATCH)
+                {
+                    c += sprintf(xsl_buf + c, "</xsl:for-each>\n");
+                    m--;
+                }
+                else if (itm == STK_IF)
+                {
+                    c += sprintf(xsl_buf + c, "</xsl:if>\n");
+                    m--;
+                }
+                else if (itm == STK_ELEM)
+                {
+                    c += sprintf(xsl_buf + c, "</xsl:element>\n");
+                    m--;
+                }
+                /* printf("%c\n", itm); */
+            }
+        }
         else
         {
             if (argv[i][0] != '-')
@@ -410,6 +452,7 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
         itm = stack_pop(stack);
         if (itm == STK_MATCH) c += sprintf(xsl_buf + c, "</xsl:for-each>\n");
         else if (itm == STK_IF) c += sprintf(xsl_buf + c, "</xsl:if>\n");
+        else if (itm == STK_ELEM) c += sprintf(xsl_buf + c, "</xsl:element>\n");
 /*        printf("%c\n", itm);  */
     }
 /*
