@@ -3,11 +3,32 @@
 /* Define if you have the ANSI C header files.  */
 #undef STDC_HEADERS
 
+/* Define if you have the asctime function.  */
+#undef HAVE_ASCTIME
+
 /* Define if you have the fprintf function.  */
 #undef HAVE_FPRINTF
 
+/* Define if you have the ftime function.  */
+#undef HAVE_FTIME
+
+/* Define if you have the gettimeofday function.  */
+#undef HAVE_GETTIMEOFDAY
+
+/* Define if you have the gmtime function.  */
+#undef HAVE_GMTIME
+
+/* Define if you have the localtime function.  */
+#undef HAVE_LOCALTIME
+
+/* Define if you have the mktime function.  */
+#undef HAVE_MKTIME
+
 /* Define if you have the printf function.  */
 #undef HAVE_PRINTF
+
+/* Define if you have the snprintf function.  */
+#undef HAVE_SNPRINTF
 
 /* Define if you have the sprintf function.  */
 #undef HAVE_SPRINTF
@@ -18,11 +39,41 @@
 /* Define if you have the stat function.  */
 #undef HAVE_STAT
 
-/* Define if you have the <dirent.h> header file.  */
-#undef HAVE_DIRENT_H
+/* Define if you have the _stat function.  */
+#undef HAVE__STAT
 
-/* Define if you have the <stdio.h> header file.  */
-#undef HAVE_STDIO_H
+/* Define if you have the time function.  */
+#undef HAVE_TIME
+
+/* Define if you have the vfprintf function.  */
+#undef HAVE_VFPRINTF
+
+/* Define if you have the vsnprintf function.  */
+#undef HAVE_VSNPRINTF
+
+/* Define if you have the vsprintf function.  */
+#undef HAVE_VSPRINTF
+
+/* Define if you have the <ansidecl.h> header file.  */
+#undef HAVE_ANSIDECL_H
+
+/* Define if you have the <float.h> header file.  */
+#undef HAVE_FLOAT_H
+
+/* Define if you have the <fp_class.h> header file.  */
+#undef HAVE_FP_CLASS_H
+
+/* Define if you have the <ieeefp.h> header file.  */
+#undef HAVE_IEEEFP_H
+
+/* Define if you have the <math.h> header file.  */
+#undef HAVE_MATH_H
+
+/* Define if you have the <nan.h> header file.  */
+#undef HAVE_NAN_H
+
+/* Define if you have the <stdarg.h> header file.  */
+#undef HAVE_STDARG_H
 
 /* Define if you have the <stdlib.h> header file.  */
 #undef HAVE_STDLIB_H
@@ -32,6 +83,12 @@
 
 /* Define if you have the <sys/stat.h> header file.  */
 #undef HAVE_SYS_STAT_H
+
+/* Define if you have the <sys/timeb.h> header file.  */
+#undef HAVE_SYS_TIMEB_H
+
+/* Define if you have the <sys/time.h> header file.  */
+#undef HAVE_SYS_TIME_H
 
 /* Define if you have the <sys/types.h> header file.  */
 #undef HAVE_SYS_TYPES_H
