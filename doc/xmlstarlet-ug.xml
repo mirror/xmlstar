@@ -1,54 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
 "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
-<book>
+<book lang="en">
   <title>XmlStarlet Command Line XML Toolkit User&#39;s Guide</title>
 
+  <bookinfo>
+    <date>Nov 23, 2003</date>
+
+    <author>
+      <firstname>Mikhail</firstname>
+
+      <surname>Grushinskiy</surname>
+    </author>
+  </bookinfo>
+
   <chapter>
-    <title>Introduction</title>
+    <title id="s.1">Introduction</title>
 
     <sect1>
-      <title>About XmlStarlet</title>
+      <title id="s.1.1">About XmlStarlet</title>
 
-      <para><link linkend="???">XMLStarlet</link> is a set of command line
-      utilities (tools) which can be used to transform, query, validate, and
-      edit XML documents and files using simple set of shell commands in
-      similar way it is done for plain text files using UNIX grep, sed, awk,
-      diff, patch, join, etc commands.</para>
+      <para><ulink url="http://xmlstar.sourceforge.net/">XMLStarlet</ulink> is
+      a set of command line utilities (tools) which can be used to transform,
+      query, validate, and edit XML documents and files using simple set of
+      shell commands in similar way it is done for plain text files using UNIX
+      grep, sed, awk, diff, patch, join, etc commands.</para>
 
       <para>This set of command line utilities can be used by those who deal
       with many XML documents on UNIX shell command prompt as well as for
       automated XML processing with shell scripts.</para>
 
-      <para> XMLStarlet command line utility is written in C and uses libxml2
-      and libxslt from <link linkend="???">http://xmlsoft.org/</link>.
+      <para>XMLStarlet command line utility is written in C and uses libxml2
+      and libxslt from <ulink url="http://xmlsoft.org/">http://xmlsoft.org/</ulink>.
       Implementation of extensive choice of options for XMLStarlet utility was
       only possible because of rich feature set of libxml2 and libxslt (many
       thanks to the developers of those libraries for great work).</para>
 
-      <para> &#39;diff&#39; and &#39;patch&#39; options are not currently
+      <para>&#39;diff&#39; and &#39;patch&#39; options are not currently
       implemented. Other features need some work too. Please, send an email to
-      the project administrator (see <link linkend="???">http://sourceforge.net/projects/xmlstar/</link>)
-      if you wish to help. </para>
+      the project administrator (see <ulink
+      url="http://sourceforge.net/projects/xmlstar/">http://sourceforge.net/projects/xmlstar/</ulink>)
+      if you wish to help.</para>
 
-      <para> XMLStarlet is linked statically to both libxml2 and libxslt, so
+      <para>XMLStarlet is linked statically to both libxml2 and libxslt, so
       generally all you need to process XML documents is one executable file.
       To run XmlStarlet utility you can simple type &#39;xml&#39; on command
-      line and see list of options available. </para>
+      line and see list of options available.</para>
 
-      <para> XMLStarlet is open source freeware under MIT license which allows
+      <para>XMLStarlet is open source freeware under MIT license which allows
       free use and distribution for both commercial and non-commercial
-      projects. </para>
+      projects.</para>
 
-      <para> We welcome any user&#39;s feedback on this project which would
+      <para>We welcome any user&#39;s feedback on this project which would
       greatly help us to improve its quality. Comments, suggestions, feature
       requests, bug reports can be done via SourceForge project web site (see
-      <link linkend="???">XMLStarlet Sourceforge forums</link>, or <link
-      linkend="???">XMLStarlet mailing list</link>)</para>
+      <ulink url="http://sourceforge.net/forum/?group_id=66612">XMLStarlet
+      Sourceforge forums</ulink>, or <ulink
+      url="http://lists.sourceforge.net/lists/listinfo/xmlstar-devel/">XMLStarlet
+      mailing list</ulink>)</para>
     </sect1>
 
     <sect1>
-      <title>Main Features</title>
+      <title id="s.1.2">Main Features</title>
 
       <para>The toolkit&#39;s feature set includes options to:</para>
 
@@ -121,7 +134,7 @@
     </sect1>
 
     <sect1>
-      <title>Supported Platforms</title>
+      <title id="s.1.3">Supported Platforms</title>
 
       <para></para>
 
@@ -158,34 +171,39 @@
   </chapter>
 
   <chapter>
-    <title>Installation</title>
+    <title id="s.2">Installation</title>
 
     <sect1>
-      <title>Installation on Linux</title>
+      <title id="s.2.1">Installation on Linux</title>
 
-      <para></para>
+      <para>Execute the following command as root<programlisting>rpm -i xmlstarlet-x.x.x-1.i386.rpm</programlisting></para>
     </sect1>
 
     <sect1>
-      <title>Installation on Solaris</title>
+      <title id="s.2.2">Installation on Solaris</title>
 
-      <para></para>
+      <para>Execute the following commands as root<programlisting>gunzip xmlstarlet-x.x.x-sol8-sparc-local.gz
+
+pkgadd -d xmlstarlet-x.x.x-sol8-sparc-local</programlisting></para>
     </sect1>
 
     <sect1>
-      <title>Installation on Windows</title>
+      <title id="s.2.3">Installation on Windows</title>
 
-      <para></para>
+      <para>Unzip the file xmlstarlet-x.x.x-win32.zip to some directory. To
+      take advantage of UNIX shell scripting you might want to run XmlStarlet
+      from Cygwin. Consider installing <ulink url="http://www.cygwin.com/">Cygwin</ulink>
+      on your Windows machine.</para>
     </sect1>
   </chapter>
 
   <chapter>
-    <title>Getting Started</title>
+    <title id="s.3">Getting Started</title>
 
     <sect1>
-      <title>Basic Command-Line Options</title>
+      <title id="s.3.1">Basic Command-Line Options</title>
 
-      <para>Basic command line syntax: <synopsis>bash-2.03$ xml
+      <para>Basic command line syntax: <programlisting>bash-2.03$ xml
 XMLStarlet Toolkit: Command line utilities for XML
 Usage: xml [&#60;options&#62;] &#60;command&#62; [&#60;cmd-options&#62;]
 where &#60;command&#62; is one of:
@@ -210,12 +228,11 @@ that URL can be used instead as well.
 Type: xml &#60;command&#62; --help &#60;ENTER&#62; for command help
 
 XMLStarlet is a command line toolkit to query/edit/check/transform
-XML documents (for more information see http://xmlstar.sourceforge.net/)</synopsis>
-      </para>
+XML documents (for more information see http://xmlstar.sourceforge.net/)</programlisting></para>
     </sect1>
 
     <sect1>
-      <title>Studying Structure of XML Document</title>
+      <title id="s.3.2">Studying Structure of XML Document</title>
 
       <para>Before you do anything with your XML document you probably would
       like to know its structure at first. &#39;el&#39; option could be used
@@ -225,7 +242,7 @@ XML documents (for more information see http://xmlstar.sourceforge.net/)</synops
 
       <para></para>
 
-      <para>xml el table.xml</para>
+      <programlisting>xml el table.xml</programlisting>
 
       <para>would produce the following output.</para>
 
@@ -242,7 +259,7 @@ XML documents (for more information see http://xmlstar.sourceforge.net/)</synops
 
       <para>EX:</para>
 
-      <para>xml el -u table.xml</para>
+      <programlisting>xml el -u table.xml</programlisting>
 
       <para></para>
 
@@ -257,7 +274,7 @@ XML documents (for more information see http://xmlstar.sourceforge.net/)</synops
 
       <para>EX:</para>
 
-      <para>xml el -a table.xml</para>
+      <programlisting>xml el -a table.xml</programlisting>
 
       <para></para>
 
@@ -267,11 +284,11 @@ XML documents (for more information see http://xmlstar.sourceforge.net/)</synops
 
       <para>If you are looking for attribute values as well use -v switch of
       &#39;el&#39; option. And again - every line of output is a valid XPath
-      expression. </para>
+      expression.</para>
 
       <para>EX:</para>
 
-      <para>xml el -v table.xml</para>
+      <programlisting>xml el -v table.xml</programlisting>
 
       <para></para>
 
