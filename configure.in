@@ -7,7 +7,7 @@ AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
 AM_MAINTAINER_MODE
 AC_CANONICAL_HOST
 
-CFLAGS="-Wall -g -ansi -pedantic"
+CFLAGS="-Wall -g -pedantic"
 EXTRA_LIBS=
 
 dnl
