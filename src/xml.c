@@ -1,4 +1,4 @@
-/*  $Id: xml.c,v 1.18 2002/11/26 05:32:18 mgrouch Exp $  */
+/*  $Id: xml.c,v 1.19 2002/12/02 04:52:31 mgrouch Exp $  */
 
 /*
 
@@ -43,6 +43,7 @@ static const char usage_str[] =
 "   sel  (or select)    - Select data or query XML document(s)\n"
 "   tr   (or transform) - Transform XML document(s)\n"
 "   val  (or validate)  - Validate XML document(s)\n"
+"   fo   (or format)    - Format XML document(s)\n"
 "<options> are:\n"
 "   --version           - show version\n"
 "   --help              - show help\n"
@@ -90,6 +91,10 @@ main(int argc, char **argv)
     else if (!strcmp(argv[1], "tr") || !strcmp(argv[1], "transform"))
     {
         ret = trMain(argc, argv);
+    }
+    else if (!strcmp(argv[1], "fo") || !strcmp(argv[1], "format"))
+    {
+        ret = foMain(argc, argv);
     }
     else if (!strcmp(argv[1], "val") || !strcmp(argv[1], "validate"))
     {
