@@ -1,4 +1,4 @@
-/*  $Id: xml_elem.c,v 1.9 2003/04/23 20:17:12 mgrouch Exp $  */
+/*  $Id: xml_elem.c,v 1.10 2003/05/11 17:28:18 mgrouch Exp $  */
 
 /*
 
@@ -27,7 +27,10 @@ THE SOFTWARE.
 */
 
 #include <libxml/parser.h>
+#include <stdlib.h>
 #include <string.h>
+
+#include "binsert.h"
 
 /* TODO:
 
@@ -49,6 +52,7 @@ THE SOFTWARE.
 typedef struct _elOptions {
     int show_attr;            /* show attributes */
     int show_attr_and_val;    /* show attributes and values */
+    int sort_uniq;            /* do sort and uniq on output */
 } etOptions;
 
 
@@ -60,12 +64,16 @@ static const char elem_usage_str[] =
 "   <options>:\n"
 "   -a  - show attributes as well\n"
 "   -v  - show attributes and their values\n"
+"   -u  - print out sorted unique lines\n"
 "\n";
 
 static xmlSAXHandler xmlSAX_handler;
 static etOptions elOps;
+static SortedArray sorted = NULL;
 
-static char curXPath[4*1024]; /* TODO: do not hardcode */
+#define LINE_BUF_SZ  4*1024
+
+static char curXPath[LINE_BUF_SZ]; /* TODO: do not hardcode size */
 
 /**
  *  Display usage syntax
@@ -85,12 +93,16 @@ elUsage(int argc, char **argv)
  */
 void elStartElement(void *user_data, const xmlChar *name, const xmlChar **attrs)
 {
+    char *tmpXPath = NULL;
+    int tmp_len = 0;
+    
     if (*curXPath != (char)0) strcat(curXPath, "/");
     strcat(curXPath, (char*) name);
 
     if (elOps.show_attr)
     {
         const xmlChar **p = attrs;
+
         fprintf(stdout, "%s\n", curXPath);
         while (p && *p)
         {
@@ -115,7 +127,18 @@ void elStartElement(void *user_data, const xmlChar *name, const xmlChar **attrs)
     }
     else
     {
-        fprintf(stdout, "%s\n", curXPath);
+        if (elOps.sort_uniq)
+        {
+            int idx;
+            tmpXPath = strdup(curXPath);
+            idx = array_binary_insert(sorted, tmpXPath);
+            if (idx < 0)
+            {
+                free(tmpXPath);
+                tmpXPath = NULL;
+            }
+        }
+        else fprintf(stdout, "%s\n", curXPath);
     }
 }
 
@@ -161,6 +184,7 @@ elInitOptions(etOptions *ops)
 {
     ops->show_attr = 0;  
     ops->show_attr_and_val = 0;
+    ops->sort_uniq = 0;
 }
 
 /**
@@ -197,8 +221,33 @@ elMain(int argc, char **argv)
             if (argc >= 4) inp_file = argv[3];
             errorno = parse_xml_file(inp_file);
         }
+        else if (!strcmp(argv[2], "-u"))
+        {
+            elOps.sort_uniq = 1;
+            if (argc >= 4) inp_file = argv[3];
+            sorted = array_create();
+            errorno = parse_xml_file(inp_file);
+        }
         else
             errorno = parse_xml_file(argv[2]);
     }
+
+    if (sorted)
+    {
+        int i;
+
+        /* printf("array len: %d\n", array_len(sorted)); */
+
+        for (i=0; i < array_len(sorted); i++)
+        {
+            char* item = array_item(sorted, i);
+            printf("%s\n", item);
+            free(item);
+        }
+        
+        array_free(sorted);
+        sorted = NULL;
+    }  
+
     return errorno;
 }

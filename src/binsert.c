@@ -1,7 +1,10 @@
-/* $Id: binsert.c,v 1.1 2003/05/11 04:53:55 mgrouch Exp $ */
+/* $Id: binsert.c,v 1.2 2003/05/11 17:28:18 mgrouch Exp $ */
 
 #include "binsert.h"
+
 #include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 
 #ifndef NULL
 #define NULL 0
@@ -82,48 +85,30 @@ array_binary_insert(SortedArray array, ArrayItem item)
    if (found < 0)
    {
       int move_len;
-      /* TODO */
+
+#if 0      
       printf("len %d  bottom: %d   top: %d    item: %s\n", array->len, bottom, top, item);
+#endif
+
       if (array->size <= (array->len + 1))
       {
-         ArrayItem* new_data;
-         new_data = realloc(array->data, (array->size + ARR_INCR_SZ) * sizeof(ArrayItem));
-         array->data = new_data;
-         array->size += ARR_INCR_SZ;
+          ArrayItem* new_data;
+          new_data = realloc(array->data, (array->size + ARR_INCR_SZ) * sizeof(ArrayItem));
+          array->data = new_data;
+          array->size += ARR_INCR_SZ;
       }
 
       move_len = array->len - bottom;
       if (move_len > 0)
       {
-         printf("before\n");
-         memmove(array->data + bottom + 1, array->data + bottom, move_len * sizeof(ArrayItem));
-         printf("after\n");
+          memmove(array->data + bottom + 1, array->data + bottom, move_len * sizeof(ArrayItem));
       }
        
       array->data[bottom] = item;
       array->len += 1;
+
+      return bottom;
    }
-}
 
-main()
-{
-   SortedArray a;
-   int i;
-   
-   a = array_create();
-   array_binary_insert(a, "125346");
-   array_binary_insert(a, "125346");
-   array_binary_insert(a, "125346");
-   array_binary_insert(a, "125346");
-   array_binary_insert(a, "225346");
-   array_binary_insert(a, "325346");
-   array_binary_insert(a, "725346");
-   array_binary_insert(a, "525346");
-
-   printf("array len: %d\n", array_len(a));
-   
-   for (i=0; i < array_len(a); i++)
-      printf("%s\n", array_item(a, i));
-     
-   array_free(a);
+   return -1;
 }

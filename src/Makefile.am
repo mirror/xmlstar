@@ -4,12 +4,12 @@ INCLUDES = -I. -I$(top_srcdir) -I$(top_srcdir)/src \
 
 bin_PROGRAMS = xml
 
-xml_SOURCES = stack.c trans.c xml_edit.c xml_select.c xml_trans.c xml_validate.c xml_format.c xml_elem.c xml.c stack.h trans.h
+xml_SOURCES = binsert.c stack.c trans.c xml_edit.c xml_select.c xml_trans.c xml_validate.c xml_format.c xml_elem.c xml.c binsert.h stack.h trans.h
 xml_LDFLAGS = 
 xml_DEPENDENCIES = $(DEPS)
 xml_LDADD = $(LDADDS)
 
-EXTRA_DIST = stack.c trans.c xml_edit.c xml_select.c xml_trans.c xml_validate.c xml_format.c xml_elem.c xml.c stack.h trans.h
+EXTRA_DIST = binsert.c stack.c trans.c xml_edit.c xml_select.c xml_trans.c xml_validate.c xml_format.c xml_elem.c xml.c binsert.h stack.h trans.h
 
 LDADDS = \
 	 @LIBXML_LIBS@ @LIBXSLT_LIBS@ $(EXTRA_LIBS)
