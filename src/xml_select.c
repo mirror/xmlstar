@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.13 2002/11/16 03:39:46 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.14 2002/11/19 04:59:26 mgrouch Exp $  */
 
 #include <string.h>
 #include <stdio.h>
@@ -120,7 +120,7 @@ static int out_text = 0;
 
 int xml_select(int argc, char **argv)
 {
-    int c, i, j, k, m, t;
+    int c, i, j, k, m, n, t;
   
     if (argc <= 2) select_usage(argc, argv);
 
@@ -242,6 +242,9 @@ int xml_select(int argc, char **argv)
 
             c += sprintf(xsl_buf + c, "</xsl:template>\n");
         }
+
+        if (argv[i][0] != '-') break;
+        
         i++;
     }
     
@@ -249,11 +252,28 @@ int xml_select(int argc, char **argv)
 
     if (printXSLT) fprintf(stdout, "%s", xsl_buf);
 
-    /*
-     *  Parse XSLT stylesheet
-     */
 
+    for (n=i; n<argc; n++)
     {
+        /*printf("%s\n", argv[n]);*/
+
+        /*
+         *  Parse XSLT stylesheet
+         */
+
+        xmlDocPtr style = xmlParseMemory(xsl_buf, c);
+        xsltStylesheetPtr cur = xsltParseStylesheetDoc(style);
+        xmlDocPtr doc = xmlParseFile(argv[n]);
+        xsltProcess(doc, cur, argv[n]);
+//        xsltFreeStylesheet(cur);
+    }
+
+    if (i == argc)    
+    {
+        /*
+         *  Parse XSLT stylesheet
+         */
+
         xmlDocPtr style = xmlParseMemory(xsl_buf, c);
         xsltStylesheetPtr cur = xsltParseStylesheetDoc(style);
         xmlDocPtr doc = xmlParseFile("-");
