@@ -1,4 +1,4 @@
-/*  $Id: xml.c,v 1.19 2002/12/02 04:52:31 mgrouch Exp $  */
+/*  $Id: xml.c,v 1.20 2002/12/05 23:34:13 mgrouch Exp $  */
 
 /*
 
@@ -47,6 +47,8 @@ static const char usage_str[] =
 "<options> are:\n"
 "   --version           - show version\n"
 "   --help              - show help\n"
+"Where file name mentioned in command help it is assumed\n"
+"that URL can be used instead as well.\n\n"
 "Type: xml <command> --help <ENTER> for command help\n\n";
 
 const char more_info[] =
