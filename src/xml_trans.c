@@ -1,4 +1,4 @@
-/*  $Id: xml_trans.c,v 1.6 2002/11/16 02:37:25 mgrouch Exp $  */
+/*  $Id: xml_trans.c,v 1.7 2002/11/22 05:30:36 mgrouch Exp $  */
 
 /*
  *  TODO:
@@ -89,8 +89,8 @@ static int xinclude = 0;
 #endif
 static int profile = 0;
 
-static const char *params[MAX_PARAMETERS + 1];
-static int nbparams = 0;
+const char *params[MAX_PARAMETERS + 1];
+int nbparams = 0;
 static xmlChar *strparams[MAX_PARAMETERS + 1];
 static int nbstrparams = 0;
 static xmlChar *paths[MAX_PATHS + 1];

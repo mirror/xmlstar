@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.16 2002/11/19 06:25:19 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.17 2002/11/22 05:30:36 mgrouch Exp $  */
 
 #include <string.h>
 #include <stdio.h>
@@ -37,6 +37,9 @@
 #define MAX_XSL_BUF  256*1014
 
 char xsl_buf[MAX_XSL_BUF];
+
+extern int nbparams;
+extern const char *params[];
 
 void select_usage(int argc, char **argv)
 {
@@ -158,6 +161,7 @@ int xml_select(int argc, char **argv)
     c += sprintf(xsl_buf, "<?xml version=\"1.0\"?>\n");
     c += sprintf(xsl_buf + c, "<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">\n");
     if (out_text) c += sprintf(xsl_buf + c, "<xsl:output method=\"text\"/>\n");
+    c += sprintf(xsl_buf + c, "<xsl:param name=\"inputFile\">reererte</xsl:param>\n");
 
     c += sprintf(xsl_buf + c, "<xsl:template match=\"/\">\n");
     if (!out_text && printRoot) c += sprintf(xsl_buf + c, "<xml-select>\n");
@@ -223,6 +227,10 @@ int xml_select(int argc, char **argv)
                     i--;
                     break;
                 }
+                else if(argv[i][0] != '-')
+                {
+                   break;
+                }
                 
                 i++;
             }
@@ -242,6 +250,8 @@ int xml_select(int argc, char **argv)
             c += sprintf(xsl_buf + c, "</xsl:template>\n");
         }
 
+        //printf("%s\n", argv[i]);
+
         if (argv[i][0] != '-') break;
         
         i++;
@@ -251,10 +261,22 @@ int xml_select(int argc, char **argv)
 
     if (printXSLT) fprintf(stdout, "%s", xsl_buf);
 
-
+    
     for (n=i; n<argc; n++)
     {
-        /*printf("%s\n", argv[n]);*/
+        char *value;
+
+        /*
+         *  Pass input file name as predefined parameter 'inputFile'
+         */
+        nbparams = 2;
+        params[0] = "inputFile";
+        value = xmlStrdup((const xmlChar *)"'");
+        value = xmlStrcat(value, argv[n]);
+        value = xmlStrcat(value, (const xmlChar *)"'");
+        params[1] = value;
+
+        //printf("%s\n", argv[n]);
 
         /*
          *  Parse XSLT stylesheet
@@ -264,7 +286,7 @@ int xml_select(int argc, char **argv)
         xsltStylesheetPtr cur = xsltParseStylesheetDoc(style);
         xmlDocPtr doc = xmlParseFile(argv[n]);
         xsltProcess(doc, cur, argv[n]);
-//        xsltFreeStylesheet(cur);
+        xsltFreeStylesheet(cur);
     }
 
     if (i == argc)    
