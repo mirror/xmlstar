@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.23 2002/11/23 19:13:47 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.24 2002/11/23 19:19:07 mgrouch Exp $  */
 
 #include <string.h>
 #include <stdio.h>
@@ -274,12 +274,13 @@ int xml_select(int argc, char **argv)
         /*
          *  Parse XSLT stylesheet
          */
-
-        xmlDocPtr style = xmlParseMemory(xsl_buf, c);
-        xsltStylesheetPtr cur = xsltParseStylesheetDoc(style);
-        xmlDocPtr doc = xmlParseFile(argv[n]);
-        xsltProcess(doc, cur, argv[n]);
-        xsltFreeStylesheet(cur);
+        {
+            xmlDocPtr style = xmlParseMemory(xsl_buf, c);
+            xsltStylesheetPtr cur = xsltParseStylesheetDoc(style);
+            xmlDocPtr doc = xmlParseFile(argv[n]);
+            xsltProcess(doc, cur, argv[n]);
+            xsltFreeStylesheet(cur);
+        }
     }
 
     if (i == argc)    
