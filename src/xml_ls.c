@@ -1,4 +1,4 @@
-/*  $Id: xml_ls.c,v 1.10 2004/11/21 18:55:27 mgrouch Exp $  */
+/*  $Id: xml_ls.c,v 1.11 2004/11/21 18:59:24 mgrouch Exp $  */
 
 /*
 
@@ -39,6 +39,7 @@ static const char ls_usage_str[] =
 "XMLStarlet Toolkit: List directory as XML\n"
 "Usage: xml ls\n"
 "Lists current directory in XML format.\n"
+"Time is shown per ISO 8601 spec.\n"
 "\n";
 
 /**
