@@ -1,4 +1,4 @@
-/*  $Id: xml_validate.c,v 1.35 2004/11/22 01:41:06 mgrouch Exp $  */
+/*  $Id: xml_validate.c,v 1.36 2005/01/07 01:52:43 mgrouch Exp $  */
 
 /*
 
@@ -277,6 +277,7 @@ valAgainstDtd(valOptionsPtr ops, char* dtdvalid, xmlDocPtr doc, char* filename)
                 }
             }
             xmlFreeDtd(dtd);
+            xmlFreeValidCtxt(cvp);
         }
     }
 
