@@ -1,4 +1,4 @@
-/*  $Id: xml_elem.c,v 1.19 2004/09/14 00:00:52 mgrouch Exp $  */
+/*  $Id: xml_elem.c,v 1.20 2004/09/14 00:11:06 mgrouch Exp $  */
 
 /*
 
@@ -102,7 +102,7 @@ void elStartElement(void *user_data, const xmlChar *name, const xmlChar **attrs)
     char *tmpXPath = NULL;
     
     if (*curXPath != (char)0) strcat(curXPath, "/");
-    strlcat(curXPath, (char*) name, LINE_BUF_SZ - 1);
+    strncat(curXPath, (char*) name, LINE_BUF_SZ - 1);
 
     if (elOps.show_attr)
     {
