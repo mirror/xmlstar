@@ -897,7 +897,7 @@ XML documents (for more information see http://xmlstar.sourceforge.net/)
       <para>EXAMPLE:</para>
 
       <programlisting># Delete elements matching XPath expression
-xml ed -d /xml/table/rec[@id='2'] xml/table.xml
+xml ed -d "/xml/table/rec[@id='2']" xml/table.xml
 </programlisting>
 
       <para>Input</para>
@@ -1014,7 +1014,7 @@ xml ed -r "/xml/table/rec" -v record xml/tab-obj.xml
       <para>EXAMPLE</para>
 
       <programlisting># Update value of an attribute
-xml ed -u '/xml/table/rec[@id=3]/@id' -v 5 xml/tab-obj.xml
+xml ed -u "/xml/table/rec[@id=3]/@id" -v 5 xml/tab-obj.xml
 </programlisting>
 
       <para>Output:</para>
@@ -1044,7 +1044,7 @@ xml ed -u '/xml/table/rec[@id=3]/@id' -v 5 xml/tab-obj.xml
       <para>EXAMPLE</para>
 
       <programlisting># Update value of an element
-xml ed -u '/xml/table/rec[@id=1]/numField' -v 0 xml/tab-obj.xml
+xml ed -u "/xml/table/rec[@id=1]/numField" -v 0 xml/tab-obj.xml
 </programlisting>
 
       <para>Output:</para>
