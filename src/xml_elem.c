@@ -1,4 +1,4 @@
-/*  $Id: xml_elem.c,v 1.1 2003/04/23 02:43:36 mgrouch Exp $  */
+/*  $Id: xml_elem.c,v 1.2 2003/04/23 03:10:07 mgrouch Exp $  */
 
 /*
 
@@ -44,10 +44,11 @@ THE SOFTWARE.
 */
 
 static const char elem_usage_str[] =
-"XMLStarlet Toolkit: Display elements structure of XML document\n"
+"XMLStarlet Toolkit: Display element structure of XML document\n"
 "Usage: xml el [<options>] <xml-file>\n"
 "where\n"
 "   <xml-file> - input XML document file name (stdin is used if missing)\n"
+"   <options>  - currently none (to be enhanced later)\n"
 "\n";
 
 static xmlSAXHandler xmlSAX_handler;
@@ -92,12 +93,17 @@ parse_xml_file(const char *filename)
 { 
     int ret;
 
+    xmlInitParser();
+    
     memset(&xmlSAX_handler, 0, sizeof(xmlSAX_handler));
 
     xmlSAX_handler.startElement = elStartElement;
     xmlSAX_handler.endElement = elEndElement;
-   
-    if ((ret = xmlSAXUserParseFile(&xmlSAX_handler, NULL, filename)) < 0)
+
+    ret = xmlSAXUserParseFile(&xmlSAX_handler, NULL, filename);
+    xmlCleanupParser();
+       
+    if (ret < 0)
     {
         return ret;
     }
@@ -113,9 +119,13 @@ elMain(int argc, char **argv)
 {
     int errorno = 0;
 
-    if (argc <= 2) elUsage(argc, argv);
+    if (argc <= 1) elUsage(argc, argv);
 
-    errorno = parse_xml_file(argv[2]);  /* TODO: more options will be added */
+    /* TODO: more options to be added */
+    if (argc == 1)
+        errorno = parse_xml_file("-");  
+    else
+        errorno = parse_xml_file(argv[2]);
     
     return errorno;
 }
