@@ -21,6 +21,7 @@ where <command> is one of:
    fo    (or format)    - Format XML document(s)
    el    (or elements)  - Display element structure of XML document
    c14n  (or canonic)   - XML canonicalization
+   ls    (or list)      - List directory as XML
    esc   (or escape)    - Escape special XML characters
    unesc (or unescape)  - Unescape special XML characters
 <options> are:
