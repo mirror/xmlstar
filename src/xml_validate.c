@@ -1,4 +1,4 @@
-/*  $Id: xml_validate.c,v 1.19 2003/02/21 02:49:32 mgrouch Exp $  */
+/*  $Id: xml_validate.c,v 1.20 2003/02/21 03:01:38 mgrouch Exp $  */
 
 /*
 
@@ -66,7 +66,7 @@ static const char validate_usage_str[] =
 #ifdef LIBXML_SCHEMAS_ENABLED
 "   -s or --xsd <xsd-file>  - validate against schema\n"
 #endif
-"   -x or --xml-out         - print result as xml\n"
+/*"   -x or --xml-out         - print result as xml\n"*/
 "   -e or --err             - print verbose error messages on stderr\n"
 "   -b or --list-bad        - list only files which do not validate (default)\n"
 "   -g or --list-good       - list only files which validate\n"
