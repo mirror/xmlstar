@@ -1,4 +1,4 @@
-/* $Id: stack.c,v 1.1 2003/03/19 23:18:06 mgrouch Exp $ */
+/* $Id: stack.c,v 1.2 2003/08/10 23:47:52 mgrouch Exp $ */
 
 #include "stack.h"
 #include <stdlib.h>
@@ -27,7 +27,7 @@ stack_create(int max_depth)
 {
     Stack stack = NULL;
 
-    stack = (Stack) malloc(sizeof(Stack));
+    stack = (Stack) malloc(sizeof(StackObj));
     stack->items = 0;
     stack->depth = 0;
     stack->items = (StackItem *) malloc(max_depth);
@@ -39,11 +39,14 @@ stack_create(int max_depth)
 void
 stack_free(Stack stack)
 {
-    free(stack->items);
-    stack->items = 0;
-    stack->depth = 0;
-    stack->max_depth = 0;
-    free(stack);
+    if (stack != NULL)
+    {
+        if (stack->items != NULL) free(stack->items);
+        stack->items = 0;
+        stack->depth = 0;
+        stack->max_depth = 0;
+        free(stack);
+    }
 }
       
 int
