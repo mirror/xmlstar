@@ -8,7 +8,7 @@ cd ../examples
 
 for i in $TESTS
 do
-    ./${i} > /tmp/xmlstarlet.$$ 2>/dev/null
+    ./${i} | tr -d "\r" > /tmp/xmlstarlet.$$ 2>/dev/null
     diff /tmp/xmlstarlet.$$ results/${i}.out >/dev/null 2>&1
     if [ $? != "0" ]
     then
