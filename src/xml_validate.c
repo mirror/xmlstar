@@ -1,4 +1,4 @@
-/*  $Id: xml_validate.c,v 1.24 2003/05/07 22:25:50 mgrouch Exp $  */
+/*  $Id: xml_validate.c,v 1.25 2003/05/12 23:55:43 mgrouch Exp $  */
 
 /*
 
@@ -80,7 +80,7 @@ static const char validate_usage_str[] =
 "   -e or --err                - print verbose error messages on stderr\n"
 "   -b or --list-bad           - list only files which do not validate\n"
 "   -g or --list-good          - list only files which validate\n"
-"   -q or --queit              - do not list files (return result code only)\n\n";
+"   -q or --quiet              - do not list files (return result code only)\n\n";
 
 #ifdef LIBXML_SCHEMAS_ENABLED
 static const char schema_notice[] =
