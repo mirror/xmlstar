@@ -49,15 +49,15 @@ AC_ARG_WITH(libxml-src,
 )
 
 AC_DEFUN(VERSION_TO_NUMBER,
-	 [`$1 | sed -e 's/libxml //' | awk 'BEGIN { FS = "."; } { printf "%d", ([$]1 * 1000 + [$]2) * 1000 + [$]3;}'`])
+	 [`$1 | sed -e 's/libxml //' -e 's/libxslt //' | awk 'BEGIN { FS = "."; } { printf "%d", ([$]1 * 1000 + [$]2) * 1000 + [$]3;}'`])
 
-LIBXML_REQUIRED_VERSION=2.6.2
+LIBXML_REQUIRED_VERSION=2.6.12
 
 if test "x$LIBXML_SRC" = "x"
 then
 	XMLVERS=`$LIBXML_PREFIX/bin/xml2-config --version`
 	if test VERSION_TO_NUMBER(echo $XMLVERS) -lt VERSION_TO_NUMBER(echo $LIBXML_REQUIRED_VERSION); then
-        	AC_MSG_ERROR(xmlstarlet needs at least libxml2 version 2.6.2 (http://www.xmlsoft.org/))
+        	AC_MSG_ERROR(xmlstarlet needs at least libxml2 version $LIBXML_REQUIRED_VERSION (http://www.xmlsoft.org/))
 	fi
 fi
 
@@ -90,6 +90,16 @@ AC_ARG_WITH(libxslt-src,
         LIBXSLT_LIBS="$withval/libxslt/.libs/libxslt.a $withval/libexslt/.libs/libexslt.a -lz -lm -lpthread"
         LIBXSLT_CFLAGS="-I$withval/libxslt -I$withval/libexslt -I$withval"
 )
+
+LIBXSLT_REQUIRED_VERSION=1.1.10
+
+if test "x$LIBXSLT_SRC" = "x"
+then
+	XSLTVERS=`$LIBXSLT_PREFIX/bin/xslt-config --version`
+	if test VERSION_TO_NUMBER(echo $XSLTVERS) -lt VERSION_TO_NUMBER(echo $LIBXSLT_REQUIRED_VERSION); then
+        	AC_MSG_ERROR(xmlstarlet needs at least libxslt version $LIBXSLT_REQUIRED_VERSION (http://www.xmlsoft.org/))
+	fi
+fi
 
 LIBICONV_PREFIX="/usr"
 AC_ARG_WITH(libiconv-prefix,
