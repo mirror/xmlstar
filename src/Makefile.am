@@ -8,3 +8,7 @@ xml_SOURCES = xml.c
 xml_LDFLAGS =
 xml_DEPENDENCIES = $(DEPS)
 xml_LDADD = $(LDADDS)
+
+LDADDS = \
+	 @LIBXML_LIBS@ $(EXTRA_LIBS)
+
