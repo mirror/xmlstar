@@ -1174,12 +1174,16 @@ Usage: xml c14n &lt;mode&gt; &lt;xml-file&gt; [&lt;xpath-file&gt;] [&lt;inclusiv
 where
   &lt;xml-file&gt;   - input XML document file name (stdin is used if '-')
   &lt;xpath-file&gt; - XML file containing XPath expression for
-                 exclusive XML canonicalization
+                 c14n XML canonicalization
     Example:
     &lt;?xml version="1.0"?&gt;
     &lt;XPath xmlns:n0="http://a.example.com" xmlns:n1="http://b.example"&gt;
     (//. | //@* | //namespace::*)[ancestor-or-self::n1:elem1]
     &lt;/XPath&gt;
+
+  &lt;inclusive-ns-list&gt; - the list of inclusive namespace prefixes
+                        (only for exclusive canonicalization)
+    Example: 'n1 n2'
 
   &lt;mode&gt; is one of following:
   --with-comments         XML file canonicalization w comments (default)
