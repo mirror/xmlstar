@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.37 2002/12/08 04:31:33 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.38 2002/12/08 04:35:01 mgrouch Exp $  */
 
 /*
 
@@ -73,7 +73,7 @@ static const char select_usage_str[] =
 "  -R or --root       - print root element <xsl-select>\n"
 "  -T or --text       - output is text (default is XML)\n"
 "  -I or --indent     - indent output\n"
-"  -D or --omit-decl  - do not omit xml declaration line\n"
+"  -D or --xml-decl   - do not omit xml declaration line\n"
 "  -B or --noblanks   - remove insignificant spaces from XML tree\n"
 "  --help             - display help\n\n"
 
@@ -176,7 +176,7 @@ selParseOptions(selOptionsPtr ops, int argc, char **argv)
         {
             ops->indent = 1;
         }
-        else if (!strcmp(argv[i], "-D") || !strcmp(argv[i], "--omit-decl"))
+        else if (!strcmp(argv[i], "-D") || !strcmp(argv[i], "--xml-decl"))
         {
             ops->no_omit_decl = 1;
         }
