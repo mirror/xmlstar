@@ -1,5 +1,5 @@
 /*
- *  $Id: xml_C14N.c,v 1.9 2004/02/14 05:14:31 mgrouch Exp $
+ *  $Id: xml_C14N.c,v 1.10 2004/05/19 03:31:35 mgrouch Exp $
  *
  *  Canonical XML implementation test program
  *  (http://www.w3.org/TR/2001/REC-xml-c14n-20010315)
@@ -38,7 +38,9 @@ static const char c14n_usage_str_1[] =
 "where\n"
 "  <xml-file>   - input XML document file name (stdin is used if '-')\n"
 "  <xpath-file> - XML file containing XPath expression for\n"
-"                 c14n XML canonicalization\n"
+"                 c14n XML canonicalization\n";
+
+static const char c14n_usage_str_2[] =
 "    Example:\n"
 "    <?xml version=\"1.0\"?>\n"
 "    <XPath xmlns:n0=\"http://a.example.com\" xmlns:n1=\"http://b.example\">\n"
@@ -50,7 +52,7 @@ static const char c14n_usage_str_1[] =
 "    Example: 'n1 n2'\n"
 "\n";
 
-static const char c14n_usage_str_2[] =
+static const char c14n_usage_str_3[] =
 "  <mode> is one of following:\n"
 "  --with-comments         XML file canonicalization w comments (default)\n"
 "  --without-comments      XML file canonicalization w/o comments\n"
@@ -64,6 +66,7 @@ static void c14nUsage(const char *name)
     FILE* o = stderr;
     fprintf(o, c14n_usage_str_1);
     fprintf(o, c14n_usage_str_2);
+    fprintf(o, c14n_usage_str_3);
     fprintf(o, more_info);
     exit(1);
 }
