@@ -5,7 +5,6 @@
       <numField>123</numField>
       <stringField>String Value</stringField>
     </rec>
-    
     <rec id="3">
       <numField>-23</numField>
       <stringField>stringValue</stringField>

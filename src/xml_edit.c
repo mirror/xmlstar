@@ -1,4 +1,34 @@
-/*  $Id: xml_edit.c,v 1.14 2002/12/02 01:10:19 mgrouch Exp $  */
+/*  $Id: xml_edit.c,v 1.15 2002/12/02 02:03:44 mgrouch Exp $  */
+
+/*
+
+XMLStarlet: Command Line Toolkit to query/edit/check/transform XML documents
+
+Copyright (c) 2002 Mikhail Grushinskiy.  All Rights Reserved.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+*/
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include <string.h>
 #include <stdio.h>
@@ -16,7 +46,11 @@
 #include <libxml/uri.h>
 
 /*
-   TODO:  
+   TODO:
+          1. Should this be allowed ?
+             ./xml ed -m /xml /xml/table/rec/object ../examples/xml/tab-obj.xml 
+
+          2. Other options insert/append/update/rename/subnode
 */
 
 typedef enum _XmlEdOp {
@@ -29,6 +63,8 @@ typedef enum _XmlEdOp {
    XML_ED_SUBNODE   
 } XmlEdOp;
 
+
+/* TODO ??? */
 typedef enum _XmlNodeType {
    XML_UNDEFINED,
    XML_ATTR,
@@ -39,6 +75,7 @@ typedef enum _XmlNodeType {
 } XmlNodeType;
 
 typedef char* XmlEdArg;
+
 
 typedef struct _XmlEdAction {
   XmlEdOp       op;
@@ -502,20 +539,22 @@ edMain(int argc, char **argv)
 
     ops_count = j;
 
+    xmlKeepBlanksDefault(0);
+
     if (i >= argc)
     {
         xmlDocPtr doc = xmlParseFile("-");
         edProcess(doc, ops, ops_count);
-        /* xmlSaveFormatFile("-", doc, 0); */
-        xmlSaveFile("-", doc);
+        xmlSaveFormatFile("-", doc, 1);
+        /*xmlSaveFile("-", doc);*/
     }
     
     for (n=i; n<argc; n++)
     {
         xmlDocPtr doc = xmlParseFile(argv[n]);
         edProcess(doc, ops, ops_count);
-        /* xmlSaveFormatFile("-", doc, 0); */
-        xmlSaveFile("-", doc);
+        xmlSaveFormatFile("-", doc, 1);
+        /*xmlSaveFile("-", doc);*/
         /* xmlDocFormatDump(stdout, doc, 0); */
         /* xmlDocDump(stdout, doc); */
     }
