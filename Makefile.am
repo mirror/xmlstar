@@ -4,8 +4,19 @@ SUBDIRS = \
 
 DIST_SUBDIRS = src
 
-confexecdir=$(libdir)
-
-EXTRA_DIST =  \
+EXTRA_DIST = \
 	README TODO Copyright
+
+confexecdir=$(libdir)
+m4datadir=$(datadir)/aclocal
+
+dist-hook: xmlstarlet.spec
+	-cp xmlstarlet.spec $(distdir)
+	(cd $(srcdir) ; tar -cf - --exclude CVS win32 macos vms test result) | (cd $(distdir); tar xf -)
+
+cleantar:
+	@(rm -f xmlstarlet*.tar.gz COPYING)
+
+rpm: cleantar
+	@(unset CDPATH ; $(MAKE) dist && rpmbuild -ta $(distdir).tar.gz)
 

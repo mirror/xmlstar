@@ -104,6 +104,7 @@ AC_SUBST(LIBXSLT_LIBS)
 AC_SUBST(LIBXSLT_CFLAGS)
 
 AC_OUTPUT([
+xmlstarlet.spec
 Makefile
 src/Makefile
 ])

@@ -1,0 +1,49 @@
+Summary: Command Line XML Toolkit
+Name: xmlstarlet
+Version: @VERSION@
+Release: 1
+License: MIT
+Group: Text Tools
+Source: http://xmlstar.sourceforge.net/downloads/xmlstarlet-%{version}.tar.gz
+BuildRoot: %{_tmppath}/%{name}-%{version}-root
+BuildRequires: 
+URL: http://xmlstar.sourceforge.net/
+Prefix: %{_prefix}
+Docdir: %{_docdir}
+
+%description
+Command Line XML Toolkit to query/edit/transform/check XML documents
+
+%prep
+%setup -q
+
+%build
+%configure
+make LIBTOOL=/usr/bin/libtool
+
+%install
+rm -fr %{buildroot}
+
+%makeinstall
+
+%clean
+rm -fr %{buildroot}
+
+%post
+
+%postun
+
+%files
+%defattr(-, root, root)
+
+%doc AUTHORS ChangeLog NEWS README Copyright TODO
+
+%{prefix}/bin/xml
+
+%files devel
+%defattr(-, root, root)
+
+%doc AUTHORS ChangeLog NEWS README Copyright TODO
+
+%changelog
+
