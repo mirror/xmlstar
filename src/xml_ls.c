@@ -1,4 +1,4 @@
-/*  $Id: xml_ls.c,v 1.15 2005/03/19 01:03:30 mgrouch Exp $  */
+/*  $Id: xml_ls.c,v 1.16 2005/03/19 01:11:11 mgrouch Exp $  */
 
 /*
 
@@ -174,7 +174,7 @@ xml_print_dir(char* dir)
       perm = get_file_perms(stats.st_mode);
 
 #if defined (__MINGW32__)
-      /* somehow atime is sometimes -1 on Windows XP */
+      /* somehow atime is -1 on Windows XP when the atime is in future */
       if (stats.st_atime < 0) stats.st_atime = stats.st_mtime; 
 #endif
 
