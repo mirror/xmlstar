@@ -14,13 +14,15 @@ xml
 XMLStarlet Toolkit: Command line utilities for XML
 Usage: xml [<options>] <command> [<cmd-options>]
 where <command> is one of:
-   ed   (or edit)      - Edit/Update XML document(s)
-   sel  (or select)    - Select data or query XML document(s) (XPATH, etc)
-   tr   (or transform) - Transform XML document(s) using XSLT
-   val  (or validate)  - Validate XML document(s) (well-formed/DTD/XSD/RelaxNG)
-   fo   (or format)    - Format XML document(s)
-   el   (or elements)  - Display element structure of XML document
-   c14n (or canonic)   - XML canonization
+   ed    (or edit)      - Edit/Update XML document(s)
+   sel   (or select)    - Select data or query XML document(s) (XPATH, etc)
+   tr    (or transform) - Transform XML document(s) using XSLT
+   val   (or validate)  - Validate XML document(s) (well-formed/DTD/XSD/RelaxNG)
+   fo    (or format)    - Format XML document(s)
+   el    (or elements)  - Display element structure of XML document
+   c14n  (or canonic)   - XML canonicalization
+   esc   (or escape)    - Escape special XML characters
+   unesc (or unescape)  - Unescape special XML characters
 <options> are:
    --version           - show version
    --help              - show help
@@ -201,7 +203,7 @@ where <options>
    -e or --err                - print verbose error messages on stderr
    -b or --list-bad           - list only files which do not validate
    -g or --list-good          - list only files which validate
-   -q or --queit              - do not list files (return result code only)
+   -q or --quiet              - do not list files (return result code only)
 
 NOTE: XML Schemas are not fully supported yet due to its incomplete
       support in libxml (see http://xmlsoft.org)
@@ -399,8 +401,8 @@ examples/xsl/param1.xsl
 
 
 Command:
-# XML canonization
-./xmlstarlet c14n --with-comments ../examples/xml/structure.xml ; echo $?
+# XML canonicalization
+xml c14n --with-comments ../examples/xml/structure.xml ; echo $?
 Result Output:
 <a1>
   <a11>
@@ -421,14 +423,14 @@ Result Output:
 
 Command:
 # Count elements matching XPath expression
-./xmlstarlet sel -t -v "count(/xml/table/rec/numField)" xml/table.xml
+xml sel -t -v "count(/xml/table/rec/numField)" xml/table.xml
 Result Output:
 3
 
 
 Command:
 # Count all nodes in XML document
-./xmlstarlet sel -t -f -o " " -v "count(//node())" xml/table.xml xml/tab-obj.xml
+xml sel -t -f -o " " -v "count(//node())" xml/table.xml xml/tab-obj.xml
 Result Output:
 xml/table.xml 32
 xml/tab-obj.xml 41
@@ -436,7 +438,7 @@ xml/tab-obj.xml 41
 
 Command:
 # Delete elements matching XPath expression
-./xmlstarlet ed -d /xml/table/rec[@id='2'] xml/table.xml
+xml ed -d /xml/table/rec[@id='2'] xml/table.xml
 Result Output:
 <?xml version="1.0"?>
 <xml>
@@ -455,7 +457,7 @@ Result Output:
 
 Command:
 # Generate HTML from given SGML docbook document
-./xmlstarlet tr --omit-decl --docbook /usr/share/sgml/docbook/yelp/docbook/html/docbook.xsl  sgml/docbook1.sgml | \
+xml tr --omit-decl --docbook /usr/share/sgml/docbook/yelp/docbook/html/docbook.xsl  sgml/docbook1.sgml | \
     ./xmlstarlet fo --html --indent-spaces 2
 Result Output:
 <?xml version="1.0" encoding="ISO-8859-1" standalone="yes"?>
@@ -520,21 +522,21 @@ Result Output:
 
 Command:
 # Validate XML document against DTD
-./xmlstarlet val --dtd dtd/table.dtd xml/tab-obj.xml >/dev/null 2>&1; echo $?
+xml val --dtd dtd/table.dtd xml/tab-obj.xml >/dev/null 2>&1; echo $?
 Result Output:
 1
 
 
 Command:
 # Validate XML document against DTD
-./xmlstarlet val --dtd dtd/table.dtd xml/table.xml >/dev/null 2>&1; echo $?
+xml val --dtd dtd/table.dtd xml/table.xml >/dev/null 2>&1; echo $?
 Result Output:
 0
 
 
 Command:
 # Display element structure of XML document
-./xmlstarlet el ./xml/tab-obj.xml
+xml el ./xml/tab-obj.xml
 Result Output:
 xml
 xml/table
@@ -554,7 +556,7 @@ xml/table/rec/stringField
 
 Command:
 # Display element structure of XML document (including attributes)
-./xmlstarlet el -a ./xml/tab-obj.xml
+xml el -a ./xml/tab-obj.xml
 Result Output:
 xml
 xml/table
@@ -580,7 +582,7 @@ xml/table/rec/stringField
 
 Command:
 # Display element structure of XML document (including attribute values)
-./xmlstarlet el -v ./xml/tab-obj.xml
+xml el -v ./xml/tab-obj.xml
 Result Output:
 xml
 xml/table
@@ -607,7 +609,7 @@ Result Output:
 
 Command:
 # Find XML files matching XPath expression (containing 'object' element)
-./xmlstarlet sel -t -m //object -f xml/table.xml xml/tab-obj.xml
+xml sel -t -m //object -f xml/table.xml xml/tab-obj.xml
 Result Output:
 xml/tab-obj.xml
 
@@ -621,13 +623,13 @@ Result Output:
 
 Command:
 # Apply XSLT stylesheet to HTML input file
-./xmlstarlet tr --html xsl/hello1.xsl html/hello1.html
+xml tr --html xsl/hello1.xsl html/hello1.html
 Result Output:
 Hello World!
 
 Command:
 # Use local-name() XSLT function in XPath expression
-./xmlstarlet sel -t -v "//*[local-name()='query']" xsql/jobserve.xsql
+xml sel -t -v "//*[local-name()='query']" xsql/jobserve.xsql
 Result Output:
 
   SELECT substr(title,1,26) short_title, title, location, skills
@@ -639,7 +641,7 @@ Result Output:
 
 Command:
 # Select text value of an XML element mathing given XPath expression
-./xmlstarlet sel -t -m "/xml/table/rec[@id='2']" -v numField xml/table.xml
+xml sel -t -m "/xml/table/rec[@id='2']" -v numField xml/table.xml
 Result Output:
 346
 
@@ -673,7 +675,7 @@ Result Output:
 
 Command:
 # xsl:copy-of in xml sel command
-./xmlstarlet sel -B -t -m /xml/table/rec -c . -n xml/table.xml
+xml sel -B -t -m /xml/table/rec -c . -n xml/table.xml
 Result Output:
 <rec id="1"><numField>123</numField><stringField>String Value</stringField></rec>
 <rec id="2"><numField>346</numField><stringField>Text Value</stringField></rec>
@@ -683,7 +685,7 @@ Result Output:
 
 Command:
 # Query XML document and produce sorted text table
-./xmlstarlet sel -T -t -m /xml/table/rec -s D:N:- "@id" -v "concat(@id,'|',numField,'|',stringField)" -n xml/table.xml
+xml sel -T -t -m /xml/table/rec -s D:N:- "@id" -v "concat(@id,'|',numField,'|',stringField)" -n xml/table.xml
 Result Output:
 3|-23|stringValue
 2|346|Text Value
@@ -692,7 +694,7 @@ Result Output:
 
 Command:
 # Print structure of XML element using xml sel (advanced XPath expressions and xml sel command usage)
-./xmlstarlet sel -T -t -m '//*' \
+xml sel -T -t -m '//*' \
 -m 'ancestor-or-self::*' -v 'name()' -i 'not(position()=last())' -o . -b -b -n \
 xml/structure.xml
 Result Output:
@@ -709,7 +711,7 @@ a1.a13.a131
 
 Command:
 # Calculating running sum on XML document
-./xmlstarlet sel -t -v "sum(/xml/table/rec/numField)" xml/table.xml
+xml sel -t -v "sum(/xml/table/rec/numField)" xml/table.xml
 Result Output:
 446
 
@@ -743,7 +745,7 @@ Result Output:
 
 Command:
 # Generate plain text table from XML document
-./xmlstarlet sel -T -t -m /xml/table/rec -v "@id" -o "|" -v numField -o "|" -v stringField -n xml/table.xml
+xml sel -T -t -m /xml/table/rec -v "@id" -o "|" -v numField -o "|" -v stringField -n xml/table.xml
 Result Output:
 1|123|String Value
 2|346|Text Value
@@ -752,7 +754,7 @@ Result Output:
 
 Command:
 # Generate plain text table from XML document
-./xmlstarlet sel -T -t -m /xml/table/rec -v "concat(@id,'|',numField,'|',stringField)" -n xml/table.xml
+xml sel -T -t -m /xml/table/rec -v "concat(@id,'|',numField,'|',stringField)" -n xml/table.xml
 Result Output:
 1|123|String Value
 2|346|Text Value
@@ -761,7 +763,7 @@ Result Output:
 
 Command:
 # Generate plain text table from XML document
-./xmlstarlet sel -T \
+xml sel -T \
     -t -o "===================" -n \
        -m xml/table/rec -v "concat(@id,'|',numField,'|',stringField)" -n \
     -t -o "===================" -n xml/table.xml
@@ -778,46 +780,46 @@ Command:
 echo "==============================================="
 echo "Well-Formedness Validation Tests"
 echo "- 1 -------------------------------------------"
-./xmlstarlet val xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
+xml val xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
 echo "- 2 -------------------------------------------"
-./xmlstarlet val -g xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
+xml val -g xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
 echo "- 3 -------------------------------------------"
-./xmlstarlet val -b xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
+xml val -b xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
 echo "- 4 -------------------------------------------"
-./xmlstarlet val -q xml/table.xml xml/tab-obj.xml 2>/dev/null; echo $?
+xml val -q xml/table.xml xml/tab-obj.xml 2>/dev/null; echo $?
 
 echo "==============================================="
 echo "DTD Validation Tests"
 echo "- 1 -------------------------------------------"
-./xmlstarlet val -d dtd/table.dtd xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
+xml val -d dtd/table.dtd xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
 echo "- 2 -------------------------------------------"
-./xmlstarlet val -g -d dtd/table.dtd xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
+xml val -g -d dtd/table.dtd xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
 echo "- 3 -------------------------------------------"
-./xmlstarlet val -b -d dtd/table.dtd xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
+xml val -b -d dtd/table.dtd xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
 echo "- 4 -------------------------------------------"
-./xmlstarlet val -q -d dtd/table.dtd xml/table.xml 2>/dev/null; echo $?
+xml val -q -d dtd/table.dtd xml/table.xml 2>/dev/null; echo $?
 
 echo "==============================================="
 echo "Schema Validation Tests"
 echo "- 1 -------------------------------------------"
-./xmlstarlet val -s xsd/table.xsd xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
+xml val -s xsd/table.xsd xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
 echo "- 2 -------------------------------------------"
-./xmlstarlet val -g -s xsd/table.xsd xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
+xml val -g -s xsd/table.xsd xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
 echo "- 3 -------------------------------------------"
-./xmlstarlet val -b -s xsd/table.xsd xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
+xml val -b -s xsd/table.xsd xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
 echo "- 4 -------------------------------------------"
-./xmlstarlet val -q -s xsd/table.xsd xml/table.xml 2>/dev/null; echo $?
+xml val -q -s xsd/table.xsd xml/table.xml 2>/dev/null; echo $?
 
 echo "==============================================="
 echo "RelaxNG Schema Validation Tests"
 echo "- 1 -------------------------------------------"
-./xmlstarlet val -r relaxng/address.rng relaxng/address.xml relaxng/address-bad.xml 2>/dev/null; echo $?
+xml val -r relaxng/address.rng relaxng/address.xml relaxng/address-bad.xml 2>/dev/null; echo $?
 echo "- 2 -------------------------------------------"
-./xmlstarlet val -g -r relaxng/address.rng relaxng/address.xml relaxng/address-bad.xml 2>/dev/null; echo $?
+xml val -g -r relaxng/address.rng relaxng/address.xml relaxng/address-bad.xml 2>/dev/null; echo $?
 echo "- 3 -------------------------------------------"
-./xmlstarlet val -b -r relaxng/address.rng relaxng/address.xml relaxng/address-bad.xml 2>/dev/null; echo $?
+xml val -b -r relaxng/address.rng relaxng/address.xml relaxng/address-bad.xml 2>/dev/null; echo $?
 echo "- 4 -------------------------------------------"
-./xmlstarlet val -q -r relaxng/address.rng relaxng/address.xml 2>/dev/null; echo $?
+xml val -q -r relaxng/address.rng relaxng/address.xml 2>/dev/null; echo $?
 Result Output:
 ===============================================
 Well-Formedness Validation Tests
@@ -884,8 +886,8 @@ relaxng/address-bad.xml
 
 
 Command:
-# Include one XML document into another using XML include
-./xmlstarlet tr --xinclude xsl/cat.xsl xml/document.xml
+# Include one XML document into another using XInclude
+xml tr --xinclude xsl/cat.xsl xml/document.xml
 Result Output:
 <?xml version="1.0" encoding="utf-8"?>
 <document xmlns:xi="http://www.w3.org/2001/XInclude">
@@ -900,14 +902,14 @@ Result Output:
 
 Command:
 # Passing parameters to XSLT stylesheet
-./xmlstarlet tr xsl/param1.xsl -p Count='count(/xml/table/rec)' -s Text="Count=" xml/table.xml
+xml tr xsl/param1.xsl -p Count='count(/xml/table/rec)' -s Text="Count=" xml/table.xml
 Result Output:
 Count=3
 
 
 Command:
 # Applying XSLT stylesheet to XML document
-./xmlstarlet tr xsl/sum1.xsl xml/table.xml
+xml tr xsl/sum1.xsl xml/table.xml
 Result Output:
 446
 

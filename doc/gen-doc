@@ -1,5 +1,6 @@
 #! /bin/sh
 
+{
 echo ""
 echo ""
 echo "                                           XMLSTARLET USER'S GUIDE"
@@ -136,4 +137,6 @@ do
 done
 
 echo ""
+} | sed -e "s#^./xmlstarlet#xml#g"
+
 
