@@ -1,4 +1,4 @@
-/*  $Id: xml_edit.c,v 1.20 2003/05/25 18:28:28 mgrouch Exp $  */
+/*  $Id: xml_edit.c,v 1.21 2003/05/28 17:33:19 mgrouch Exp $  */
 
 /*
 
@@ -235,7 +235,118 @@ edUsage(int argc, char **argv)
 void
 edUpdate(xmlDocPtr doc, const char *loc, const char *val, XmlNodeType type)
 {
+  /*
     fprintf(stderr, "update is not implemented loc=%s val=%s type=%d\n", loc, val, type);
+   */
+   
+    int xptr = 0;
+    int expr = 0;
+    int tree = 0;
+
+    xmlXPathObjectPtr res;
+    xmlXPathContextPtr ctxt;
+
+#if defined(LIBXML_XPTR_ENABLED)
+    if (xptr)
+    {
+        ctxt = xmlXPtrNewContext(doc, NULL, NULL);
+        res = xmlXPtrEval(BAD_CAST loc, ctxt);
+    }
+    else
+    {
+#endif
+        ctxt = xmlXPathNewContext(doc);
+        ctxt->node = xmlDocGetRootElement(doc);
+        if (expr)
+            res = xmlXPathEvalExpression(BAD_CAST loc, ctxt);
+        else
+        {
+            xmlXPathCompExprPtr comp;
+
+            comp = xmlXPathCompile(BAD_CAST loc);
+            if (comp != NULL)
+            {
+                if (tree)
+                    xmlXPathDebugDumpCompExpr(stdout, comp, 0);
+
+                res = xmlXPathCompiledEval(comp, ctxt);
+                xmlXPathFreeCompExpr(comp);
+            }
+            else res = NULL;
+        }
+#if defined(LIBXML_XPTR_ENABLED)
+    }
+#endif
+    if (res == NULL) return;
+
+    /* Found loc */
+    switch(res->type)
+    {
+        case XPATH_NODESET:
+        {
+            int i;
+            xmlNodeSetPtr cur = res->nodesetval;
+            /*
+            fprintf(stderr, "Set contains %d nodes:\n", cur->nodeNr);
+            */
+            for (i = 0; i < cur->nodeNr; i++)
+            {
+                /*
+                 *  rename node
+                 */
+                /*
+                if (cur->nodeTab[i]->type == XML_ATTRIBUTE_NODE)
+                {
+                    xmlFree((xmlChar *) cur->nodeTab[i]->name);
+                    cur->nodeTab[i]->name = xmlStrdup((const xmlChar*) val);
+                }
+                else
+                {
+                    xmlFree((xmlChar *)cur->nodeTab[i]->name);
+                    cur->nodeTab[i]->name = xmlStrdup((const xmlChar*) val);
+                }
+                */
+                if (cur->nodeTab[i]->type == XML_ATTRIBUTE_NODE)
+                {
+                    //printf("%p, %s\n", xmlSetProp(cur->nodeTab[i]->parent, cur->nodeTab[i]->name, val), cur->nodeTab[i]->name);
+                    //xmlChar* tmp = xmlStrdup(cur->nodeTab[i]->name);
+                    //xmlNodePtr node = cur->nodeTab[i]->parent;
+                    xmlAttrPtr attr = NULL;
+                    attr = cur->nodeTab[i];
+                    xmlNodeSetContent(attr, val);
+                    //xmlFreeNode(attr->children);
+                    //if (attr->children != NULL) xmlFreeNodeList(attr->children);
+                    //attr->children = NULL;
+                    //UPDATE_LAST_CHILD_AND_PARENT(attr)
+                    //xmlUnsetProp(cur->nodeTab[i]->parent, cur->nodeTab[i]->name);
+                    //xmlSetProp(node, tmp, val);
+                    //xmlRemoveProp(cur->nodeTab[i]);
+                    //xmlFreeProp(cur->nodeTab[i]);
+                    //xmlSetProp(cur->nodeTab[i], cur->nodeTab[i]->name, val);
+                    //attr = xmlNewProp(node, tmp, xmlStrdup(val));
+                    //attr = xmlNewProp(node, "a", "v");
+                    //attr->name = tmp;
+                //printf("eeeeee %s node %s\n", tmp, node->name);
+                    //xmlNodeSetContent(((xmlAttrPtr) cur->nodeTab[i])->children, val);
+                    //xmlFree((xmlChar *)cur->nodeTab[i]->content);
+                    //((xmlAttrPtr) cur->nodeTab[i])->children->content = xmlStrdup((const xmlChar*) val);
+                    //cur->nodeTab[i]->content = xmlStrdup((const xmlChar*) val);
+                    //if (cur->nodeTab[i]->children != NULL) xmlFreeNodeList(cur->nodeTab[i]->children);
+                    //xmlFree((xmlChar *)((xmlAttributePtr) cur->nodeTab[i])->defaultValue);
+                    //((xmlAttributePtr) cur->nodeTab[i])->defaultValue = xmlStrdup((const xmlChar*) val);
+                }
+                else
+                {
+                    xmlNodeSetContent(cur->nodeTab[i], val);
+                }
+            }
+            break;
+        }
+        default:
+            break;
+    }
+    xmlXPathFreeObject(res);
+    xmlXPathFreeContext(ctxt);
 }
 
 /**
@@ -540,6 +651,7 @@ edProcess(xmlDocPtr doc, XmlEdAction* ops, int ops_count)
                 break;
             case XML_ED_UPDATE:
                 edUpdate(doc, ops[k].arg1, ops[k].arg2, ops[k].type);
+                break;
             case XML_ED_RENAME:
                 edRename(doc, ops[k].arg1, ops[k].arg2, ops[k].type);
                 break;
