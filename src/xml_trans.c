@@ -1,4 +1,4 @@
-/*  $Id: xml_trans.c,v 1.32 2003/05/24 00:18:57 mgrouch Exp $  */
+/*  $Id: xml_trans.c,v 1.33 2003/12/17 06:26:01 mgrouch Exp $  */
 
 /*
 
@@ -26,10 +26,8 @@ THE SOFTWARE.
 
 */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
- 
+#include "config.h"
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,18 +42,25 @@ THE SOFTWARE.
  *        4. exit values on errors
  */
 
-static const char trans_usage_str[] =
+/*
+ * usage string chunk : 509 char min on ISO C90
+ */
+static const char trans_usage_str_1[] =
 "XMLStarlet Toolkit: Transform XML document(s) using XSLT\n"
 "Usage: xml tr [<options>] <xsl-file> {-p|-s <name>=<value>} [ <xml-file-or-uri> ... ]\n"
 "where\n"
 "   <xsl-file>      - main XSLT stylesheet for transformation\n"
-"   <xml-file>      - input XML document file name (stdin is used if missing)\n"
+"   <xml-file>      - input XML document file name (stdin is used if missing)\n";
+
+static const char trans_usage_str_2[] =
 "   <name>=<value>  - name and value of the parameter passed to XSLT processor\n"
 "   -p              - parameter is XPATH expression (\"'string'\" to quote string)\n"
 "   -s              - parameter is a string literal\n"
 "<options> are:\n"
 "   --omit-decl     - omit xml declaration <?xml version=\"1.0\"?>\n"
-"   --show-ext      - show list of extensions\n"
+"   --show-ext      - show list of extensions\n";
+
+static const char trans_usage_str_3[] =
 "   --val           - allow validate against DTDs or schemas\n"
 "   --net           - allow fetch DTDs or entities over network\n"
 #ifdef LIBXML_XINCLUDE_ENABLED
@@ -64,9 +69,6 @@ static const char trans_usage_str[] =
 "   --maxdepth val  - increase the maximum depth\n"
 #ifdef LIBXML_HTML_ENABLED
 "   --html          - input document(s) is(are) in HTML format\n"
-#endif
-#ifdef LIBXML_DOCB_ENABLED
-"   --docbook       - input document(s) is(are) in SGML docbook format\n"
 #endif
 #ifdef LIBXML_CATALOG_ENABLED
 "   --catalogs      - use SGML catalogs from $SGML_CATALOG_FILES\n"
@@ -83,7 +85,9 @@ trUsage(int argc, char **argv)
     extern const char more_info[];
     extern const char libxslt_more_info[];
     FILE* o = stderr;
-    fprintf(o, trans_usage_str);
+    fprintf(o, trans_usage_str_1);
+    fprintf(o, trans_usage_str_2);
+    fprintf(o, trans_usage_str_3);
     fprintf(o, more_info);
     fprintf(o, libxslt_more_info);
     exit(1);
@@ -140,12 +144,6 @@ trParseOptions(xsltOptionsPtr ops, int argc, char **argv)
             else if (!strcmp(argv[i], "--html"))
             {
                 ops->html = 1;
-            }
-#endif
-#ifdef LIBXML_DOCB_ENABLED
-            else if (!strcmp(argv[i], "--docbook"))
-            {
-                ops->docbook = 1;
             }
 #endif
         }

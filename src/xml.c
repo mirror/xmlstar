@@ -1,4 +1,4 @@
-/*  $Id: xml.c,v 1.33 2003/10/29 02:50:28 mgrouch Exp $  */
+/*  $Id: xml.c,v 1.34 2003/12/17 06:26:01 mgrouch Exp $  */
 
 /*
 
@@ -44,28 +44,39 @@ extern int pyxMain(int argc, char **argv);
 extern int depyxMain(int argc, char **argv);
 extern int escMain(int argc, char **argv, int escape);
 
-static const char usage_str[] =
+/* 
+ * usage string chunk : 509 char min on ISO C90
+ */
+static const char usage_str_1[] = 
 "XMLStarlet Toolkit: Command line utilities for XML\n"
-"Usage: xml [<options>] <command> [<cmd-options>]\n"
+"Usage: xml [<options>] <command> [<cmd-options>]\n";
+
+static const char usage_str_2[] = 
 "where <command> is one of:\n"
 "   ed    (or edit)      - Edit/Update XML document(s)\n"
 "   sel   (or select)    - Select data or query XML document(s) (XPATH, etc)\n"
 "   tr    (or transform) - Transform XML document(s) using XSLT\n"
 "   val   (or validate)  - Validate XML document(s) (well-formed/DTD/XSD/RelaxNG)\n"
 "   fo    (or format)    - Format XML document(s)\n"
-"   el    (or elements)  - Display element structure of XML document\n"
+"   el    (or elements)  - Display element structure of XML document\n";
+
+static const char usage_str_3[] = 
 "   c14n  (or canonic)   - XML canonicalization\n"
 "   ls    (or list)      - List directory as XML\n"
 "   esc   (or escape)    - Escape special XML characters\n"
 "   unesc (or unescape)  - Unescape special XML characters\n"
 "   pyx   (or xmln)      - Convert XML into PYX format (based on ESIS - ISO 8879)\n"
-"   p2x   (or depyx)     - Convert PYX into XML\n"
+"   p2x   (or depyx)     - Convert PYX into XML\n";
+
+static const char usage_str_4[] = 
 "<options> are:\n"
 "   --version            - show version\n"
 "   --help               - show help\n"
 "Wherever file name mentioned in command help it is assumed\n"
 "that URL can be used instead as well.\n\n"
 "Type: xml <command> --help <ENTER> for command help\n\n";
+
+
 
 const char more_info[] =
 "XMLStarlet is a command line toolkit to query/edit/check/transform\n"
@@ -83,7 +94,11 @@ void
 usage(int argc, char **argv)
 {
     FILE* o = stderr;
-    fprintf(o, usage_str);
+
+    fprintf(o, usage_str_1);
+    fprintf(o, usage_str_2);
+    fprintf(o, usage_str_3);
+    fprintf(o, usage_str_4);
     fprintf(o, more_info);
     exit(1);
 }  

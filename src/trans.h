@@ -1,4 +1,4 @@
-/*  $Id: trans.h,v 1.8 2002/12/09 02:29:45 mgrouch Exp $  */
+/*  $Id: trans.h,v 1.9 2003/12/17 06:26:01 mgrouch Exp $  */
 
 /*
 
@@ -41,9 +41,6 @@ THE SOFTWARE.
 #include <libxslt/extensions.h>
 #include <libexslt/exslt.h>
 
-#ifdef LIBXML_DOCB_ENABLED
-#include <libxml/DOCBparser.h>
-#endif
 #ifdef LIBXML_XINCLUDE_ENABLED
 #include <libxml/xinclude.h>
 #endif
@@ -65,9 +62,6 @@ typedef struct _xsltOptions {
 #endif
 #ifdef LIBXML_HTML_ENABLED
     int html;                 /* inputs are in HTML format */
-#endif
-#ifdef LIBXML_DOCB_ENABLED
-    int docbook;              /* inputs are in SGML docbook format */
 #endif
 #ifdef LIBXML_CATALOG_ENABLED
     int catalogs;             /* use SGML catalogs from $SGML_CATALOG_FILES */

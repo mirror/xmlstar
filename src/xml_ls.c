@@ -1,4 +1,4 @@
-/*  $Id: xml_ls.c,v 1.5 2003/08/10 23:50:53 mgrouch Exp $  */
+/*  $Id: xml_ls.c,v 1.6 2003/12/17 06:26:01 mgrouch Exp $  */
 
 /*
 
@@ -58,28 +58,26 @@ lsUsage(int argc, char **argv)
 char *
 get_file_type(mode_t mode)
 {
-   switch(mode & S_IFMT)
-   {
-       case S_IFREG:
-            return("f"); /* regular file */
-       case S_IFDIR:
-            return("d"); /* directory */
-       case S_IFCHR:
-            return("c"); /* character device */
-       case S_IFBLK:
-            return("b"); /* block device */
-#ifdef S_IFLNK
-       case S_IFLNK:
-            return("l"); /* symbolic link */
+if(S_ISREG(mode))
+	return("f"); /* regular file */
+else if(S_ISDIR(mode))
+	return("d"); /* directory */
+else if(S_ISCHR(mode))
+	return("c"); /* character device */
+else if(S_ISBLK(mode))
+	return("b"); /* block device */
+else if(S_ISFIFO(mode))
+	return("p"); /* fifo */
+#ifdef S_ISLNK
+else if(S_ISLNK(mode))
+	return("l"); /* symbolic link */
 #endif
-       case S_IFIFO:
-            return("p"); /* fifo */
-#ifdef S_IFSOCK
-       case S_IFSOCK:
-            return("s"); /* socket */
+#ifdef S_ISSOCK
+else if(S_ISSOCK(mode))
+	return("s"); /* socket */
 #endif
-   }
-   return(NULL);
+
+return(NULL);
 }
 
 char *
@@ -94,15 +92,15 @@ get_file_perms(mode_t mode)
 
    for(i=0; i<3; i++)
    {
-       if(mode &(S_IREAD>>(i*3)))
+       if(mode &(S_IRUSR >>(i*3)))
            *p='r';
        ++p;
 
-       if(mode &(S_IWRITE>>(i*3)))
+       if(mode &(S_IWUSR >>(i*3)))
            *p='w';
        ++p;
 
-       if(mode &(S_IEXEC>>(i*3)))
+       if(mode &(S_IXUSR >>(i*3)))
            *p='x';
        ++p;
    }
@@ -150,7 +148,7 @@ xml_print_dir(char* dir)
 #if defined (__MINGW32__)
       if(stat(d->d_name, &stats) != 0)
 #else
-      if(lstat(d->d_name, &stats) != 0)
+      if(stat(d->d_name, &stats) != 0)
 #endif
       {
         fprintf(stderr, "couldn't stat: %s\n", d->d_name);
@@ -162,7 +160,7 @@ xml_print_dir(char* dir)
       strftime(last_acc, 20, "%Y.%m.%d %H:%M:%S", gmtime(&stats.st_atime));
       strftime(last_mod, 20, "%Y.%m.%d %H:%M:%S", gmtime(&stats.st_mtime));
       sz[15] = '\0';
-      sz_len = snprintf(sz, 15, "%u", (unsigned) stats.st_size);
+      sz_len = sprintf(sz, "%u", (unsigned) stats.st_size);
       for(k=0; k<(16-sz_len); k++) sp[k] = ' ';
       sp[16-sz_len] = '\0';
       

@@ -1,9 +1,6 @@
-/*  $Id: trans.c,v 1.16 2003/09/18 01:22:31 mgrouch Exp $  */
+/*  $Id: trans.c,v 1.17 2003/12/17 06:26:01 mgrouch Exp $  */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
+#include "config.h"
 #include "trans.h"
 
 /*
@@ -36,9 +33,6 @@ xsltInitOptions(xsltOptionsPtr ops)
 #endif
 #ifdef LIBXML_HTML_ENABLED
     ops->html = 0;
-#endif
-#ifdef LIBXML_DOCB_ENABLED
-    ops->docbook = 0;
 #endif
 #ifdef LIBXML_CATALOG_ENABLED
     ops->catalogs = 0;
@@ -174,7 +168,7 @@ xsltExternalEntityLoader(const char *URL, const char *ID, xmlParserCtxtPtr ctxt)
         newURL = xmlMalloc(len);
         if (newURL != NULL)
         {
-            snprintf((char *) newURL, len, "%s/%s", paths[i], URL);
+            sprintf((char *) newURL, "%s/%s", paths[i], URL);
             ret = defaultEntityLoader((const char *)newURL, ID, ctxt);
             xmlFree(newURL);
             if (ret != NULL)
@@ -338,10 +332,6 @@ int xsltRun(xsltOptionsPtr ops, char* xsl, const char** params,
             if (ops->html) doc = htmlParseFile(docs[i], NULL);
             else
 #endif
-#ifdef LIBXML_DOCB_ENABLED
-            if (ops->docbook) doc = docbParseFile(docs[i], NULL);
-            else
-#endif
             {
                 doc = xmlParseFile(docs[i]);
             }
@@ -361,10 +351,6 @@ int xsltRun(xsltOptionsPtr ops, char* xsl, const char** params,
             doc = NULL;
 #ifdef LIBXML_HTML_ENABLED
             if (ops->html) doc = htmlParseFile("-", NULL);
-            else
-#endif
-#ifdef LIBXML_DOCB_ENABLED
-            if (ops->docbook) doc = docbParseFile("-", NULL);
             else
 #endif
                 doc = xmlParseFile("-");

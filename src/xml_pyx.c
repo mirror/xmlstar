@@ -1,4 +1,4 @@
-/* $Id: xml_pyx.c,v 1.2 2003/06/12 01:36:54 mgrouch Exp $ */
+/* $Id: xml_pyx.c,v 1.3 2003/12/17 06:26:01 mgrouch Exp $ */
 
 /**
  *  Based on xmln from pyxie project
@@ -18,16 +18,22 @@
 
 #include <libxml/parser.h>
 
-static const char pyx_usage_str[] =
+/*
+ * usage string chunk : 509 char min on ISO C90
+ */
+static const char pyx_usage_str_1[] =
 "XMLStarlet Toolkit: Convert XML into PYX format (based on ESIS - ISO 8879)\n"
 "Usage: xml pyx {<xml-file>}\n"
 "where\n"
-"   <xml-file> - input XML document file name (stdin is used if missing)\n\n"
+"   <xml-file> - input XML document file name (stdin is used if missing)\n\n";
+
+static const char pyx_usage_str_2[] =
 "The PYX format is a line-oriented representation of\n"
 "XML documents that is derived from the SGML ESIS format.\n"
 "(see ESIS - ISO 8879 Element Structure Information Set spec,\n"
-"ISO/IEC JTC1/SC18/WG8 N931 (ESIS))\n"
-"\n"
+"ISO/IEC JTC1/SC18/WG8 N931 (ESIS))\n\n";
+
+static const char pyx_usage_str_3[] =
 "A non-validating, ESIS generating tool originally developed for\n"
 "pyxie project (see http://pyxie.sourceforge.net/)\n"
 "ESIS Generation by Sean Mc Grath http://www.digitome.com/sean.html\n\n";
@@ -64,13 +70,13 @@ SanitizeData(const char *s, int len)
 int
 CompareAttributes(const void *a1,const void *a2)
 {
-    return strcmp (*(const char **)a1,*(const char **)a2);
+    return xmlStrcmp(a1,a2);
 }
 
 void
-pyxStartElement(void *userData, const char *name, const char **atts)
+pyxStartElement(void *userData, const xmlChar *name, const xmlChar **atts)
 {
-    const char **p;
+    const xmlChar **p;
     int AttributeCount;
     fprintf (stdout,"(%s\n",name);
 
@@ -79,16 +85,21 @@ pyxStartElement(void *userData, const char *name, const char **atts)
         /* Count the number of attributes */
         for (p = atts; *p != NULL; p++);
 
-        AttributeCount = (p - atts) >> 1; /* (name,value) pairs so divide by two */
+        AttributeCount = (p - atts) >> 1; /* (name,value) pairs 
+					     so divide by two */
         if (AttributeCount > 1)
             /* Sort the pairs based on the name part of the pair */
-            qsort ((void *)atts,AttributeCount,sizeof(char *)*2,CompareAttributes);
+            qsort ((void *)atts,
+		    AttributeCount,
+		    sizeof(char *)*2,
+		    CompareAttributes);
 
         while (*atts) {
             /* Attribute Name */
             fprintf (stdout,"A%s ",*atts);
-            atts++; /* Now pointing at value - can contain literal "\n" so escape */
-            SanitizeData(*atts,strlen(*atts));
+            atts++; /* Now pointing at value - can contain literal "\n" 
+		       so escape */
+            SanitizeData((const char *) *atts, xmlStrlen(*atts));
             atts++;
             putchar('\n');
         }
@@ -96,68 +107,64 @@ pyxStartElement(void *userData, const char *name, const char **atts)
 }
 
 void
-pyxEndElement(void *userData, const char *name)
+pyxEndElement(void *userData, const xmlChar *name)
 {
     fprintf (stdout,")%s\n",name);
 }
 
 void
-pyxCharacterData(void *userdata, const char *s, int len)
+pyxCharacterData(void *userData, const xmlChar *s, int len)
 {
     fprintf (stdout, "-");
-    SanitizeData (s,len);
+    SanitizeData ((const char *) s,len);
     putchar ('\n');
 }
 
 void
-pyxProcessingInstruction(void *userdata, const xmlChar *target, const xmlChar *data)
+pyxProcessingInstruction(void *userData, 
+                         const xmlChar *target, 
+			 const xmlChar *data)
 {
     fprintf(stdout,"?%s ",target);
-    SanitizeData((const char *) data, strlen((const char *) data));
+    SanitizeData((const char *) data, xmlStrlen(data));
     fprintf(stdout,"\n");
 }
 
 void
-pyxUnparsedEntityDeclHandler(void *userdata,
-                             const char *entityName,
-                             const char *base,
-                             const char *systemId,
-                             const char *publicId,
-                             const char *notationName)
+pyxUnparsedEntityDeclHandler(void *userData,
+                             const xmlChar *entityName,
+                             const xmlChar *publicId,
+                             const xmlChar *systemId,
+                             const xmlChar *notationName)
 {
-    fprintf(stdout, "U%s %s %s%s%s\n", entityName, notationName, systemId,
-           (publicId == NULL? "": " "), (publicId == NULL? "": publicId));
+    fprintf(stdout, "U%s %s %s%s%s\n", 
+           (char *)entityName, (char *)notationName, (char *)systemId,
+           (publicId == NULL? "": " "), 
+           (publicId == NULL? "": (char *) publicId));
 }
 
 void
 pyxNotationDeclHandler(void *userData,
                        const xmlChar *notationName,
-                       const xmlChar *base,
-                       const xmlChar *systemId,
-                       const xmlChar *publicId)
+                       const xmlChar *publicId,
+                       const xmlChar *systemId)
 {
     fprintf(stdout, "N%s %s%s%s\n", (char*) notationName, (char*) systemId,
-           (publicId == NULL? "": " "), (publicId == NULL? "": (const char*) publicId));
+           (publicId == NULL? "": " "), 
+	   (publicId == NULL? "": (const char*) publicId));
 }
 
-int
-pyxExternalEntityReferenceHandler(void* parser,
-                                  const xmlChar *openEntityNames,
-                                  const xmlChar *base,
-                                  const xmlChar *systemId,
-                                  const xmlChar *publicId)
+void
+pyxExternalEntityReferenceHandler(void* userData,
+                                  const xmlChar *name)
 {
-    const char *p = (const char *) openEntityNames;
+    const xmlChar *p = name;
     fprintf (stdout, "&");
     /* Up to space is the name of the referenced entity */
     while (*p && (*p != ' ')) {
         putchar (*p);
         p++;
     }
-    fprintf(stdout, " %s%s%s\n", systemId,
-           (publicId == NULL ? "": " "), (publicId == NULL ? "": (const char *)publicId));
-    /* Indicate success */
-    return 1;
 }
 
 static void
@@ -165,7 +172,9 @@ pyxUsage()
 {
     extern const char more_info[];
     FILE* o = stderr;
-    fprintf(o, pyx_usage_str);
+    fprintf(o, pyx_usage_str_1);
+    fprintf(o, pyx_usage_str_2);
+    fprintf(o, pyx_usage_str_3);
     fprintf(o, more_info);
     exit(1);
 }

@@ -1,4 +1,4 @@
-/*  $Id: xml_format.c,v 1.18 2003/11/05 03:11:49 mgrouch Exp $  */
+/*  $Id: xml_format.c,v 1.19 2003/12/17 06:26:01 mgrouch Exp $  */
 
 /*
 
@@ -26,9 +26,7 @@ THE SOFTWARE.
 
 */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
+#include "config.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -44,6 +42,8 @@ THE SOFTWARE.
 #include <libxml/xpointer.h>
 #include <libxml/parserInternals.h>
 #include <libxml/uri.h>
+
+#include "strdup.h"
 
 /*
  *  TODO:  1. Attribute formatting options (as every attribute on a new line)
@@ -65,14 +65,19 @@ typedef struct _foOptions {
 
 typedef foOptions *foOptionsPtr;
 
-static const char format_usage_str[] =
+/*
+ * usage string chunk : 509 char min on ISO C90
+ */
+static const char format_usage_str_1[] =
 "XMLStarlet Toolkit: Format XML document\n"
 "Usage: xml fo [<options>] <xml-file>\n"
 "where <options> are\n"
 "   -n or --noindent            - do not indent\n"
 "   -t or --indent-tab          - indent output with tabulation\n"
 "   -s or --indent-spaces <num> - indent output with <num> spaces\n"
-"   -o or --omit-decl           - omit xml declaration <?xml version=\"1.0\"?>\n"
+"   -o or --omit-decl           - omit xml declaration <?xml version=\"1.0\"?>\n";
+
+static const char format_usage_str_2[] =
 "   -R or --recover             - try to recover what is parsable\n"
 "   -D or --dropdtd             - remove the DOCTYPE of the input docs\n"
 "   -C or --nocdata             - replace cdata section with text nodes\n"
@@ -93,7 +98,8 @@ foUsage(int argc, char **argv)
 {
     extern const char more_info[];
     FILE* o = stderr;
-    fprintf(o, format_usage_str);
+    fprintf(o, format_usage_str_1);
+    fprintf(o, format_usage_str_2);
     fprintf(o, more_info);
     exit(1);
 }

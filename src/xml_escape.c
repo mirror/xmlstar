@@ -1,4 +1,4 @@
-/*  $Id: xml_escape.c,v 1.4 2003/05/30 05:13:03 mgrouch Exp $  */
+/*  $Id: xml_escape.c,v 1.5 2003/12/17 06:26:01 mgrouch Exp $  */
 
 /*
 
@@ -26,9 +26,7 @@ THE SOFTWARE.
 
 */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
+#include "config.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -38,6 +36,8 @@ THE SOFTWARE.
 #include <libxml/debugXML.h>
 #include <libxml/xmlIO.h>
 #include <libxml/parserInternals.h>
+
+#include "strdup.h" 
 
 #define INSZ 4*1024
 

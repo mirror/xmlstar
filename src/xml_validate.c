@@ -1,4 +1,4 @@
-/*  $Id: xml_validate.c,v 1.27 2003/11/05 03:37:10 mgrouch Exp $  */
+/*  $Id: xml_validate.c,v 1.28 2003/12/17 06:26:01 mgrouch Exp $  */
 
 /*
 
@@ -26,9 +26,7 @@ THE SOFTWARE.
 
 */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
+#include "config.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -64,12 +62,18 @@ typedef struct _valOptions {
 
 typedef valOptions *valOptionsPtr;
 
-static const char validate_usage_str[] =
+/*
+ * usage string chunk : 509 char min on ISO C90
+ */
+static const char validate_usage_str_1[] =
 "XMLStarlet Toolkit: Validate XML document(s)\n"
 "Usage: xml val <options> [ <xml-file-or-uri> ... ]\n"
 "where <options>\n"
 "   -w or --well-formed        - validate well-formedness only (default)\n"
-"   -d or --dtd <dtd-file>     - validate against DTD\n"
+"   -d or --dtd <dtd-file>     - validate against DTD\n";
+
+
+static const char validate_usage_str_2[] =
 #ifdef LIBXML_SCHEMAS_ENABLED
 "   -s or --xsd <xsd-file>     - validate against XSD schema\n"
 #endif
@@ -96,7 +100,8 @@ valUsage(int argc, char **argv)
 {
     extern const char more_info[];
     FILE* o = stderr;
-    fprintf(o, validate_usage_str);
+    fprintf(o, validate_usage_str_1);
+    fprintf(o, validate_usage_str_2);
 #ifdef LIBXML_SCHEMAS_ENABLED
     fprintf(o, schema_notice);
 #endif

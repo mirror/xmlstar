@@ -784,7 +784,6 @@ where
    --xinclude      - do XInclude processing on document input
    --maxdepth val  - increase the maximum depth
    --html          - input document(s) is(are) in HTML format
-   --docbook       - input document(s) is(are) in SGML docbook format
    --catalogs      - use SGML catalogs from $SGML_CATALOG_FILES
                      otherwise XML catalogs starting from
                      file:///etc/xml/catalog are activated by default

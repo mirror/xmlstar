@@ -1,4 +1,4 @@
-/*  $Id: xml_edit.c,v 1.37 2003/11/05 00:51:15 mgrouch Exp $  */
+/*  $Id: xml_edit.c,v 1.38 2003/12/17 06:26:01 mgrouch Exp $  */
 
 /*
 
@@ -26,9 +26,7 @@ THE SOFTWARE.
 
 */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
+#include "config.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -105,13 +103,18 @@ int nCount = 0;
 int ops_count = 0;
 static XmlEdAction ops[MAX_XML_ED_OPS];
 
-static const char edit_usage_str[] =
+/*
+ * usage string chunk : 509 char min on ISO C90
+ */
+static const char edit_usage_str_1[] =
 "XMLStarlet Toolkit: Edit XML document(s)\n"
 "Usage: xml ed <global-options> {<action>} [ <xml-file-or-uri> ... ]\n"
 "where\n"
 "  <global-options>  - global options for editing\n"
-"  <xml-file-or-uri> - input XML document file name/uri (stdin is used if missing)\n\n"
+"  <xml-file-or-uri> - input XML document file name/uri (stdin otherwise)\n\n";
 
+
+static const char edit_usage_str_2[] =
 "<global-options> are:\n"
 "  -P (or --pf)        - preserve original formatting\n"
 "  -S (or --ps)        - preserve non-significant spaces\n"
@@ -120,13 +123,16 @@ static const char edit_usage_str[] =
 "                        ex: xsql=urn:oracle-xsql\n"
 "                        Multiple -N options are allowed.\n"
 "                        -N options must be last global options.\n"
-"  --help or -h        - display help\n\n"
+"  --help or -h        - display help\n\n";
 
+static const char edit_usage_str_3[] =
 "where <action>\n"
 "   -d or --delete <xpath>\n"
 "   -i or --insert <xpath> -t (--type) elem|text|attr -n <name> -v (--value) <value>\n"
 "   -a or --append <xpath> -t (--type) elem|text|attr -n <name> -v (--value) <value>\n"
-"   -s or --subnode <xpath> -t (--type) elem|text|attr -n <name> -v (--value) <value>\n"
+"   -s or --subnode <xpath> -t (--type) elem|text|attr -n <name> -v (--value) <value>\n";
+
+static const char edit_usage_str_4[] =
 "   -m or --move <xpath1> <xpath2>\n"
 "   -r or --rename <xpath1> -v <new-name>\n"
 "   -u or --update <xpath> -v (--value) <value>\n"
@@ -148,7 +154,10 @@ edUsage(int argc, char **argv)
 {
     extern const char more_info[];
     FILE* o = stderr;
-    fprintf(o, edit_usage_str);
+    fprintf(o, edit_usage_str_1);
+    fprintf(o, edit_usage_str_2);
+    fprintf(o, edit_usage_str_3);
+    fprintf(o, edit_usage_str_4);
     fprintf(o, more_info);
     exit(1);
 }

@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.58 2003/09/18 03:17:02 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.59 2003/12/17 06:26:01 mgrouch Exp $  */
 
 /*
 
@@ -26,9 +26,7 @@ THE SOFTWARE.
 
 */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
+#include "config.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -61,14 +59,18 @@ typedef struct _selOptions {
 
 typedef selOptions *selOptionsPtr;
 
-static const char select_usage_str[] =
+/*
+ * usage string chunk : 509 char min on ISO C90
+ */
+static const char select_usage_str_1[] =
 "XMLStarlet Toolkit: Select from XML document(s)\n"
 "Usage: xml sel <global-options> {<template>} [ <xml-file> ... ]\n"
 "where\n"
 "  <global-options> - global options for selecting\n"
 "  <xml-file> - input XML document file name/uri (stdin is used if missing)\n"
-"  <template> - template for querying XML document with following syntax:\n\n"
+"  <template> - template for querying XML document with following syntax:\n\n";
 
+static const char select_usage_str_2[] =
 "<global-options> are:\n"
 "  -C or --comp       - display generated XSLT\n"
 "  -R or --root       - print root element <xsl-select>\n"
@@ -76,32 +78,41 @@ static const char select_usage_str[] =
 "  -I or --indent     - indent output\n"
 "  -D or --xml-decl   - do not omit xml declaration line\n"
 "  -B or --noblanks   - remove insignificant spaces from XML tree\n"
-"  -N <name>=<value>  - predefine namespaces (name without \'xmlns:\')\n"
+"  -N <name>=<value>  - predefine namespaces (name without \'xmlns:\')\n";
+
+static const char select_usage_str_3[] =
 "                       ex: xsql=urn:oracle-xsql\n"
 "                       Multiple -N options are allowed.\n"
 "  --net              - allow fetch DTDs or entities over network\n"
-"  --help             - display help\n\n"
+"  --help             - display help\n\n";
 
+static const char select_usage_str_4[] =
 "Syntax for templates: -t|--template <options>\n"
 "where <options>\n"
 "  -c or --copy-of <xpath>  - print copy of XPATH expression\n"
 "  -v or --value-of <xpath> - print value of XPATH expression\n"
 "  -o or --output <string>  - output string literal\n"
 "  -n or --nl               - print new line\n"
-"  -f or --inp-name         - print input file name (or URL)\n"
+"  -f or --inp-name         - print input file name (or URL)\n";
+
+static const char select_usage_str_5[] =
 "  -m or --match <xpath>    - match XPATH expression\n"
 "  -i or --if <test-xpath>  - check condition <xsl:if test=\"test-xpath\">\n"
 "  -e or --elem <name>      - print out element <xsl:element name=\"name\">\n"
 "  -a or --attr <name>      - add attribute <xsl:attribute name=\"name\">\n"
 "  -b or --break            - break nesting\n"
-"  -s or --sort op xpath    - sort in order (used after -m) where\n"
+"  -s or --sort op xpath    - sort in order (used after -m) where\n";
+
+static const char select_usage_str_6[] =
 "  op is X:Y:Z, \n"
 "      X is A - for order=\"ascending\"\n"
 "      X is D - for order=\"descending\"\n"
 "      Y is N - for data-type=\"numeric\"\n"
 "      Y is T - for data-type=\"text\"\n"
 "      Z is U - for case-order=\"upper-first\"\n"
-"      Z is L - for case-order=\"lower-first\"\n\n"
+"      Z is L - for case-order=\"lower-first\"\n\n";
+
+static const char select_usage_str_7[] =
 "There can be multiple --match, --copy-of, --value-of, etc options\n"
 "in a single template. The effect of applying command line templates\n"
 "can be illustrated with the following XSLT analogue\n\n"
@@ -109,8 +120,9 @@ static const char select_usage_str[] =
 "xml sel -t -c \"xpath0\" -m \"xpath1\" -m \"xpath2\" -v \"xpath3\" \\\n"
 "        -t -m \"xpath4\" -c \"xpath5\"\n\n"
 
-"is equivalent to applying the following XSLT\n\n"
+"is equivalent to applying the following XSLT\n\n";
 
+static const char select_usage_str_8[] =
 "<?xml version=\"1.0\"?>\n"
 "<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">\n"
 "<xsl:template match=\"/\">\n"
@@ -124,7 +136,9 @@ static const char select_usage_str[] =
 "      <xsl:value-of select=\"xpath3\"/>\n"
 "    </xsl:for-each>\n"
 "  </xsl:for-each>\n"
-"</xsl:template>\n"
+"</xsl:template>\n";
+
+static const char select_usage_str_9[] =
 "<xsl:template name=\"t2\">\n"
 "  <xsl:for-each select=\"xpath4\">\n"
 "    <xsl:copy-of select=\"xpath5\"/>\n"
@@ -141,7 +155,15 @@ selUsage(int argc, char **argv)
     extern const char more_info[];
     extern const char libxslt_more_info[];
     FILE* o = stderr;
-    fprintf(o, select_usage_str);
+    fprintf(o, select_usage_str_1);
+    fprintf(o, select_usage_str_2);
+    fprintf(o, select_usage_str_3);
+    fprintf(o, select_usage_str_4);
+    fprintf(o, select_usage_str_5);
+    fprintf(o, select_usage_str_6);
+    fprintf(o, select_usage_str_7);
+    fprintf(o, select_usage_str_8);
+    fprintf(o, select_usage_str_9);
     fprintf(o, more_info);
     fprintf(o, libxslt_more_info);
     exit(1);

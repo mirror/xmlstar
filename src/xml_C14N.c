@@ -1,5 +1,5 @@
 /*
- *  $Id: xml_C14N.c,v 1.6 2003/11/05 03:46:55 mgrouch Exp $
+ *  $Id: xml_C14N.c,v 1.7 2003/12/17 06:26:01 mgrouch Exp $
  *
  *  Canonical XML implementation test program
  *  (http://www.w3.org/TR/2001/REC-xml-c14n-20010315)
@@ -10,10 +10,7 @@
  */
 
 #include <libxml/xmlversion.h>
-
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
+#include "config.h"
 
 #if defined(LIBXML_C14N_ENABLED)
 
@@ -33,7 +30,9 @@
 
 #include <libxml/c14n.h>
 
-static const char c14n_usage_str[] =
+
+
+static const char c14n_usage_str_1[] =
 "XMLStarlet Toolkit: XML canonicalization\n"
 "Usage: xml c14n <mode> <xml-file> [<xpath-file>] [<inclusive-ns-list>]\n"
 "where\n"
@@ -45,7 +44,9 @@ static const char c14n_usage_str[] =
 "    <XPath xmlns:n0=\"http://a.example.com\" xmlns:n1=\"http://b.example\">\n"
 "    (//. | //@* | //namespace::*)[ancestor-or-self::n1:elem1]\n"
 "    </XPath>\n"
-"\n"
+"\n";
+
+static const char c14n_usage_str_2[] =
 "  <mode> is one of following:\n"
 "  --with-comments         XML file canonicalization w comments (default)\n"
 "  --without-comments      XML file canonicalization w/o comments\n"
@@ -57,7 +58,8 @@ static void c14nUsage(const char *name)
 {
     extern const char more_info[];
     FILE* o = stderr;
-    fprintf(o, c14n_usage_str);
+    fprintf(o, c14n_usage_str_1);
+    fprintf(o, c14n_usage_str_2);
     fprintf(o, more_info);
     exit(1);
 }

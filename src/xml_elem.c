@@ -1,4 +1,4 @@
-/*  $Id: xml_elem.c,v 1.13 2003/06/12 01:36:53 mgrouch Exp $  */
+/*  $Id: xml_elem.c,v 1.14 2003/12/17 06:26:01 mgrouch Exp $  */
 
 /*
 
@@ -31,6 +31,8 @@ THE SOFTWARE.
 #include <string.h>
 
 #include "binsert.h"
+
+#include "strdup.h"
 
 /* TODO:
 

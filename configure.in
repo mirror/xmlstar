@@ -7,7 +7,7 @@ AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
 AM_MAINTAINER_MODE
 AC_CANONICAL_HOST
 
-CFLAGS="-Wall -g -pedantic"
+CFLAGS="-Wall -ansi -pedantic"
 EXTRA_LIBS=
 
 dnl
@@ -39,6 +39,12 @@ AC_ARG_WITH(libxml-src,
         LIBXML_LIBS="$withval/.libs/libxml2.a -lz -lm -lpthread"
         LIBXML_CFLAGS="-I$withval/include/libxml2 -I$withval/include/libxml -I$withval/include"
 )
+
+LIBXML_VERSION=`$LIBXML_PREFIX/bin/xml2-config --version | sed -e 's/\.//g' -e 's/^\(.\{3\}\).*/\1/'`
+if test "$LIBXML_VERSION" -lt 262; then
+        AC_MSG_ERROR(xmlstarlet need at least libxml2 version 2.6.2 (http://www.xmlsoft.org/))
+fi
+
 
 dnl
 dnl The following parameters offer
@@ -96,35 +102,17 @@ AC_ISC_POSIX
 AC_PROG_CC
 AC_STDC_HEADERS
 AC_ARG_PROGRAM
-dnl AM_PROG_LIBTOOL
 
-dnl
-dnl Math detection
-dnl
 
-AC_CHECK_HEADERS(sys/types.h sys/time.h stdlib.h unistd.h string.h)
-AC_CHECK_HEADERS(ieeefp.h nan.h math.h fp_class.h float.h ansidecl.h)
-AC_CHECK_HEADERS(sys/timeb.h time.h sys/stat.h stdarg.h)
-AC_CHECK_FUNCS(stat _stat)
-dnl AC_CHECK_FUNC(isnan, , AC_CHECK_LIB(m, isnan,
-dnl   [M_LIBS="-lm"; AC_DEFINE(HAVE_ISNAN)]))
-
-dnl AC_CHECK_FUNC(isinf, , AC_CHECK_LIB(m, isinf,
-dnl   [M_LIBS="-lm"; AC_DEFINE(HAVE_ISINF)]))
-
-dnl AC_CHECK_FUNC(pow, , AC_CHECK_LIB(m, pow,
-dnl   [M_LIBS="-lm"; AC_DEFINE(HAVE_POW)]))
-
-dnl AC_CHECK_FUNC(floor, , AC_CHECK_LIB(m, floor,
-dnl   [M_LIBS="-lm"; AC_DEFINE(HAVE_FLOOR)]))
-
-dnl AC_CHECK_FUNC(fabs, , AC_CHECK_LIB(m, fabs,
-dnl   [M_LIBS="-lm"; AC_DEFINE(HAVE_FABS)]))
-AC_CHECK_FUNCS(gettimeofday)
-AC_CHECK_FUNCS(mktime localtime asctime time gmtime ftime)
+AC_CHECK_HEADERS(stdio.h stdlib.h unistd.h string.h) 
+AC_CHECK_HEADERS(dirent.h)
+AC_CHECK_HEADERS(sys/types.h sys/stat.h)
+AC_CHECK_HEADERS(time.h)
+dnl AC_CHECK_FUNCS(stat _stat)
+AC_CHECK_FUNCS(stat)
 
 dnl Checking the standard string functions availability
-AC_CHECK_FUNCS(printf sprintf fprintf snprintf vfprintf vsprintf vsnprintf sscanf,,
+AC_CHECK_FUNCS(printf sprintf fprintf sscanf,,
                NEED_TRIO=1)
 dnl
 dnl Check for trio string functions
