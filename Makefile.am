@@ -20,3 +20,7 @@ cleantar:
 rpm: cleantar
 	@(unset CDPATH ; $(MAKE) dist && rpmbuild -ta $(distdir).tar.gz)
 
+dummy:
+
+tests: dummy 
+	@(cd tests; ./runTests)
