@@ -1,4 +1,4 @@
-/*  $Id: xml_validate.c,v 1.16 2003/02/19 04:05:59 mgrouch Exp $  */
+/*  $Id: xml_validate.c,v 1.17 2003/02/20 05:21:18 mgrouch Exp $  */
 
 /*
 
@@ -307,59 +307,65 @@ valMain(int argc, char **argv)
                
         schema = xmlSchemaParse(ctxt);
         xmlSchemaFreeParserCtxt(ctxt);
-
-        ctxt2 = xmlSchemaNewValidCtxt(schema);
-        xmlSchemaSetValidErrors(ctxt2,
-            (xmlSchemaValidityErrorFunc) fprintf,
-            (xmlSchemaValidityWarningFunc) fprintf,
-            stderr);
+        if (schema != NULL)
+        {  
+            ctxt2 = xmlSchemaNewValidCtxt(schema);
+            xmlSchemaSetValidErrors(ctxt2,
+                (xmlSchemaValidityErrorFunc) fprintf,
+                (xmlSchemaValidityWarningFunc) fprintf,
+                stderr);
         
-        for (i=start; i<argc; i++)
-        {
-            xmlDocPtr doc;
-            int ret;
-
-            ret = 0;
-            doc = NULL;
-
-            if (!ops.err)
+            for (i=start; i<argc; i++)
             {
-                xmlDefaultSAXHandlerInit();
-                xmlDefaultSAXHandler.error = NULL;
-                xmlDefaultSAXHandler.warning = NULL;
-            }
+                xmlDocPtr doc;
+                int ret;
 
-            doc = xmlParseFile(argv[i]);
-            if (doc)
-            {
-                ret = xmlSchemaValidateDoc(ctxt2, doc);
-                xmlFreeDoc(doc);
-            }
-            else
-            {
-                ret = 1; /* Malformed XML or could not open file */
-                if (ops.listGood < 0)
+                ret = 0;
+                doc = NULL;
+
+                if (!ops.err)
                 {
-                    fprintf(stdout, "%s\n", argv[i]);
+                    xmlDefaultSAXHandlerInit();
+                    xmlDefaultSAXHandler.error = NULL;
+                    xmlDefaultSAXHandler.warning = NULL;
                 }
+
+                doc = xmlParseFile(argv[i]);
+                if (doc)
+                {
+                    ret = xmlSchemaValidateDoc(ctxt2, doc);
+                    xmlFreeDoc(doc);
+                }
+                else
+                {
+                    ret = 1; /* Malformed XML or could not open file */
+                    if (ops.listGood < 0)
+                    {
+                        fprintf(stdout, "%s\n", argv[i]);
+                    }
+                }
+                if (ret) invalidFound = 1;
+
+                if ((ops.listGood > 0) && (ret == 0))
+                    fprintf(stdout, "%s\n", argv[i]);
+                if ((ops.listGood < 0) && (ret != 0))
+                    fprintf(stdout, "%s\n", argv[i]);
+                /*
+                if (ret == 0)
+                    fprintf(stderr, "%s - validates\n", argv[i]);
+                else
+                    fprintf(stderr, "%s - invalid\n", argv[i]);
+                */
             }
-            if (ret) invalidFound = 1;
-
-            if ((ops.listGood > 0) && (ret == 0))
-                fprintf(stdout, "%s\n", argv[i]);
-            if ((ops.listGood < 0) && (ret != 0))
-                fprintf(stdout, "%s\n", argv[i]);
-            /*
-            if (ret == 0)
-                fprintf(stderr, "%s - validates\n", argv[i]);
-            else
-                fprintf(stderr, "%s - invalid\n", argv[i]);
-            */
         }
-
-        xmlSchemaFreeValidCtxt(ctxt2);
+        else
+        {
+            invalidFound = 2;
+        }
+        if (ctxt2 != NULL) xmlSchemaFreeValidCtxt(ctxt2);
         if (schema != NULL) xmlSchemaFree(schema);
         xmlSchemaCleanupTypes();
+        
     }
 #endif
     else if (ops.wellFormed)
