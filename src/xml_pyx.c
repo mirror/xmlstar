@@ -1,4 +1,4 @@
-/* $Id: xml_pyx.c,v 1.7 2005/03/12 02:05:06 mgrouch Exp $ */
+/* $Id: xml_pyx.c,v 1.8 2005/03/12 02:30:33 mgrouch Exp $ */
 
 /**
  *  Based on xmln from pyxie project
@@ -168,6 +168,22 @@ pyxExternalEntityReferenceHandler(void* userData,
 }
 
 static void
+pyxExternalSubsetHandler(void *ctx ATTRIBUTE_UNUSED, const xmlChar *name,
+                         const xmlChar *ExternalID, const xmlChar *SystemID)
+{
+    fprintf(stdout, "D %s PUBLIC", name); /* TODO: re-check */
+    if (ExternalID == NULL)
+        fprintf(stdout, " ");
+    else
+        fprintf(stdout, " \"%s\"", ExternalID);
+    if (SystemID == NULL)
+        fprintf(stdout, "\n");
+    else
+        fprintf(stdout, " \"%s\"\n", SystemID);
+}
+
+
+static void
 pyxUsage()
 {
     extern const char more_info[];
@@ -198,6 +214,7 @@ pyx_process_file(const char *filename)
     xmlSAX_handler.notationDecl = pyxNotationDeclHandler;
     xmlSAX_handler.reference = pyxExternalEntityReferenceHandler;
     xmlSAX_handler.unparsedEntityDecl = pyxUnparsedEntityDeclHandler;
+    xmlSAX_handler.externalSubset = pyxExternalSubsetHandler;
 
     ret = xmlSAXUserParseFile(&xmlSAX_handler, NULL, filename);
     xmlCleanupParser();
