@@ -1,0 +1,2 @@
+# XML canonization
+./xmlstarlet c14n --with-comments ../examples/xml/structure.xml ; echo $?
