@@ -1,4 +1,4 @@
-/*  $Id: xml_ls.c,v 1.14 2005/03/12 03:49:41 mgrouch Exp $  */
+/*  $Id: xml_ls.c,v 1.15 2005/03/19 01:03:30 mgrouch Exp $  */
 
 /*
 
@@ -158,7 +158,7 @@ xml_print_dir(char* dir)
       char  sp[16];
       int   k;
 
-      if (!strcmp(d->d_name, ".") || !strcmp(d->d_name, ".."))
+      if ((d->d_name == NULL) || !strcmp(d->d_name, ".") || !strcmp(d->d_name, ".."))
           continue;
       
 #if defined (__MINGW32__)
@@ -173,11 +173,16 @@ xml_print_dir(char* dir)
       type = get_file_type(stats.st_mode);
       perm = get_file_perms(stats.st_mode);
 
+#if defined (__MINGW32__)
+      /* somehow atime is sometimes -1 on Windows XP */
+      if (stats.st_atime < 0) stats.st_atime = stats.st_mtime; 
+#endif
+
       /* format time as per ISO 8601 */
       strftime(last_acc, 20, "%Y%m%dT%H%M%SZ", gmtime(&stats.st_atime));
       strftime(last_mod, 20, "%Y%m%dT%H%M%SZ", gmtime(&stats.st_mtime));
       sz[15] = '\0';
-      sz_len = snprintf(sz, 15, "%u", (unsigned) stats.st_size);
+      sz_len = snprintf(sz, 15, "%lu", (unsigned long) stats.st_size);
       for(k=0; k<(16-sz_len); k++) sp[k] = ' ';
       sp[16-sz_len] = '\0';
 
@@ -189,6 +194,7 @@ xml_print_dir(char* dir)
 
    } /* end of for loop */
 
+   closedir(dirp);
    num_files = i;
    return num_files;
 }
