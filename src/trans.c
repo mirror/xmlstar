@@ -1,4 +1,4 @@
-/*  $Id: trans.c,v 1.12 2002/12/08 03:53:18 mgrouch Exp $  */
+/*  $Id: trans.c,v 1.13 2003/04/19 01:55:56 mgrouch Exp $  */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -26,8 +26,8 @@ xmlExternalEntityLoader defaultEntityLoader = NULL;
 void
 xsltInitOptions(xsltOptionsPtr ops)
 {
-    ops->noval = 0;
-    ops->nonet = 0;
+    ops->noval = 1;
+    ops->nonet = 1;
     ops->omit_decl = 0;
     ops->show_extensions = 0;
     ops->noblanks = 0;
@@ -73,8 +73,12 @@ xsltInitLibXml(xsltOptionsPtr ops)
     */
     xsltRegisterTestModule();
 
-    if (ops->show_extensions) xsltDebugDumpExtensions(stderr);
-
+    if (ops->show_extensions)
+    {
+        xsltDebugDumpExtensions(stderr);
+        exit(0);
+    }
+    
     /*
      * Replace entities with their content.
      */
@@ -85,8 +89,11 @@ xsltInitLibXml(xsltOptionsPtr ops)
      */
     defaultEntityLoader = xmlGetExternalEntityLoader();
     xmlSetExternalEntityLoader(xsltExternalEntityLoader);
-    if (ops->nonet) defaultEntityLoader = xmlNoNetExternalEntityLoader;
-
+    if (ops->nonet) {
+        defaultEntityLoader = xmlNoNetExternalEntityLoader;
+        xmlSubstituteEntitiesDefault(0);
+    }
+    
     xmlKeepBlanksDefault(1);
     if (ops->noblanks)  xmlKeepBlanksDefault(0);
     xmlPedanticParserDefault(0);

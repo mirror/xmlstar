@@ -1,4 +1,4 @@
-/*  $Id: xml_trans.c,v 1.30 2003/04/19 00:27:09 mgrouch Exp $  */
+/*  $Id: xml_trans.c,v 1.31 2003/04/19 01:55:56 mgrouch Exp $  */
 
 /*
 
@@ -56,8 +56,8 @@ static const char trans_usage_str[] =
 "<options> are:\n"
 "   --omit-decl     - omit xml declaration <?xml version=\"1.0\"?>\n"
 "   --show-ext      - show list of extensions\n"
-"   --noval         - do not validate against DTDs or schemas\n"
-"   --nonet         - refuse to fetch DTDs or entities over network\n"
+"   --val           - allow validate against DTDs or schemas\n"
+"   --net           - allow fetch DTDs or entities over network\n"
 #ifdef LIBXML_XINCLUDE_ENABLED
 "   --xinclude      - do XInclude processing on document input\n"
 #endif
@@ -110,13 +110,13 @@ trParseOptions(xsltOptionsPtr ops, int argc, char **argv)
             {
                 ops->show_extensions = 1;
             }
-            else if (!strcmp(argv[i], "--noval"))
+            else if (!strcmp(argv[i], "--val"))
             {
-                ops->noval = 1;
+                ops->noval = 0;
             }
-            else if (!strcmp(argv[i], "--nonet"))
+            else if (!strcmp(argv[i], "--net"))
             {
-                ops->nonet = 1;
+                ops->nonet = 0;
             }
             else if (!strcmp(argv[i], "--omit-decl"))
             {
@@ -148,10 +148,6 @@ trParseOptions(xsltOptionsPtr ops, int argc, char **argv)
                 ops->docbook = 1;
             }
 #endif
-            else if (!strcmp(argv[i], "--nonet"))
-            {
-                ops->nonet = 1;
-            }
         }
         else
             break;
