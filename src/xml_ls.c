@@ -1,4 +1,4 @@
-/*  $Id: xml_ls.c,v 1.2 2003/05/22 03:33:57 mgrouch Exp $  */
+/*  $Id: xml_ls.c,v 1.3 2003/05/24 03:16:13 mgrouch Exp $  */
 
 /*
 
@@ -90,14 +90,17 @@ get_file_perms(mode_t mode)
 
    for(i=0; i<3; i++)
    {
-       if(mode &(S_IREAD>>i*3))
-           *++p='r';
+       if(mode &(S_IREAD>>(i*3)))
+           *p='r';
+       ++p;
 
-       if(mode &(S_IWRITE>>i*3))
-           *++p='w';
+       if(mode &(S_IWRITE>>(i*3)))
+           *p='w';
+       ++p;
 
-       if(mode &(S_IEXEC>>i*3))
-           *++p='x';
+       if(mode &(S_IEXEC>>(i*3)))
+           *p='x';
+       ++p;
    }
 
    if((mode & S_ISUID))
