@@ -1,4 +1,4 @@
-/*  $Id: xml_elem.c,v 1.8 2003/04/23 18:46:59 mgrouch Exp $  */
+/*  $Id: xml_elem.c,v 1.9 2003/04/23 20:17:12 mgrouch Exp $  */
 
 /*
 
@@ -94,7 +94,7 @@ void elStartElement(void *user_data, const xmlChar *name, const xmlChar **attrs)
         fprintf(stdout, "%s\n", curXPath);
         while (p && *p)
         {
-            fprintf(stdout, "%s@%s\n", curXPath, *p);
+            fprintf(stdout, "%s/@%s\n", curXPath, *p);
             p += 2;
         }
     }
