@@ -1,4 +1,4 @@
-/*  $Id: xml_trans.c,v 1.3 2002/11/15 02:02:54 mgrouch Exp $  */
+/*  $Id: xml_trans.c,v 1.4 2002/11/15 16:35:14 mgrouch Exp $  */
 
 /*
  *  TODO:
@@ -24,7 +24,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <libgen.h>
 
 #include <libxml/xmlmemory.h>
 #include <libxml/debugXML.h>
@@ -39,7 +38,9 @@
 #include <libxslt/transform.h>
 #include <libxslt/xsltutils.h>
 #include <libxslt/extensions.h>
+#if 0
 #include <libxslt/security.h>
+#endif
 
 #include <libexslt/exslt.h>
 
@@ -57,29 +58,18 @@ void trans_usage(int argc, char **argv)
 {
     FILE* o = stderr;
 
-    char *path = argv[0];
-    char *dirc;
-    char *cmd;
-
-    dirc = strdup(path);
-    cmd = basename(dirc);
-
     fprintf(o, "XMLStarlet Toolkit: Transform XML document using XSLT\n");
-    fprintf(o, "Usage: %s tr <xsl-file> {-p <name>=<value> } [ <xml-file> ... ]\n", cmd);
+    fprintf(o, "Usage: xml tr <xsl-file> {-p <name>=<value> } [ <xml-file> ... ]\n");
     fprintf(o, "where\n");
     fprintf(o, "      <xsl-file>         - main XSLT stylesheet for transformation\n");
     fprintf(o, "      <name>=<value>     - name and value of the parameter passed to XSLT processor\n");
     fprintf(o, "      <xml-file>         - input XML document file name (standard input is used if missing)\n\n");
+
     fprintf(o, "XMLStarlet is a command line toolkit to query/edit/check/transform\n");
     fprintf(o, "XML documents (for more information see http://xmlstar.sourceforge.net/)\n\n");
+
     fprintf(o, "Current implementation uses libxslt from GNOME codebase as XSLT processor\n");
     fprintf(o, "(see http://xmlsoft.org/ for more details)\n");
-
-    if (dirc)
-    {
-        free(dirc);
-        cmd = 0;
-    }
 
     exit(1);
 }

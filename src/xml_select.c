@@ -1,9 +1,8 @@
-/*  $Id: xml_select.c,v 1.7 2002/11/15 05:00:05 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.8 2002/11/15 16:35:14 mgrouch Exp $  */
 
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <libgen.h>
 
 /*
  *  TODO:
@@ -24,15 +23,8 @@ void select_usage(int argc, char **argv)
 {
     FILE* o = stderr;
 
-    char *path = argv[0];
-    char *dirc;
-    char *cmd;
-
-    dirc = strdup(path);
-    cmd = basename(dirc);
-
     fprintf(o, "XMLStarlet Toolkit: Select from XML document(s)\n");
-    fprintf(o, "Usage: %s sel {<template>} {<xml-file>}\n", cmd);
+    fprintf(o, "Usage: xml sel {<template>} {<xml-file>}\n");
     fprintf(o, "where\n");
     fprintf(o, "  <xml-file> - input XML document file name (stdin is used if missing)\n");
     fprintf(o, "  <template> - template for querying XL document with following syntax:\n\n");
@@ -47,7 +39,7 @@ void select_usage(int argc, char **argv)
     fprintf(o, "There can be multiple --match and --print options in a single template\n");
     fprintf(o, "Effect of applying command line templates can be illustrated with the following XSLT analogue\n\n");
 
-    fprintf(o, "./xml sel -t -p \"xpath0\" -m \"xpath1\" -m \"xpath2\" -p \"xpath3\" \\\n");
+    fprintf(o, "xml sel -t -p \"xpath0\" -m \"xpath1\" -m \"xpath2\" -p \"xpath3\" \\\n");
     fprintf(o, "          -t -m \"xpath4\" -p \"xpath5\"\n\n");
 
     fprintf(o, "is equivalent to applying the following XSLT\n\n");
@@ -78,12 +70,6 @@ void select_usage(int argc, char **argv)
 
     fprintf(o, "Current implementation uses libxslt from GNOME codebase as XSLT processor\n");
     fprintf(o, "(see http://xmlsoft.org/ for more details)\n");
-
-    if (dirc)
-    {
-        free(dirc);
-        cmd = 0;
-    }
 
     exit(1);
 }
