@@ -2,4 +2,5 @@
 2. How about XUpdate? (see http://www.xmldb.org/)
 3. just do grep TODO src/*.c and you'll figure it out
 4. generate xsd/DTD (best guess) from given XML document
-5. XPATH option for xml el
+5. XPATH option for xml el / unique sorted 
+6. make canonical XML with xml fo
