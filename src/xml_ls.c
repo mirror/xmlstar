@@ -1,10 +1,10 @@
-/*  $Id: xml_ls.c,v 1.9 2004/09/10 02:02:21 mgrouch Exp $  */
+/*  $Id: xml_ls.c,v 1.10 2004/11/21 18:55:27 mgrouch Exp $  */
 
 /*
 
 XMLStarlet: Command Line Toolkit to query/edit/check/transform XML documents
 
-Copyright (c) 2002 Mikhail Grushinskiy.  All Rights Reserved.
+Copyright (c) 2002-2004 Mikhail Grushinskiy.  All Rights Reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -159,8 +159,9 @@ xml_print_dir(char* dir)
       type = get_file_type(stats.st_mode);
       perm = get_file_perms(stats.st_mode);
 
-      strftime(last_acc, 20, "%Y.%m.%d %H:%M:%S", gmtime(&stats.st_atime));
-      strftime(last_mod, 20, "%Y.%m.%d %H:%M:%S", gmtime(&stats.st_mtime));
+      /* format time as per ISO 8601 */
+      strftime(last_acc, 20, "%Y%m%dT%H%M%SZ", gmtime(&stats.st_atime));
+      strftime(last_mod, 20, "%Y%m%dT%H%M%SZ", gmtime(&stats.st_mtime));
       sz[15] = '\0';
       sz_len = snprintf(sz, 15, "%u", (unsigned) stats.st_size);
       for(k=0; k<(16-sz_len); k++) sp[k] = ' ';
