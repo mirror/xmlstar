@@ -1,4 +1,4 @@
-/*  $Id: xml.c,v 1.32 2003/08/19 23:24:21 mgrouch Exp $  */
+/*  $Id: xml.c,v 1.33 2003/10/29 02:50:28 mgrouch Exp $  */
 
 /*
 
@@ -61,8 +61,8 @@ static const char usage_str[] =
 "   pyx   (or xmln)      - Convert XML into PYX format (based on ESIS - ISO 8879)\n"
 "   p2x   (or depyx)     - Convert PYX into XML\n"
 "<options> are:\n"
-"   --version           - show version\n"
-"   --help              - show help\n"
+"   --version            - show version\n"
+"   --help               - show help\n"
 "Wherever file name mentioned in command help it is assumed\n"
 "that URL can be used instead as well.\n\n"
 "Type: xml <command> --help <ENTER> for command help\n\n";

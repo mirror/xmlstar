@@ -1,5 +1,5 @@
 /*
- *  $Id: xml_C14N.c,v 1.2 2003/05/21 03:20:45 mgrouch Exp $
+ *  $Id: xml_C14N.c,v 1.3 2003/10/29 02:53:45 mgrouch Exp $
  *
  *  Canonical XML implementation test program
  *  (http://www.w3.org/TR/2001/REC-xml-c14n-20010315)
@@ -34,15 +34,15 @@
 #include <libxml/c14n.h>
 
 static const char c14n_usage_str[] =
-"XMLStarlet Toolkit: XML canonization\n"
+"XMLStarlet Toolkit: XML canonicalization\n"
 "Usage: xml c14n <mode> <xml-file> [<xpath-expr>] [<inclusive-ns-list>]\n"
 "where\n"
 "   <xml-file> - input XML document file name (stdin is used if '-')\n"
 "   <mode> is one of following:\n"
-"   --with-comments         XML file canonization w comments\n"
-"   --without-comments      XML file canonization w/o comments\n"
-"   --exc-with-comments     Exclusive XML file canonization w comments\n"
-"   --exc-without-comments  Exclusive XML file canonization w/o comments\n"
+"   --with-comments         XML file canonicalization w comments\n"
+"   --without-comments      XML file canonicalization w/o comments\n"
+"   --exc-with-comments     Exclusive XML file canonicalization w comments\n"
+"   --exc-without-comments  Exclusive XML file canonicalization w/o comments\n"
 "\n";
 
 static void c14nUsage(const char *name)
@@ -369,3 +369,4 @@ int c14nMain(int argc, char **argv) {
     return 2;
 }
 #endif /* LIBXML_C14N_ENABLED */
+
