@@ -128,15 +128,13 @@ XMLStarlet Toolkit: Edit XML document(s)
 Usage: xml ed {<action>} [ <xml-file-or-uri> ... ]
 where <action>
    -d or --delete <xpath>
-   -i or --insert <xpath> -t (--type) elem|text|attr -v (--value) <value>
-   -a or --append <xpath> -t (--type) elem|text|attr -v (--value) <value>
-   -s or --subnode <xpath> -t (--type) elem|text|attr -v (--value) <value>
+   -i or --insert <xpath> -t (--type) elem|text|attr -n <name> -v (--value) <value>
+   -a or --append <xpath> -t (--type) elem|text|attr -n <name> -v (--value) <value>
+   -s or --subnode <xpath> -t (--type) elem|text|attr -n <name> -v (--value) <value>
    -m or --move <xpath1> <xpath2>
    -r or --rename <xpath1> -v <new-name>
    -u or --update <xpath> -v (--value) <value>
-			  -x (--expr) <xpath>
-
-Currently only --delete, --move, and --rename are implemented.
+			  -x (--expr) <xpath> (-x is not implemented yet)
 
 XMLStarlet is a command line toolkit to query/edit/check/transform
 XML documents (for more information see http://xmlstar.sourceforge.net/)
@@ -885,6 +883,60 @@ Result Output:
 2|346|Text Value
 3|-23|stringValue
 ===================
+
+
+Command:
+# Update value of an attribute
+xml ed -u '/xml/table/rec[@id=3]/@id' -v 5 xml/tab-obj.xml
+Result Output:
+<?xml version="1.0"?>
+<xml>
+  <table>
+    <rec id="1">
+      <numField>123</numField>
+      <stringField>String Value</stringField>
+      <object name="Obj1">
+        <property name="size">10</property>
+        <property name="type">Data</property>
+      </object>
+    </rec>
+    <rec id="2">
+      <numField>346</numField>
+      <stringField>Text Value</stringField>
+    </rec>
+    <rec id="5">
+      <numField>-23</numField>
+      <stringField>stringValue</stringField>
+    </rec>
+  </table>
+</xml>
+
+
+Command:
+# Update value of an element
+xml ed -u '/xml/table/rec[@id=1]/numField' -v 0 xml/tab-obj.xml
+Result Output:
+<?xml version="1.0"?>
+<xml>
+  <table>
+    <rec id="1">
+      <numField>0</numField>
+      <stringField>String Value</stringField>
+      <object name="Obj1">
+        <property name="size">10</property>
+        <property name="type">Data</property>
+      </object>
+    </rec>
+    <rec id="2">
+      <numField>346</numField>
+      <stringField>Text Value</stringField>
+    </rec>
+    <rec id="3">
+      <numField>-23</numField>
+      <stringField>stringValue</stringField>
+    </rec>
+  </table>
+</xml>
 
 
 Command:
