@@ -1,4 +1,4 @@
-/*  $Id: xml_escape.c,v 1.6 2004/03/28 21:28:33 mgrouch Exp $  */
+/*  $Id: xml_escape.c,v 1.7 2004/08/24 23:22:05 mgrouch Exp $  */
 
 /*
 
@@ -37,7 +37,9 @@ THE SOFTWARE.
 #include <libxml/xmlIO.h>
 #include <libxml/parserInternals.h>
 
-#include "strdup.h" 
+#ifndef HAVE_STRDUP
+#include "strdup.h"
+#endif
 
 #define INSZ 4*1024
 

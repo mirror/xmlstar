@@ -1,4 +1,4 @@
-/*  $Id: xml_elem.c,v 1.15 2004/03/28 21:28:33 mgrouch Exp $  */
+/*  $Id: xml_elem.c,v 1.16 2004/08/24 23:22:05 mgrouch Exp $  */
 
 /*
 
@@ -32,7 +32,9 @@ THE SOFTWARE.
 
 #include "binsert.h"
 
+#ifndef HAVE_STRDUP
 #include "strdup.h"
+#endif
 
 /* TODO:
 

@@ -1,4 +1,4 @@
-/*  $Id: xml_format.c,v 1.20 2004/02/12 23:28:26 mgrouch Exp $  */
+/*  $Id: xml_format.c,v 1.21 2004/08/24 23:22:05 mgrouch Exp $  */
 
 /*
 
@@ -43,7 +43,9 @@ THE SOFTWARE.
 #include <libxml/parserInternals.h>
 #include <libxml/uri.h>
 
+#ifndef HAVE_STRDUP
 #include "strdup.h"
+#endif
 
 /*
  *  TODO:  1. Attribute formatting options (as every attribute on a new line)
