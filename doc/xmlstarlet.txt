@@ -126,7 +126,17 @@ Current implementation uses libxslt from GNOME codebase as XSLT processor
 
 xml ed --help
 XMLStarlet Toolkit: Edit XML document(s)
-Usage: xml ed {<action>} [ <xml-file-or-uri> ... ]
+Usage: xml ed <global-options> {<action>} [ <xml-file-or-uri> ... ]
+where
+  <global-options>  - global options for editing
+  <xml-file-or-uri> - input XML document file name/uri (stdin is used if missing)
+
+<global-options> are:
+  -N <name>=<value> - predefine namespaces (name without 'xmlns:')
+                      ex: xsql=urn:oracle-xsql
+                      Multiple -N options are allowed.
+  --help or -h      - display help
+
 where <action>
    -d or --delete <xpath>
    -i or --insert <xpath> -t (--type) elem|text|attr -n <name> -v (--value) <value>
@@ -187,6 +197,7 @@ where <options> are
    -s or --indent-spaces <num> - indent output with <num> spaces
    -o or --omit-decl           - omit xml declaration <?xml version="1.0"?>
    -R or --recover             - try to recover what is parsable
+   -e or --encode              - output in the given encoding (utf-8, unicode...)
    -H or --html                - input is HTML
    -h or --help                - print help
 
@@ -960,6 +971,15 @@ Result Output:
 2|346|Text Value
 3|-23|stringValue
 ===================
+
+
+Command:
+# Select from XML document containing unicode characters
+xml sel -T -t -m "//test[@lang='fran&#231;ais']/@lang" -v . -n xml/unicode.xml
+Result Output:
+français
+français
+français
 
 
 Command:
