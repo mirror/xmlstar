@@ -1,4 +1,4 @@
-/*  $Id: xml_escape.c,v 1.5 2003/12/17 06:26:01 mgrouch Exp $  */
+/*  $Id: xml_escape.c,v 1.6 2004/03/28 21:28:33 mgrouch Exp $  */
 
 /*
 
@@ -50,8 +50,8 @@ static const char escape_usage_str[] =
 "XMLStarlet Toolkit: %s special XML characters\n"
 "Usage: xml %s [<options>] [<string>]\n"
 "where <options> are\n"
-"   --help      - print usage\n"
-"   (TODO: more to be added in future)\n"
+"  --help      - print usage\n"
+"  (TODO: more to be added in future)\n"
 "if <string> is missing stdin is used instead.\n"
 "\n";
 

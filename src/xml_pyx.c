@@ -1,4 +1,4 @@
-/* $Id: xml_pyx.c,v 1.3 2003/12/17 06:26:01 mgrouch Exp $ */
+/* $Id: xml_pyx.c,v 1.4 2004/03/28 21:28:33 mgrouch Exp $ */
 
 /**
  *  Based on xmln from pyxie project
@@ -25,7 +25,7 @@ static const char pyx_usage_str_1[] =
 "XMLStarlet Toolkit: Convert XML into PYX format (based on ESIS - ISO 8879)\n"
 "Usage: xml pyx {<xml-file>}\n"
 "where\n"
-"   <xml-file> - input XML document file name (stdin is used if missing)\n\n";
+"  <xml-file> - input XML document file name (stdin is used if missing)\n\n";
 
 static const char pyx_usage_str_2[] =
 "The PYX format is a line-oriented representation of\n"

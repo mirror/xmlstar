@@ -1,4 +1,4 @@
-/*  $Id: xml_validate.c,v 1.29 2004/02/04 18:49:39 mgrouch Exp $  */
+/*  $Id: xml_validate.c,v 1.30 2004/03/28 21:28:33 mgrouch Exp $  */
 
 /*
 
@@ -69,22 +69,22 @@ static const char validate_usage_str_1[] =
 "XMLStarlet Toolkit: Validate XML document(s)\n"
 "Usage: xml val <options> [ <xml-file-or-uri> ... ]\n"
 "where <options>\n"
-"   -w or --well-formed        - validate well-formedness only (default)\n"
-"   -d or --dtd <dtd-file>     - validate against DTD\n";
+"  -w or --well-formed        - validate well-formedness only (default)\n"
+"  -d or --dtd <dtd-file>     - validate against DTD\n";
 
 
 static const char validate_usage_str_2[] =
 #ifdef LIBXML_SCHEMAS_ENABLED
-"   -s or --xsd <xsd-file>     - validate against XSD schema\n"
+"  -s or --xsd <xsd-file>     - validate against XSD schema\n"
 #endif
 #ifdef LIBXML_SCHEMAS_ENABLED
-"   -r or --relaxng <rng-file> - validate against Relax-NG schema\n"
+"  -r or --relaxng <rng-file> - validate against Relax-NG schema\n"
 #endif
-/*"   -x or --xml-out            - print result as xml\n"*/
-"   -e or --err                - print verbose error messages on stderr\n"
-"   -b or --list-bad           - list only files which do not validate\n"
-"   -g or --list-good          - list only files which validate\n"
-"   -q or --quiet              - do not list files (return result code only)\n\n";
+/*"  -x or --xml-out            - print result as xml\n"*/
+"  -e or --err                - print verbose error messages on stderr\n"
+"  -b or --list-bad           - list only files which do not validate\n"
+"  -g or --list-good          - list only files which validate\n"
+"  -q or --quiet              - do not list files (return result code only)\n\n";
 
 #ifdef LIBXML_SCHEMAS_ENABLED
 static const char schema_notice[] =

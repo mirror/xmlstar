@@ -1,4 +1,4 @@
-/*  $Id: xml_edit.c,v 1.38 2003/12/17 06:26:01 mgrouch Exp $  */
+/*  $Id: xml_edit.c,v 1.39 2004/03/28 21:28:33 mgrouch Exp $  */
 
 /*
 
@@ -127,16 +127,16 @@ static const char edit_usage_str_2[] =
 
 static const char edit_usage_str_3[] =
 "where <action>\n"
-"   -d or --delete <xpath>\n"
-"   -i or --insert <xpath> -t (--type) elem|text|attr -n <name> -v (--value) <value>\n"
-"   -a or --append <xpath> -t (--type) elem|text|attr -n <name> -v (--value) <value>\n"
-"   -s or --subnode <xpath> -t (--type) elem|text|attr -n <name> -v (--value) <value>\n";
+"  -d or --delete <xpath>\n"
+"  -i or --insert <xpath> -t (--type) elem|text|attr -n <name> -v (--value) <value>\n"
+"  -a or --append <xpath> -t (--type) elem|text|attr -n <name> -v (--value) <value>\n"
+"  -s or --subnode <xpath> -t (--type) elem|text|attr -n <name> -v (--value) <value>\n";
 
 static const char edit_usage_str_4[] =
-"   -m or --move <xpath1> <xpath2>\n"
-"   -r or --rename <xpath1> -v <new-name>\n"
-"   -u or --update <xpath> -v (--value) <value>\n"
-                  "\t\t\t  -x (--expr) <xpath> (-x is not implemented yet)\n\n";
+"  -m or --move <xpath1> <xpath2>\n"
+"  -r or --rename <xpath1> -v <new-name>\n"
+"  -u or --update <xpath> -v (--value) <value>\n"
+                  "\t\t\t -x (--expr) <xpath> (-x is not implemented yet)\n\n";
 
 /*
    How to increment value of every attribute @weight?

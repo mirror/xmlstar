@@ -1,4 +1,4 @@
-/*  $Id: xml_elem.c,v 1.14 2003/12/17 06:26:01 mgrouch Exp $  */
+/*  $Id: xml_elem.c,v 1.15 2004/03/28 21:28:33 mgrouch Exp $  */
 
 /*
 
@@ -62,11 +62,11 @@ static const char elem_usage_str[] =
 "XMLStarlet Toolkit: Display element structure of XML document\n"
 "Usage: xml el [<options>] <xml-file>\n"
 "where\n"
-"   <xml-file> - input XML document file name (stdin is used if missing)\n"
-"   <options>:\n"
-"   -a  - show attributes as well\n"
-"   -v  - show attributes and their values\n"
-"   -u  - print out sorted unique lines\n"
+"  <xml-file> - input XML document file name (stdin is used if missing)\n"
+"  <options>:\n"
+"  -a  - show attributes as well\n"
+"  -v  - show attributes and their values\n"
+"  -u  - print out sorted unique lines\n"
 "\n";
 
 static xmlSAXHandler xmlSAX_handler;

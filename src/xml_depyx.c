@@ -1,4 +1,4 @@
-/*  $Id: xml_depyx.c,v 1.2 2003/08/22 19:42:42 mgrouch Exp $  */
+/*  $Id: xml_depyx.c,v 1.3 2004/03/28 21:28:33 mgrouch Exp $  */
 
 /*
 
@@ -37,7 +37,7 @@ static const char depyx_usage_str[] =
 "XMLStarlet Toolkit: Convert PYX into XML\n"
 "Usage: xml p2x [<pyx-file>]\n"
 "where\n"
-"   <pyx-file> - input PYX document file name (stdin is used if missing)\n\n"
+"  <pyx-file> - input PYX document file name (stdin is used if missing)\n\n"
 "The PYX format is a line-oriented representation of\n"
 "XML documents that is derived from the SGML ESIS format.\n"
 "(see ESIS - ISO 8879 Element Structure Information Set spec,\n"
