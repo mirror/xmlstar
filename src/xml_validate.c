@@ -1,4 +1,4 @@
-/*  $Id: xml_validate.c,v 1.26 2003/09/18 01:56:54 mgrouch Exp $  */
+/*  $Id: xml_validate.c,v 1.27 2003/11/05 03:37:10 mgrouch Exp $  */
 
 /*
 
@@ -398,7 +398,8 @@ valMain(int argc, char **argv)
                     xmlDefaultSAXHandler.warning = NULL;
                 }
 
-                doc = xmlParseFile(argv[i]);
+                /* doc = xmlParseFile(argv[i]); */
+                doc = xmlReadFile(argv[i], NULL, 0);
                 if (doc)
                 {
                     ret = xmlSchemaValidateDoc(ctxt2, doc);
