@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.53 2003/05/03 03:47:35 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.54 2003/05/24 00:18:57 mgrouch Exp $  */
 
 /*
 
@@ -44,7 +44,8 @@ THE SOFTWARE.
  *   2. --nonet option (to disable fetching DTD over network)
  */
 
-#define MAX_XSL_BUF  256*1024
+#define MAX_XSL_BUF    256*1024
+#define MAX_NS_ARGS    256
 
 char xsl_buf[MAX_XSL_BUF];
 
@@ -75,6 +76,8 @@ static const char select_usage_str[] =
 "  -I or --indent     - indent output\n"
 "  -D or --xml-decl   - do not omit xml declaration line\n"
 "  -B or --noblanks   - remove insignificant spaces from XML tree\n"
+"  -N <name>=<value>  - predefine namespaces (name without \'xmlns:\')\n"
+"                       ex: xsql=urn:oracle-xsql\n"
 "  --net              - allow fetch DTDs or entities over network\n"
 "  --help             - display help\n\n"
 
@@ -156,6 +159,57 @@ selInitOptions(selOptionsPtr ops)
     ops->noblanks = 0;
     ops->no_omit_decl = 0;
     ops->nonet = 1;
+}
+
+/**
+ *  Parse command line for additional namespaces
+ */
+int
+selParseNSArr(const char** ns_arr, int* plen,
+              int count, char **argv)
+{
+    int i;
+    *plen = 0;
+    ns_arr[0] = 0;
+
+    for (i=0; i<count; i++)
+    {
+        if (argv[i][0] == '-')
+        {
+            if (!strcmp(argv[i], "-N"))
+            {
+                int j;
+                xmlChar *name, *value;
+
+                i++;
+                if (i >= count) selUsage(0, NULL);
+
+                for(j=0; argv[i][j] && (argv[i][j] != '='); j++);
+                if (argv[i][j] != '=') selUsage(0, NULL);
+
+                name = xmlStrndup((const xmlChar *) argv[i], j);
+                value = xmlStrdup((const xmlChar *) argv[i]+j+1);
+
+                if (*plen >= MAX_NS_ARGS)
+                {
+                    fprintf(stderr, "too many namespaces increase MAX_NS_ARGS\n");
+                    exit(2);
+                }
+
+                ns_arr[*plen] = (char *)name;
+                (*plen)++;
+                ns_arr[*plen] = (char *)value;
+                (*plen)++;
+                ns_arr[*plen] = 0;
+
+                /*printf("xmlns:%s=\"%s\"\n", name, value);*/
+            }
+        }
+        else
+            break;
+    }
+
+    return i;
 }
 
 /**
@@ -521,10 +575,10 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
  *  Prepare XSLT stylesheet based on command line options
  */
 int
-selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops,
+selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops, const char *ns_arr[], 
                int start, int argc, char **argv)
 {
-    int c, i, t;
+    int c, i, t, ns;
    
     xsl_buf[0] = 0;
     *len = 0;
@@ -545,8 +599,17 @@ selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops,
     c += sprintf(xsl_buf + c, "\n xmlns:xt=\"http://www.jclark.com/xt\"");
     c += sprintf(xsl_buf + c, "\n xmlns:libxslt=\"http://xmlsoft.org/XSLT/namespace\"");
     c += sprintf(xsl_buf + c, "\n xmlns:test=\"http://xmlsoft.org/XSLT/\"");
+
+    ns = 0;
+    while(ns_arr[ns])
+    {
+        c += sprintf(xsl_buf + c, "\n xmlns:%s=\"%s\"", ns_arr[ns], ns_arr[ns+1]);
+        ns += 2;
+    }
     c += sprintf(xsl_buf + c, "\n extension-element-prefixes=\"exslt math date func set str dyn saxon xalanredirect xt libxslt test\"");
     c += sprintf(xsl_buf + c, "\n exclude-result-prefixes=\"math str\"");
+
+    
     c += sprintf(xsl_buf + c, ">\n");
 
     if (ops->no_omit_decl) c += sprintf(xsl_buf + c, "<xsl:output omit-xml-declaration=\"no\"");
@@ -613,7 +676,9 @@ selMain(int argc, char **argv)
     static xsltOptions xsltOps;
     static selOptions ops;
     static const char *params[2 * MAX_PARAMETERS + 1];
+    static const char *ns_arr[2 * MAX_NS_ARGS + 1];
     int start, c, i, n;
+    int nCount = 0;
     int nbparams;
   
     if (argc <= 2) selUsage(argc, argv);
@@ -625,8 +690,11 @@ selMain(int argc, char **argv)
     xsltOps.noblanks = ops.noblanks;    
     xsltInitLibXml(&xsltOps);
 
+    /* set parameters */
+    selParseNSArr(ns_arr, &nCount, start, argv+2);
+    
     c = sizeof(xsl_buf);
-    i = selPrepareXslt(xsl_buf, &c, &ops, start, argc, argv);
+    i = selPrepareXslt(xsl_buf, &c, &ops, ns_arr, start, argc, argv);
     
     if (ops.printXSLT)
     {

@@ -1,4 +1,4 @@
-/*  $Id: xml_trans.c,v 1.31 2003/04/19 01:55:56 mgrouch Exp $  */
+/*  $Id: xml_trans.c,v 1.32 2003/05/24 00:18:57 mgrouch Exp $  */
 
 /*
 
@@ -266,7 +266,7 @@ trParseParams(const char** params, int* plen,
 }
 
 /**
- *  Cleanup memory aloocated by XSLT parameters
+ *  Cleanup memory allocated by XSLT parameters
  */
 void
 trCleanupParams(const char **xsltParams)
