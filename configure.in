@@ -91,7 +91,7 @@ AC_ARG_WITH(libxslt-src,
         LIBXSLT_CFLAGS="-I$withval/libxslt -I$withval/libexslt -I$withval"
 )
 
-LIBXSLT_REQUIRED_VERSION=1.1.10
+LIBXSLT_REQUIRED_VERSION=1.1.9
 
 if test "x$LIBXSLT_SRC" = "x"
 then
