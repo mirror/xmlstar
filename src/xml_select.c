@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.28 2002/11/27 00:09:17 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.29 2002/11/27 00:16:34 mgrouch Exp $  */
 
 /*
 
@@ -125,8 +125,7 @@ int selMain(int argc, char **argv)
 
     /*
      *   Parse global options
-     */
-     
+     */     
     i = 2;
     while((i < argc) && (strcmp(argv[i], "-t")) && strcmp(argv[i], "--template"))
     {
@@ -289,7 +288,6 @@ int selMain(int argc, char **argv)
         /*
          *  Parse XSLT stylesheet
          */
-
         xmlDocPtr style = xmlParseMemory(xsl_buf, c);
         xsltStylesheetPtr cur = xsltParseStylesheetDoc(style);
         xmlDocPtr doc = xmlParseFile("-");

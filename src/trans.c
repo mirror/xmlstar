@@ -1,4 +1,4 @@
-/*  $Id: trans.c,v 1.5 2002/11/27 00:09:17 mgrouch Exp $  */
+/*  $Id: trans.c,v 1.6 2002/11/27 00:16:33 mgrouch Exp $  */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -174,7 +174,6 @@ xsltProcess(xsltOptionsPtr ops, xmlDocPtr doc, const char** params,
 /**
  *  run XSLT on documents
  */
-
 int xsltRun(xsltOptionsPtr ops, char* xsl, const char** params,
             int count, char **docs)
 {

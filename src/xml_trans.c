@@ -1,4 +1,4 @@
-/*  $Id: xml_trans.c,v 1.18 2002/11/27 00:09:18 mgrouch Exp $  */
+/*  $Id: xml_trans.c,v 1.19 2002/11/27 00:16:34 mgrouch Exp $  */
 
 /*
 
@@ -379,8 +379,6 @@ trMain(int argc, char **argv)
     errorno = xsltRun(&ops, argv[xslt_ind], xsltParams,
                       argc-start-1, argv+start+1);
 
-    /*printf("p=%d s=%d\n", pCount, sCount);*/
-    
     /* free resources */
     trCleanupParams(xsltParams);
     trCleanup();
