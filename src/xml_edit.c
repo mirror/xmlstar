@@ -1,4 +1,4 @@
-/*  $Id: xml_edit.c,v 1.17 2003/04/19 00:27:09 mgrouch Exp $  */
+/*  $Id: xml_edit.c,v 1.18 2003/05/25 16:55:43 mgrouch Exp $  */
 
 /*
 
@@ -71,7 +71,8 @@ typedef enum _XmlNodeType {
    XML_ELEM,
    XML_TEXT,
    XML_COMT,
-   XML_CDATA
+   XML_CDATA,
+   XML_EXPR
 } XmlNodeType;
 
 typedef char* XmlEdArg;
@@ -100,7 +101,8 @@ static const char edit_usage_str[] =
 "   -m or --move <xpath1> <xpath2>\n"
 "   -r or --rename <xpath1> -v <new-name>\n"
 "   -u or --update <xpath> -v (--value) <value>\n"
-                  "\t\t\t  -x (--expr) <xpath>\n\n";
+                  "\t\t\t  -x (--expr) <xpath>\n\n"
+"Currently only --delete and --move are implemented\n\n";
 
 /*
    How to increment value of every attribute @weight?
@@ -228,6 +230,79 @@ edUsage(int argc, char **argv)
 }
 
 /**
+ *  'update' operation
+ */
+void
+edUpdate(xmlDocPtr doc, char *loc, char *val, XmlNodeType type)
+{
+    int xptr = 0;
+    int expr = 0;
+    int tree = 0;
+
+    xmlXPathObjectPtr res;
+    xmlXPathContextPtr ctxt;
+
+    fprintf(stderr, "update not implemented loc=%s val=%s type=%d\n", loc, val, type);
+
+#if defined(LIBXML_XPTR_ENABLED)
+    if (xptr)
+    {
+        ctxt = xmlXPtrNewContext(doc, NULL, NULL);
+        res = xmlXPtrEval(BAD_CAST loc, ctxt);
+    }
+    else
+    {
+#endif
+        ctxt = xmlXPathNewContext(doc);
+        ctxt->node = xmlDocGetRootElement(doc);
+        if (expr)
+            res = xmlXPathEvalExpression(BAD_CAST loc, ctxt);
+        else
+        {
+            xmlXPathCompExprPtr comp;
+
+            comp = xmlXPathCompile(BAD_CAST loc);
+            if (comp != NULL)
+            {
+                if (tree)
+                    xmlXPathDebugDumpCompExpr(stdout, comp, 0);
+
+                res = xmlXPathCompiledEval(comp, ctxt);
+                xmlXPathFreeCompExpr(comp);
+            }
+            else res = NULL;
+        }
+#if defined(LIBXML_XPTR_ENABLED)
+    }
+#endif
+    if (res == NULL) return;
+
+    /* Found loc */    
+    switch(res->type)
+    {
+        case XPATH_NODESET:
+        {
+            int i;
+            xmlNodeSetPtr cur = res->nodesetval;
+            /*
+            fprintf(stderr, "Set contains %d nodes:\n", cur->nodeNr);
+            */
+            for (i = 0; i < cur->nodeNr; i++)
+            {
+                /*
+                 *  update node
+                 */
+            }
+            break;
+        }
+        default:
+            break;
+    }
+    xmlXPathFreeObject(res);
+    xmlXPathFreeContext(ctxt);
+}
+
+/**
  *  'delete' operation
  */
 void
@@ -255,7 +330,6 @@ edDelete(xmlDocPtr doc, char *str)
             res = xmlXPathEvalExpression(BAD_CAST str, ctxt);
         else
         {
-            /* res = xmlXPathEval(BAD_CAST str, ctxt); */
             xmlXPathCompExprPtr comp;
 
             comp = xmlXPathCompile(BAD_CAST str);
@@ -281,27 +355,16 @@ edDelete(xmlDocPtr doc, char *str)
             int i;
             xmlNodeSetPtr cur = res->nodesetval;
             /*
-            fprintf(stderr, "Object is a Node Set :\n");
             fprintf(stderr, "Set contains %d nodes:\n", cur->nodeNr);
             */
             for (i = 0; i < cur->nodeNr; i++)
             {
                 /*
-                fprintf(output, shift);
-                fprintf(output, "%d", i + 1);
-                xmlXPathDebugDumpNode(output, cur->nodeTab[i], depth + 1);
-                */
-
-                /*
                  *  delete node
                  */
                  xmlUnlinkNode(cur->nodeTab[i]);
-                 /*fprintf(stderr, "unlinked\n");*/
-                 /*xmlFreeNode(cur->nodeTab[i]);*/
+                 /* xmlFreeNode(cur->nodeTab[i]); ??? */
             }
-            /*
-            xmlXPathDebugDumpNodeSet(output, cur->nodesetval, depth);
-            */
             break;
         }
         default:
@@ -409,9 +472,6 @@ edMove(xmlDocPtr doc, char *from, char *to)
                 fprintf(stderr, "destination nodeset does not contain one node (node count is %d)\n", cur->nodeNr);
                 break;
             }
-/*
-fprintf(stderr, "(node count is %d)\n", cur->nodeNr);
-*/            
         }
         default:
             break;
@@ -423,32 +483,15 @@ fprintf(stderr, "(node count is %d)\n", cur->nodeNr);
         {
             int i;
             xmlNodeSetPtr cur = res->nodesetval;
-/*
-fprintf(stderr, "Object is a Node Set :\n");
-fprintf(stderr, "Set contains %d nodes:\n", cur->nodeNr);
-*/
             for (i = 0; i < cur->nodeNr; i++)
             {
-                /*
-                fprintf(output, shift);
-                fprintf(output, "%d", i + 1);
-                xmlXPathDebugDumpNode(output, cur->nodeTab[i], depth + 1);
-                */
-
                 /*
                  *  delete node
                  */
                 xmlUnlinkNode(cur->nodeTab[i]);
-/*
-fprintf(stderr, "unlinked\n");
-*/
-                xmlAddChild(res_to->nodesetval->nodeTab[0], cur->nodeTab[i]);
-             
-                 /*xmlFreeNode(cur->nodeTab[i]);*/
+                xmlAddChild(res_to->nodesetval->nodeTab[0], cur->nodeTab[i]);             
+                /* xmlFreeNode(cur->nodeTab[i]); ??? */
             }
-            /*
-            xmlXPathDebugDumpNodeSet(output, cur->nodesetval, depth);
-            */
             break;
         }
         default:
@@ -478,6 +521,9 @@ edProcess(xmlDocPtr doc, XmlEdAction* ops, int ops_count)
                 break;
             case XML_ED_MOVE:
                 edMove(doc, ops[k].arg1, ops[k].arg2);
+                break;
+            case XML_ED_UPDATE:
+                edUpdate(doc, ops[k].arg1, ops[k].arg2, ops[k].type);
                 break;
             default:
                 break;
@@ -527,6 +573,26 @@ edMain(int argc, char **argv)
             ops[j].type = XML_UNDEFINED;
             j++;
         }
+        else if (!strcmp(argv[i], "-u") || !strcmp(argv[i], "--update"))
+        {
+            i++;
+            if (i >= argc) edUsage(argc, argv);
+            ops[j].type = XML_UNDEFINED;
+            ops[j].op = XML_ED_UPDATE;
+            ops[j].arg1 = argv[i];
+            i++;
+            if (i >= argc) edUsage(argc, argv);
+            if (strcmp(argv[i], "-v") && strcmp(argv[i], "--value") &&
+                strcmp(argv[i], "-x") && strcmp(argv[i], "--expr")) edUsage(argc, argv);
+
+            if (!strcmp(argv[i], "-x") || !strcmp(argv[i], "--expr"))
+                ops[j].type = XML_EXPR;
+            i++;
+            if (i >= argc) edUsage(argc, argv);
+            ops[j].arg2 = argv[i];
+
+            j++;
+        }
         else
         {
             if (argv[i][0] != '-')
@@ -547,7 +613,6 @@ edMain(int argc, char **argv)
         xmlDocPtr doc = xmlParseFile("-");
         edProcess(doc, ops, ops_count);
         xmlSaveFormatFile("-", doc, 1);
-        /*xmlSaveFile("-", doc);*/
     }
     
     for (n=i; n<argc; n++)
@@ -555,9 +620,6 @@ edMain(int argc, char **argv)
         xmlDocPtr doc = xmlParseFile(argv[n]);
         edProcess(doc, ops, ops_count);
         xmlSaveFormatFile("-", doc, 1);
-        /*xmlSaveFile("-", doc);*/
-        /* xmlDocFormatDump(stdout, doc, 0); */
-        /* xmlDocDump(stdout, doc); */
     }
 
     return 0;
