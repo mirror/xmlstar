@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.43 2003/03/19 23:18:07 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.44 2003/03/19 23:52:50 mgrouch Exp $  */
 
 /*
 
@@ -209,6 +209,9 @@ selParseOptions(selOptionsPtr ops, int argc, char **argv)
     return i;
 }
 
+#define STK_MATCH 'm'
+#define STK_IF    'i'
+
 /**
  *  Prepare XSLT template based on command line options
  *  Assumes start points to -t option
@@ -291,6 +294,23 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
             for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
             c += sprintf(xsl_buf + c, "<xsl:value-of select=\"'&#10;'\"/>\n");
         }
+        else if(!strcmp(argv[i], "-e") || !strcmp(argv[i], "--end"))
+        {
+            while(!stack_isEmpty(stack))
+            {
+                StackItem itm;
+
+                for (j=0; j<stack_depth(stack); j++) c += sprintf(xsl_buf + c, "  ");
+                itm = stack_pop(stack);
+                if (itm == STK_MATCH)
+                {
+                    c += sprintf(xsl_buf + c, "</xsl:for-each>\n");
+                    m--;
+                }
+                else if (itm == STK_IF) c += sprintf(xsl_buf + c, "</xsl:if>\n");
+                /* printf("%c\n", itm); */
+            }
+        }
         else if(!strcmp(argv[i], "-m") || !strcmp(argv[i], "--match"))
         {
             templateEmpty = 0;
@@ -302,6 +322,7 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
             }
             for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
             c += sprintf(xsl_buf + c, "<xsl:for-each select=\"%s\">\n", argv[i+1]);
+            stack_push(stack, STK_MATCH);
             m++;
             i++;
             if ((i+1 < argc) && (!strcmp(argv[i+1], "-s") || !strcmp(argv[i+1], "--sort")))
@@ -379,12 +400,24 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
         c += sprintf(xsl_buf + c, "<xsl:value-of select=\"'&#10;'\"/>\n");
     }
 */
+
+    while(!stack_isEmpty(stack))
+    {
+        StackItem itm;
+
+        for (j=0; j<stack_depth(stack); j++) c += sprintf(xsl_buf + c, "  ");
+        itm = stack_pop(stack);
+        if (itm == STK_MATCH) c += sprintf(xsl_buf + c, "</xsl:for-each>\n");
+        else if (itm == STK_IF) c += sprintf(xsl_buf + c, "</xsl:if>\n");
+/*        printf("%c\n", itm);  */
+    }
+/*
     for (k=0; k<m; k++)
     {
         for (j=k; j<m; j++) c += sprintf(xsl_buf + c, "  ");
         c += sprintf(xsl_buf + c, "</xsl:for-each>\n");
     }
-
+*/
     if (templateEmpty)
     {
         fprintf(stderr, "error in arguments:");
