@@ -25,6 +25,7 @@ where <command> is one of:
    esc   (or escape)    - Escape special XML characters
    unesc (or unescape)  - Unescape special XML characters
    pyx   (or xmln)      - Convert XML into PYX format (based on ESIS - ISO 8879)
+   p2x   (or depyx)     - Convert PYX into XML
 <options> are:
    --version           - show version
    --help              - show help
@@ -132,10 +133,14 @@ where
   <xml-file-or-uri> - input XML document file name/uri (stdin is used if missing)
 
 <global-options> are:
-  -N <name>=<value> - predefine namespaces (name without 'xmlns:')
-                      ex: xsql=urn:oracle-xsql
-                      Multiple -N options are allowed.
-  --help or -h      - display help
+  -P (or --pf)        - preserve original formatting
+  -S (or --ps)        - preserve non-significant spaces
+  -O (or --omit-decl) - omit XML declaration (<?xml ...?>)
+  -N <name>=<value>   - predefine namespaces (name without 'xmlns:')
+                        ex: xsql=urn:oracle-xsql
+                        Multiple -N options are allowed.
+                        -N options must be last global options.
+  --help or -h        - display help
 
 where <action>
    -d or --delete <xpath>
