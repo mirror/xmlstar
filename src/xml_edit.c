@@ -1,4 +1,4 @@
-/*  $Id: xml_edit.c,v 1.39 2004/03/28 21:28:33 mgrouch Exp $  */
+/*  $Id: xml_edit.c,v 1.40 2004/03/30 03:43:02 mgrouch Exp $  */
 
 /*
 
@@ -222,9 +222,13 @@ edParseNSArr(const char** ns_arr, int* plen,
     *plen = 0;
     ns_arr[0] = 0;
 
-    for (i=0; i<count; i++)
+    i = 0;
+    while(i < count)
     {
         if (argv[i] == 0) break;
+
+        /* printf("%d of %d %s\n", i, count, argv[i]); */
+
         if (argv[i][0] == '-')
         {
             if (!strcmp(argv[i], "-N"))
@@ -253,11 +257,12 @@ edParseNSArr(const char** ns_arr, int* plen,
                 (*plen)++;
                 ns_arr[*plen] = 0;
 
-                /*printf("xmlns:%s=\"%s\"\n", name, value);*/
+                /* printf("xmlns:%s=\"%s\"\n", name, value); */
             }
         }
         else
             break;
+        i++;
     }
 
     return i;
@@ -842,7 +847,7 @@ edMain(int argc, char **argv)
     edInitOptions(&g_ops);
     start = edParseOptions(&g_ops, argc, argv);
 
-    edParseNSArr(ns_arr, &nCount, start, argv+start);
+    edParseNSArr(ns_arr, &nCount, argc-start, argv+start);
         
     /*
      *  Parse command line and fill array of operations
