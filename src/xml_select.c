@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.15 2002/11/19 06:03:40 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.16 2002/11/19 06:25:19 mgrouch Exp $  */
 
 #include <string.h>
 #include <stdio.h>
@@ -152,7 +152,6 @@ int xml_select(int argc, char **argv)
         i++;  
     }
 
-
     xsl_buf[0] = 0;
     c = 0;
     
@@ -221,19 +220,19 @@ int xml_select(int argc, char **argv)
                 }
                 else if(!strcmp(argv[i], "-t") || !strcmp(argv[i], "--template"))
                 {
-                    //i--;
+                    i--;
                     break;
                 }
                 
                 i++;
             }
-
+/*
             if((i < argc) && (!strcmp(argv[i], "-n") || !strcmp(argv[i], "--nl")))
             {
                 for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
                 c += sprintf(xsl_buf + c, "<xsl:value-of select=\"'&#10;'\"/>\n");
             }
-
+*/
             for (k=0; k<m; k++)
             {
                 for (j=k; j<m; j++) c += sprintf(xsl_buf + c, "  ");

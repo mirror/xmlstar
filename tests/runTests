@@ -2,7 +2,7 @@
 
 DIR=`pwd`
 
-TESTS="count1 look1 sum1 table1 table2"
+TESTS="count1 look1 sum1 table1 table2 table3"
 
 cd ../examples
 
