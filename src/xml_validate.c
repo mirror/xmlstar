@@ -1,4 +1,4 @@
-/*  $Id: xml_validate.c,v 1.13 2003/02/19 00:56:16 mgrouch Exp $  */
+/*  $Id: xml_validate.c,v 1.14 2003/02/19 03:52:59 mgrouch Exp $  */
 
 /*
 
@@ -247,6 +247,8 @@ valMain(int argc, char **argv)
     valInitOptions(&ops);
     start = valParseOptions(&ops, argc, argv);
 
+    xmlLineNumbersDefault(1);
+
     if (ops.dtd)
     {
         int i;
@@ -288,28 +290,26 @@ valMain(int argc, char **argv)
     else if (ops.schema)
     {
         xmlSchemaPtr schema = NULL;
-        xmlSchemaParserCtxtPtr ctxt;
-        xmlSchemaValidCtxtPtr ctxt2;
+        xmlSchemaParserCtxtPtr ctxt = NULL;
+        xmlSchemaValidCtxtPtr ctxt2 = NULL;
         int i;
 
-        /* TODO: here */
-        printf("validate against %s\n", ops.schema);
-
+        /* TODO: Do not print debug stuff */
         ctxt = xmlSchemaNewParserCtxt(ops.schema);
-        /*
         xmlSchemaSetParserErrors(ctxt,
             (xmlSchemaValidityErrorFunc) fprintf,
             (xmlSchemaValidityWarningFunc) fprintf,
             stderr);
-        */
+               
         schema = xmlSchemaParse(ctxt);
+        xmlSchemaFreeParserCtxt(ctxt);
 
         ctxt2 = xmlSchemaNewValidCtxt(schema);
         xmlSchemaSetValidErrors(ctxt2,
             (xmlSchemaValidityErrorFunc) fprintf,
             (xmlSchemaValidityWarningFunc) fprintf,
             stderr);
-
+        
         for (i=start; i<argc; i++)
         {
             xmlDocPtr doc;
@@ -341,14 +341,17 @@ valMain(int argc, char **argv)
             }
             if (ret) invalidFound = 1;
 
+            /*
             if (ret == 0)
                 fprintf(stderr, "%s - validates\n", argv[i]);
             else
                 fprintf(stderr, "%s - invalid\n", argv[i]);
+            */
         }
 
         xmlSchemaFreeValidCtxt(ctxt2);
-        xmlSchemaFreeParserCtxt(ctxt);
+        if (schema != NULL) xmlSchemaFree(schema);
+        xmlSchemaCleanupTypes();
     }
 #endif
     else if (ops.wellFormed)
@@ -390,5 +393,6 @@ valMain(int argc, char **argv)
         }
     }
     
+    xmlCleanupParser();
     return invalidFound;
 }  
