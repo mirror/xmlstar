@@ -1,0 +1,1 @@
+./xmlstarlet tr --xinclude xsl/cat.xsl xml/document.xml
