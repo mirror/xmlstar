@@ -1,4 +1,4 @@
-/*  $Id: xml_format.c,v 1.16 2003/11/05 02:04:59 mgrouch Exp $  */
+/*  $Id: xml_format.c,v 1.17 2003/11/05 02:49:44 mgrouch Exp $  */
 
 /*
 
@@ -51,12 +51,13 @@ THE SOFTWARE.
  */
 
 typedef struct _foOptions {
-    int indent;               /* Indent output */
-    int indent_tab;           /* Indent output with tab */
-    int indent_spaces;        /* Num spaces for indentation */
+    int indent;               /* indent output */
+    int indent_tab;           /* indent output with tab */
+    int indent_spaces;        /* num spaces for indentation */
     int omit_decl;            /* omit xml declaration */
     int recovery;             /* try to recover what is parsable */
     int dropdtd;              /* remove the DOCTYPE of the input docs */
+    int options;              /* global parsing flags */ 
 #ifdef LIBXML_HTML_ENABLED
     int html;                 /* inputs are in HTML format */
 #endif
@@ -107,6 +108,7 @@ foInitOptions(foOptionsPtr ops)
     ops->omit_decl = 0;
     ops->recovery = 0;
     ops->dropdtd = 0;
+    ops->options = 0;
 #ifdef LIBXML_HTML_ENABLED
     ops->html = 0;
 #endif
@@ -197,6 +199,7 @@ foParseOptions(foOptionsPtr ops, int argc, char **argv)
         else if (!strcmp(argv[i], "--recover") || !strcmp(argv[i], "-R"))
         {
             ops->recovery = 1;
+	    ops->options |= XML_PARSE_RECOVER;
             i++;
         }
         else if (!strcmp(argv[i], "--indent-spaces") || !strcmp(argv[i], "-s"))
@@ -261,20 +264,21 @@ foProcess(foOptionsPtr ops, int start, int argc, char **argv)
     {
         fileName = argv[start];   
     }
-
+/*
     if (ops->recovery)
     {
         doc = xmlRecoverFile(fileName);
     }
     else    
+*/
 #ifdef LIBXML_HTML_ENABLED
     if (ops->html)
     {
-        doc = htmlParseFile(fileName, NULL);
+        doc = htmlReadFile(fileName, NULL, ops->options);
     }
     else
 #endif
-        doc = xmlParseFile(fileName);
+        doc = xmlReadFile(fileName, NULL, ops->options);
 
     if (doc == NULL)
     {
