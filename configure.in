@@ -1,6 +1,6 @@
 AC_INIT(src/xml.c)
 
-VERSION=0.9.1
+VERSION=0.9.2
 PACKAGE=xmlstarlet
 
 AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
@@ -9,6 +9,14 @@ AC_CANONICAL_HOST
 
 CFLAGS="-Wall -g -pedantic"
 EXTRA_LIBS=
+
+case "${host}" in
+  hp* )
+      CFLAGS="-Ae"
+      ;;
+  * )
+      ;;
+esac
 
 dnl
 dnl The following parameters offer
@@ -179,6 +187,10 @@ case "${host}" in
       AC_DEFINE([vsnprintf],[_vsnprintf],[Win32 Std C name mangling work-around])
       LIBXML_LIBS=`echo "$LIBXML_LIBS" | sed -e 's/ -lz//g' -e 's/ -lpthread//g'`
       LIBXSLT_LIBS=`echo "$LIBXSLT_LIBS" | sed -e 's/ -lz//g' -e 's/ -lpthread//g'`
+      ;;
+  hp* )
+      LIBXML_LIBS=`echo "$LIBXML_LIBS" | sed -e 's/ -lz//g'`
+      LIBXSLT_LIBS=`echo "$LIBXSLT_LIBS" | sed -e 's/ -lz//g'`
       ;;
   * )
       LIBICONV_LIBS=
