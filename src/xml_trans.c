@@ -1,4 +1,16 @@
-/* $Id: xml_trans.c,v 1.1 2002/11/13 19:10:23 mgrouch Exp $ */
+/*  $Id: xml_trans.c,v 1.2 2002/11/14 00:19:56 mgrouch Exp $  */
+
+/*
+ *  TODO:
+ *        1. proper command line arguments handling
+ *        2. review and clean up all code
+ *        3. tests
+ *        4. --novalid option analog (no dtd validation)
+ *        5. --nonet option analog (no network for external entities)
+ *        6. html and docbook input documents
+ *        7. -s for string parameters instead of -p
+ *        8. check embedded stylesheet support
+ */
 
 /*
  *  This code is based on xsltproc by Daniel Veillard (daniel@veillard.com)
@@ -17,6 +29,7 @@
 #include <libxml/xmlmemory.h>
 #include <libxml/debugXML.h>
 #include <libxml/xmlIO.h>
+#include <libxml/HTMLtree.h>
 #include <libxml/xinclude.h>
 #include <libxml/parserInternals.h>
 #include <libxml/uri.h>
@@ -27,6 +40,15 @@
 #include <libxslt/xsltutils.h>
 #include <libxslt/extensions.h>
 #include <libxslt/security.h>
+
+#include <libexslt/exslt.h>
+
+#ifdef LIBXML_DOCB_ENABLED
+#include <libxml/DOCBparser.h>
+#endif
+#ifdef LIBXML_XINCLUDE_ENABLED
+#include <libxml/xinclude.h>
+#endif
 
 #define MAX_PARAMETERS 256
 #define MAX_PATHS 256
@@ -77,7 +99,6 @@ static int xinclude = 0;
 #endif
 static int profile = 0;
 
-
 static const char *params[MAX_PARAMETERS + 1];
 static int nbparams = 0;
 static xmlChar *strparams[MAX_PARAMETERS + 1];
@@ -87,7 +108,6 @@ static int nbpaths = 0;
 static const char *output = NULL;
 static int errorno = 0;
 static const char *writesubtree = NULL;
-
 
 xmlExternalEntityLoader defaultEntityLoader = NULL;
 
@@ -152,76 +172,78 @@ xsltProcess(xmlDocPtr doc, xsltStylesheetPtr cur, const char *filename)
     }
 #endif
     if (output == NULL) {
-	ctxt = xsltNewTransformContext(cur, doc);
-	if (ctxt == NULL)
-	    return;
-	if (profile) {
-	    res = xsltApplyStylesheetUser(cur, doc, params, NULL,
-		                          stderr, ctxt);
-	} else {
-	    res = xsltApplyStylesheetUser(cur, doc, params, NULL,
-		                          NULL, ctxt);
-	}
-	if (ctxt->state == XSLT_STATE_ERROR)
-	    errorno = 9;
-	if (ctxt->state == XSLT_STATE_STOPPED)
-	    errorno = 10;
-	xsltFreeTransformContext(ctxt);
-	xmlFreeDoc(doc);
-	if (res == NULL) {
-	    fprintf(stderr, "no result for %s\n", filename);
-	    return;
-	}
-	if (noout) {
-	    xmlFreeDoc(res);
-	    return;
-	}
-#ifdef LIBXML_DEBUG_ENABLED
-	if (debug)
-	    xmlDebugDumpDocument(stdout, res);
-	else {
-#endif
-	    if (cur->methodURI == NULL) {
-		xsltSaveResultToFile(stdout, res, cur);
-	    } else {
-		if (xmlStrEqual
-		    (cur->method, (const xmlChar *) "xhtml")) {
-		    fprintf(stderr, "non standard output xhtml\n");
-		    xsltSaveResultToFile(stdout, res, cur);
-		} else {
-		    fprintf(stderr,
-			    "Unsupported non standard output %s\n",
-			    cur->method);
-		    errorno = 7;
-		}
-	    }
-#ifdef LIBXML_DEBUG_ENABLED
-	}
-#endif
+        ctxt = xsltNewTransformContext(cur, doc);
+        if (ctxt == NULL)
+            return;
+        if (profile) {
+            res = xsltApplyStylesheetUser(cur, doc, params, NULL,
+                                          stderr, ctxt);
+        } else {
+            res = xsltApplyStylesheetUser(cur, doc, params, NULL,
+                                          NULL, ctxt);
+        }
+        if (ctxt->state == XSLT_STATE_ERROR)
+            errorno = 9;
+        if (ctxt->state == XSLT_STATE_STOPPED)
+            errorno = 10;
+        xsltFreeTransformContext(ctxt);
+        xmlFreeDoc(doc);
+        if (res == NULL) {
+            fprintf(stderr, "no result for %s\n", filename);
+            return;
+        }
+        if (noout) {
+            xmlFreeDoc(res);
+            return;
+        }
 
-	xmlFreeDoc(res);
-    } else
-    {
-	int ret;
+#ifdef LIBXML_DEBUG_ENABLED
+        if (debug)
+            xmlDebugDumpDocument(stdout, res);
+        else {
+#endif
+            if (cur->methodURI == NULL) {
+                xsltSaveResultToFile(stdout, res, cur);                
+            } else {
+                if (xmlStrEqual
+                    (cur->method, (const xmlChar *) "xhtml")) {
+                    fprintf(stderr, "non standard output xhtml\n");
+                    xsltSaveResultToFile(stdout, res, cur);
+                } else {
+                    fprintf(stderr,
+                            "Unsupported non standard output %s\n",
+                            cur->method);
+                    errorno = 7;
+                }
+            }
+#ifdef LIBXML_DEBUG_ENABLED
+        }
+#endif
+        xmlFreeDoc(res);
+    }
+    else {
+        int ret;
 
-	ctxt = xsltNewTransformContext(cur, doc);
-	if (ctxt == NULL)
-	    return;
-	if (profile) {
-	    ret = xsltRunStylesheetUser(cur, doc, params, output,
-		                        NULL, NULL, stderr, ctxt);
-	} else {
-	    ret = xsltRunStylesheetUser(cur, doc, params, output,
-		                        NULL, NULL, NULL, ctxt);
-	}
-	if (ctxt->state == XSLT_STATE_ERROR)
-	    errorno = 9;
-	xsltFreeTransformContext(ctxt);
-	xmlFreeDoc(doc);
+        ctxt = xsltNewTransformContext(cur, doc);
+        if (ctxt == NULL)
+            return;
+        if (profile) {
+            ret = xsltRunStylesheetUser(cur, doc, params, output,
+                                        NULL, NULL, stderr, ctxt);
+        } else {
+            ret = xsltRunStylesheetUser(cur, doc, params, output,
+                                        NULL, NULL, stderr, ctxt);
+        }
+        if (ctxt->state == XSLT_STATE_ERROR)
+            errorno = 9;
+        xsltFreeTransformContext(ctxt);
+        xmlFreeDoc(doc);
     }
 }
 
-
+/*
+ * This is like main() function for 'tr' option
+ */
 
 int xml_trans(int argc, char **argv)
 {
@@ -253,6 +275,10 @@ int xml_trans(int argc, char **argv)
      */
     xmlSubstituteEntitiesDefault(1);
 
+    /*
+     * Compile XSLT Sylesheet
+     */
+    
     {
         style = xmlParseFile((const char *) argv[2]);
         {
@@ -261,7 +287,6 @@ int xml_trans(int argc, char **argv)
                 cur = NULL;
                 errorno = 4;
             } else {
-                //printf("COMPILED %s\n", argv[2]);
                 cur = xsltLoadStylesheetPI(style);
                 if (cur != NULL) {
                     /* it is an embedded stylesheet */
@@ -294,6 +319,10 @@ int xml_trans(int argc, char **argv)
     xmlDefaultSAXHandlerInit();
     xmlDefaultSAXHandler.cdataBlock = NULL;
 
+    /*
+     * run XSLT
+     */
+    
     if ((cur != NULL) && (cur->errors == 0)) {
         for (i=3; i < argc; i++) {
             doc = NULL;
@@ -319,10 +348,8 @@ int xml_trans(int argc, char **argv)
     if (cur != NULL)
         xsltFreeStylesheet(cur);
 
-//    for (i = 0;i < nbstrparams;i++)
-//        xmlFree(strparams[i]);
-
-
+    for (i = 0; i < nbstrparams; i++)
+        xmlFree(strparams[i]);
     
 done:
     xsltCleanupGlobals();
@@ -331,5 +358,4 @@ done:
     xmlMemoryDump();
 #endif
     return(errorno);    
-}  
-
+}
