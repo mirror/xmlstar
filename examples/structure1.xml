@@ -1,0 +1,4 @@
+./xmlstarlet sel -T -t -m '//*' \
+-m 'ancestor-or-self::*' -v 'name()' -i 'not(position()=last())' -o . -b -b -n \
+xml/structure.xml
+
