@@ -1,4 +1,4 @@
-/*  $Id: xml_elem.c,v 1.5 2003/04/23 17:09:04 mgrouch Exp $  */
+/*  $Id: xml_elem.c,v 1.6 2003/04/23 17:15:11 mgrouch Exp $  */
 
 /*
 
@@ -91,14 +91,11 @@ void elStartElement(void *user_data, const xmlChar *name, const xmlChar **attrs)
     if (elOps.show_attr)
     {
         const xmlChar **p = attrs;
-        if (!attrs) fprintf(stdout, "%s\n", curXPath);
-        else
+        fprintf(stdout, "%s\n", curXPath);
+        while (p && *p)
         {
-            while (p && *p)
-            {
-                fprintf(stdout, "%s@%s\n", curXPath, *p);
-                p += 2;
-            }
+            fprintf(stdout, "%s@%s\n", curXPath, *p);
+            p += 2;
         }
     }
     else if (elOps.show_attr_and_val)
