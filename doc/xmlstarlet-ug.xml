@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<book>
+  <title>XmlStarlet Command Line XML Toolkit User&#39;s Guide</title>
+
+  <chapter>
+    <title>Introduction</title>
+
+    <sect1>
+      <title>About XmlStarlet</title>
+
+      <para><link linkend="???">XMLStarlet</link> is a set of command line
+      utilities (tools) which can be used to transform, query, validate, and
+      edit XML documents and files using simple set of shell commands in
+      similar way it is done for plain text files using UNIX grep, sed, awk,
+      diff, patch, join, etc commands.</para>
+
+      <para>This set of command line utilities can be used by those who deal
+      with many XML documents on UNIX shell command prompt as well as for
+      automated XML processing with shell scripts.</para>
+
+      <para> XMLStarlet command line utility is written in C and uses libxml2
+      and libxslt from <link linkend="???">http://xmlsoft.org/</link>.
+      Implementation of extensive choice of options for XMLStarlet utility was
+      only possible because of rich feature set of libxml2 and libxslt (many
+      thanks to the developers of those libraries for great work).</para>
+
+      <para> &#39;diff&#39; and &#39;patch&#39; options are not currently
+      implemented. Other features need some work too. Please, send an email to
+      the project administrator (see <link linkend="???">http://sourceforge.net/projects/xmlstar/</link>)
+      if you wish to help. </para>
+
+      <para> XMLStarlet is linked statically to both libxml2 and libxslt, so
+      generally all you need to process XML documents is one executable file.
+      To run XmlStarlet utility you can simple type &#39;xml&#39; on command
+      line and see list of options available. </para>
+
+      <para> XMLStarlet is open source freeware under MIT license which allows
+      free use and distribution for both commercial and non-commercial
+      projects. </para>
+
+      <para> We welcome any user&#39;s feedback on this project which would
+      greatly help us to improve its quality. Comments, suggestions, feature
+      requests, bug reports can be done via SourceForge project web site (see
+      <link linkend="???">XMLStarlet Sourceforge forums</link>, or <link
+      linkend="???">XMLStarlet mailing list</link>)</para>
+    </sect1>
+
+    <sect1>
+      <title>Main Features</title>
+
+      <para>The toolkit&#39;s feature set includes options to:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Check or validate XML files (simple well-formedness check,
+          DTD, XSD, RelaxNG)</para>
+        </listitem>
+
+        <listitem>
+          <para>Calculate values of XPath expressions on XML files (such as
+          running sums, etc)</para>
+        </listitem>
+
+        <listitem>
+          <para>Search XML files for matches to given XPath expressions</para>
+        </listitem>
+
+        <listitem>
+          <para>Apply XSLT stylesheets to XML documents (including EXSLT
+          support, and passing parameters to stylesheets)</para>
+        </listitem>
+
+        <listitem>
+          <para>Query XML documents (ex. query for value of some elements of
+          attributes, sorting, etc)</para>
+        </listitem>
+
+        <listitem>
+          <para>Modify or edit XML documents (ex. delete some elements)</para>
+        </listitem>
+
+        <listitem>
+          <para>Format or &#34;beautify&#34; XML documents (as changing
+          indentation, etc)</para>
+        </listitem>
+
+        <listitem>
+          <para>Fetch XML documents using http:// or ftp:// URLs</para>
+        </listitem>
+
+        <listitem>
+          <para>Browse tree structure of XML documents (in similar way to
+          &#39;ls&#39; command for directories)</para>
+        </listitem>
+
+        <listitem>
+          <para>Include one XML document into another using XInclude</para>
+        </listitem>
+
+        <listitem>
+          <para>XML c14n canonicalization</para>
+        </listitem>
+
+        <listitem>
+          <para>Escape/unescape special XML characters in input text</para>
+        </listitem>
+
+        <listitem>
+          <para>Print directory as XML document</para>
+        </listitem>
+
+        <listitem>
+          <para>Convert XML into PYX format (based on ESIS - ISO 8879), and
+          vice versa</para>
+        </listitem>
+      </itemizedlist>
+
+      <para></para>
+    </sect1>
+
+    <sect1>
+      <title>Supported Platforms</title>
+
+      <para></para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Linux</para>
+        </listitem>
+      </itemizedlist>
+
+      <itemizedlist>
+        <listitem>
+          <para>Solaris</para>
+        </listitem>
+      </itemizedlist>
+
+      <itemizedlist>
+        <listitem>
+          <para>Windows</para>
+        </listitem>
+      </itemizedlist>
+
+      <itemizedlist>
+        <listitem>
+          <para>MacOS X</para>
+        </listitem>
+      </itemizedlist>
+
+      <itemizedlist>
+        <listitem>
+          <para>FreeBSD</para>
+        </listitem>
+      </itemizedlist>
+    </sect1>
+  </chapter>
+
+  <chapter>
+    <title>Installation</title>
+
+    <sect1>
+      <title>Installation on Linux</title>
+
+      <para></para>
+    </sect1>
+
+    <sect1>
+      <title>Installation on Solaris</title>
+
+      <para></para>
+    </sect1>
+
+    <sect1>
+      <title>Installation on Windows</title>
+
+      <para></para>
+    </sect1>
+  </chapter>
+
+  <chapter>
+    <title>Getting Started</title>
+
+    <sect1>
+      <title>Basic Command-Line Options</title>
+
+      <para>Basic command line syntax: <synopsis>bash-2.03$ xml
+XMLStarlet Toolkit: Command line utilities for XML
+Usage: xml [&#60;options&#62;] &#60;command&#62; [&#60;cmd-options&#62;]
+where &#60;command&#62; is one of:
+   ed    (or edit)      - Edit/Update XML document(s)
+   sel   (or select)    - Select data or query XML document(s) (XPATH, etc)
+   tr    (or transform) - Transform XML document(s) using XSLT
+   val   (or validate)  - Validate XML document(s) (well-formed/DTD/XSD/RelaxNG)
+   fo    (or format)    - Format XML document(s)
+   el    (or elements)  - Display element structure of XML document
+   c14n  (or canonic)   - XML canonicalization
+   ls    (or list)      - List directory as XML
+   esc   (or escape)    - Escape special XML characters
+   unesc (or unescape)  - Unescape special XML characters
+   pyx   (or xmln)      - Convert XML into PYX format (based on ESIS - ISO 8879)
+   p2x   (or depyx)     - Convert PYX into XML
+&#60;options&#62; are:
+   --version            - show version
+   --help               - show help
+Wherever file name mentioned in command help it is assumed
+that URL can be used instead as well.
+
+Type: xml &#60;command&#62; --help &#60;ENTER&#62; for command help
+
+XMLStarlet is a command line toolkit to query/edit/check/transform
+XML documents (for more information see http://xmlstar.sourceforge.net/)</synopsis>
+      </para>
+    </sect1>
+
+    <sect1>
+      <title>Studying Structure of XML Document</title>
+
+      <para>Before you do anything with your XML document you probably would
+      like to know its structure at first. &#39;el&#39; option could be used
+      for this purpose.</para>
+
+      <para>Let&#39;s say you have the following XML document (table.xml)</para>
+
+      <para></para>
+
+      <para>xml el table.xml</para>
+
+      <para>would produce the following output.</para>
+
+      <para>Every line in this output is an XPath expression which indicates a
+      &#39;path&#39; to elements in XML document. You would use these XPath
+      expressions to navigate through your XML documents in other XmlStarlet
+      options.</para>
+
+      <para>XML documents can be pretty large but with a very simple
+      structure. (This is espesially true for data driven XML documents ex:
+      XML formatted result of select from SQL table). If you just interested
+      in structure but not order of the elements you can use -u switch
+      combined with &#39;el&#39; option.</para>
+
+      <para>EX:</para>
+
+      <para>xml el -u table.xml</para>
+
+      <para></para>
+
+      <para>Output:</para>
+
+      <para></para>
+
+      <para>If you are interested not just in elements of your XML document,
+      but you want to see attributes as well you can use -a switch with
+      &#39;el&#39; option. And every line of the output will still be a valid
+      XPath expression.</para>
+
+      <para>EX:</para>
+
+      <para>xml el -a table.xml</para>
+
+      <para></para>
+
+      <para>Output:</para>
+
+      <para></para>
+
+      <para>If you are looking for attribute values as well use -v switch of
+      &#39;el&#39; option. And again - every line of output is a valid XPath
+      expression. </para>
+
+      <para>EX:</para>
+
+      <para>xml el -v table.xml</para>
+
+      <para></para>
+
+      <para>Output:</para>
+
+      <para></para>
+
+      <para></para>
+    </sect1>
+  </chapter>
+</book>
