@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.39 2002/12/09 02:29:45 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.40 2002/12/11 00:50:45 mgrouch Exp $  */
 
 /*
 
@@ -200,10 +200,13 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
 {
     int c, i, j, k, m, t;
     int templateEmpty = 1;
+    int nextTempl = 0;
 
     c = *len;
     i = start;
     t = num;
+
+    *lastTempl = 0;
 
     if (strcmp(argv[i], "-t") && strcmp(argv[i], "--template"))
     {
@@ -216,7 +219,7 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
 
     i++;
     m = 0;
-    while(i < (argc - 1))
+    while(i < argc)
     {
         if(!strcmp(argv[i], "-c") || !strcmp(argv[i], "--copy-of"))
         {
@@ -261,14 +264,24 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
         }
         else if(!strcmp(argv[i], "-t") || !strcmp(argv[i], "--template"))
         {
+            nextTempl = 1;
             i--;
             break;
         }
         else
         {
-            if(argv[i][0] != '-')
+            if (argv[i][0] != '-')
             {
                 break;
+            }
+            else if (!strcmp(argv[i], "-"))
+            {
+                break;
+            }
+            else
+            {
+                fprintf(stderr, "unknown option: %s\n", argv[i]);
+                exit(1);
             }
         }
 
@@ -299,15 +312,23 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
 
     *len = c;
 
-    if (i >= argc)
+    if (!nextTempl)
     {
-        *lastTempl = 1;
-        return i-1;
-    }
-    if (argv[i][0] != '-')
-    {
-        *lastTempl = 1;
-        return i;
+        if (i >= argc)
+        {
+            *lastTempl = 1;
+            return i;
+        }
+        if (argv[i][0] != '-')
+        {
+            *lastTempl = 1;
+            return i;
+        }
+        if (!strcmp(argv[i], "-"))
+        {
+            *lastTempl = 1;
+            return i;
+        }
     }
 
     /* return index of the beginning of the next template or input file name */
