@@ -1,1 +1,2 @@
+# Format XML document disabling indent
 cat xml/tab-obj.xml | ./xmlstarlet fo --noindent 

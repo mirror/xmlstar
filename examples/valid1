@@ -1,3 +1,4 @@
+# Validate XML documents using well-formedness/DTD/XSD/RelaxNG checks
 echo "==============================================="
 echo "Well-Formedness Validation Tests"
 echo "- 1 -------------------------------------------"

@@ -1,1 +1,2 @@
+# Display element structure of XML document
 ./xmlstarlet el ./xml/tab-obj.xml

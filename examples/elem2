@@ -1,1 +1,2 @@
+# Display element structure of XML document (including attributes)
 ./xmlstarlet el -a ./xml/tab-obj.xml

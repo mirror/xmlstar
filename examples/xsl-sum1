@@ -1,1 +1,2 @@
+# Applying XSLT stylesheet to XML document
 ./xmlstarlet tr xsl/sum1.xsl xml/table.xml

@@ -193,13 +193,14 @@ xml val --help
 XMLStarlet Toolkit: Validate XML document(s)
 Usage: xml val <options> [ <xml-file-or-uri> ... ]
 where <options>
-   -d or --dtd <dtd-file>  - validate against DTD
-   -s or --xsd <xsd-file>  - validate against schema
-   -e or --err             - print verbose error messages on stderr
-   -b or --list-bad        - list only files which do not validate (default)
-   -g or --list-good       - list only files which validate
-   -n or --none            - do not list files (return result code only)
-   -w or --well-formed     - check only if XML is well-formed (default)
+   -d or --dtd <dtd-file>     - validate against DTD
+   -s or --xsd <xsd-file>     - validate against schema
+   -r or --relaxng <rng-file> - validate against Relax-NG schema
+   -e or --err                - print verbose error messages on stderr
+   -b or --list-bad           - list only files which do not validate
+   -g or --list-good          - list only files which validate
+   -q or --queit              - do not list files (return result code only)
+   -w or --well-formed        - check only if XML is well-formed (default)
 
 NOTE: XML Schemas are not fully supported yet due to its incomplete
       support in libxml (see http://xmlsoft.org)
@@ -396,12 +397,14 @@ examples/xsl/param1.xsl
 
 
 Command:
+# Count elements matching XPath expression
 ./xmlstarlet sel -t -v "count(/xml/table/rec/numField)" xml/table.xml
 Result Output:
 3
 
 
 Command:
+# Count all nodes in XML document
 ./xmlstarlet sel -t -f -o " " -v "count(//node())" xml/table.xml xml/tab-obj.xml
 Result Output:
 xml/table.xml 32
@@ -409,6 +412,7 @@ xml/tab-obj.xml 41
 
 
 Command:
+# Delete elements matching XPath expression
 ./xmlstarlet ed -d /xml/table/rec[@id='2'] xml/table.xml
 Result Output:
 <?xml version="1.0"?>
@@ -427,6 +431,7 @@ Result Output:
 
 
 Command:
+# Generate HTML from given SGML docbook document
 ./xmlstarlet tr --omit-decl --docbook /usr/share/sgml/docbook/yelp/docbook/html/docbook.xsl  sgml/docbook1.sgml | \
     ./xmlstarlet fo --html --indent-spaces 2
 Result Output:
@@ -491,18 +496,21 @@ Result Output:
 
 
 Command:
+# Validate XML document against DTD
 ./xmlstarlet val --dtd dtd/table.dtd xml/tab-obj.xml >/dev/null 2>&1; echo $?
 Result Output:
 1
 
 
 Command:
+# Validate XML document against DTD
 ./xmlstarlet val --dtd dtd/table.dtd xml/table.xml >/dev/null 2>&1; echo $?
 Result Output:
 0
 
 
 Command:
+# Display element structure of XML document
 ./xmlstarlet el ./xml/tab-obj.xml
 Result Output:
 xml
@@ -522,6 +530,7 @@ xml/table/rec/stringField
 
 
 Command:
+# Display element structure of XML document (including attributes)
 ./xmlstarlet el -a ./xml/tab-obj.xml
 Result Output:
 xml
@@ -547,6 +556,7 @@ xml/table/rec/stringField
 
 
 Command:
+# Display element structure of XML document (including attribute values)
 ./xmlstarlet el -v ./xml/tab-obj.xml
 Result Output:
 xml
@@ -566,29 +576,34 @@ xml/table/rec/stringField
 
 
 Command:
+# Calculate EXSLT (XSLT extentions) XPath value
 echo "<x/>" | ./xmlstarlet sel -t -v "math:abs(-1000)"
 Result Output:
 1000
 
 
 Command:
+# Find XML files matching XPath expression (containing 'object' element)
 ./xmlstarlet sel -t -m //object -f xml/table.xml xml/tab-obj.xml
 Result Output:
 xml/tab-obj.xml
 
 
 Command:
+# Generate XML document using command line xml sel
 echo "<x/>" | ./xmlstarlet sel -t -m / -e xml -e child -a data -o value
 Result Output:
 <xml><child data="value"/></xml>
 
 
 Command:
+# Apply XSLT stylesheet to HTML input file
 ./xmlstarlet tr --html xsl/hello1.xsl html/hello1.html
 Result Output:
 Hello World!
 
 Command:
+# Use local-name() XSLT function in XPath expression
 ./xmlstarlet sel -t -v "//*[local-name()='query']" xsql/jobserve.xsql
 Result Output:
 
@@ -600,12 +615,14 @@ Result Output:
 
 
 Command:
+# Select text value of an XML element mathing given XPath expression
 ./xmlstarlet sel -t -m "/xml/table/rec[@id='2']" -v numField xml/table.xml
 Result Output:
 346
 
 
 Command:
+# Format XML document disabling indent
 cat xml/tab-obj.xml | ./xmlstarlet fo --noindent 
 Result Output:
 <?xml version="1.0"?>
@@ -632,6 +649,7 @@ Result Output:
 
 
 Command:
+# xsl:copy-of in xml sel command
 ./xmlstarlet sel -B -t -m /xml/table/rec -c . -n xml/table.xml
 Result Output:
 <rec id="1"><numField>123</numField><stringField>String Value</stringField></rec>
@@ -641,6 +659,7 @@ Result Output:
 
 
 Command:
+# Query XML document and produce sorted text table
 ./xmlstarlet sel -T -t -m /xml/table/rec -s D:N:- "@id" -v "concat(@id,'|',numField,'|',stringField)" -n xml/table.xml
 Result Output:
 3|-23|stringValue
@@ -649,6 +668,7 @@ Result Output:
 
 
 Command:
+# Print structure of XML element using xml sel (advanced XPath expressions and xml sel command usage)
 ./xmlstarlet sel -T -t -m '//*' \
 -m 'ancestor-or-self::*' -v 'name()' -i 'not(position()=last())' -o . -b -b -n \
 xml/structure.xml
@@ -665,12 +685,14 @@ a1.a13.a131
 
 
 Command:
+# Calculating running sum on XML document
 ./xmlstarlet sel -t -v "sum(/xml/table/rec/numField)" xml/table.xml
 Result Output:
 446
 
 
 Command:
+# Indent XML document with tabs
 cat xml/tab-obj.xml | ./xmlstarlet fo --indent-tab 
 Result Output:
 <?xml version="1.0"?>
@@ -697,6 +719,7 @@ Result Output:
 
 
 Command:
+# Generate plain text table from XML document
 ./xmlstarlet sel -T -t -m /xml/table/rec -v "@id" -o "|" -v numField -o "|" -v stringField -n xml/table.xml
 Result Output:
 1|123|String Value
@@ -705,6 +728,7 @@ Result Output:
 
 
 Command:
+# Generate plain text table from XML document
 ./xmlstarlet sel -T -t -m /xml/table/rec -v "concat(@id,'|',numField,'|',stringField)" -n xml/table.xml
 Result Output:
 1|123|String Value
@@ -713,6 +737,7 @@ Result Output:
 
 
 Command:
+# Generate plain text table from XML document
 ./xmlstarlet sel -T \
     -t -o "===================" -n \
        -m xml/table/rec -v "concat(@id,'|',numField,'|',stringField)" -n \
@@ -726,6 +751,117 @@ Result Output:
 
 
 Command:
+# Validate XML documents using well-formedness/DTD/XSD/RelaxNG checks
+echo "==============================================="
+echo "Well-Formedness Validation Tests"
+echo "- 1 -------------------------------------------"
+./xmlstarlet val xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
+echo "- 2 -------------------------------------------"
+./xmlstarlet val -g xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
+echo "- 3 -------------------------------------------"
+./xmlstarlet val -b xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
+echo "- 4 -------------------------------------------"
+./xmlstarlet val -q xml/table.xml xml/tab-obj.xml 2>/dev/null; echo $?
+
+echo "==============================================="
+echo "DTD Validation Tests"
+echo "- 1 -------------------------------------------"
+./xmlstarlet val -d dtd/table.dtd xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
+echo "- 2 -------------------------------------------"
+./xmlstarlet val -g -d dtd/table.dtd xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
+echo "- 3 -------------------------------------------"
+./xmlstarlet val -b -d dtd/table.dtd xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
+echo "- 4 -------------------------------------------"
+./xmlstarlet val -q -d dtd/table.dtd xml/table.xml 2>/dev/null; echo $?
+
+echo "==============================================="
+echo "Schema Validation Tests"
+echo "- 1 -------------------------------------------"
+./xmlstarlet val -s xsd/table.xsd xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
+echo "- 2 -------------------------------------------"
+./xmlstarlet val -g -s xsd/table.xsd xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
+echo "- 3 -------------------------------------------"
+./xmlstarlet val -b -s xsd/table.xsd xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
+echo "- 4 -------------------------------------------"
+./xmlstarlet val -q -s xsd/table.xsd xml/table.xml 2>/dev/null; echo $?
+
+echo "==============================================="
+echo "RelaxNG Schema Validation Tests"
+echo "- 1 -------------------------------------------"
+./xmlstarlet val -r relaxng/address.rng relaxng/address.xml relaxng/address-bad.xml 2>/dev/null; echo $?
+echo "- 2 -------------------------------------------"
+./xmlstarlet val -g -r relaxng/address.rng relaxng/address.xml relaxng/address-bad.xml 2>/dev/null; echo $?
+echo "- 3 -------------------------------------------"
+./xmlstarlet val -b -r relaxng/address.rng relaxng/address.xml relaxng/address-bad.xml 2>/dev/null; echo $?
+echo "- 4 -------------------------------------------"
+./xmlstarlet val -q -r relaxng/address.rng relaxng/address.xml 2>/dev/null; echo $?
+Result Output:
+===============================================
+Well-Formedness Validation Tests
+- 1 -------------------------------------------
+xml/table.xml - valid
+xml/tab-obj.xml - valid
+xml/tab-bad.xml - invalid
+1
+- 2 -------------------------------------------
+xml/table.xml
+xml/tab-obj.xml
+1
+- 3 -------------------------------------------
+xml/tab-bad.xml
+1
+- 4 -------------------------------------------
+0
+===============================================
+DTD Validation Tests
+- 1 -------------------------------------------
+xml/table.xml - valid
+xml/tab-obj.xml - invalid
+xml/tab-bad.xml - invalid
+1
+- 2 -------------------------------------------
+xml/table.xml
+1
+- 3 -------------------------------------------
+xml/tab-obj.xml
+xml/tab-bad.xml
+1
+- 4 -------------------------------------------
+0
+===============================================
+Schema Validation Tests
+- 1 -------------------------------------------
+xml/table.xml - valid
+xml/tab-obj.xml - invalid
+xml/tab-bad.xml - invalid
+1
+- 2 -------------------------------------------
+xml/table.xml
+1
+- 3 -------------------------------------------
+xml/tab-obj.xml
+xml/tab-bad.xml
+1
+- 4 -------------------------------------------
+0
+===============================================
+RelaxNG Schema Validation Tests
+- 1 -------------------------------------------
+relaxng/address.xml - valid
+relaxng/address-bad.xml - invalid
+1
+- 2 -------------------------------------------
+relaxng/address.xml
+1
+- 3 -------------------------------------------
+relaxng/address-bad.xml
+1
+- 4 -------------------------------------------
+0
+
+
+Command:
+# Include one XML document into another using XML include
 ./xmlstarlet tr --xinclude xsl/cat.xsl xml/document.xml
 Result Output:
 <?xml version="1.0" encoding="utf-8"?>
@@ -740,12 +876,14 @@ Result Output:
 
 
 Command:
+# Passing parameters to XSLT stylesheet
 ./xmlstarlet tr xsl/param1.xsl -p Count='count(/xml/table/rec)' -s Text="Count=" xml/table.xml
 Result Output:
 Count=3
 
 
 Command:
+# Applying XSLT stylesheet to XML document
 ./xmlstarlet tr xsl/sum1.xsl xml/table.xml
 Result Output:
 446

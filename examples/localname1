@@ -1,1 +1,2 @@
+# Use local-name() XSLT function in XPath expression
 ./xmlstarlet sel -t -v "//*[local-name()='query']" xsql/jobserve.xsql

@@ -1,1 +1,2 @@
+# Count all nodes in XML document
 ./xmlstarlet sel -t -f -o " " -v "count(//node())" xml/table.xml xml/tab-obj.xml

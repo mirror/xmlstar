@@ -1,1 +1,2 @@
+# Calculate EXSLT (XSLT extentions) XPath value
 echo "<x/>" | ./xmlstarlet sel -t -v "math:abs(-1000)"

@@ -1,1 +1,2 @@
+# Calculating running sum on XML document
 ./xmlstarlet sel -t -v "sum(/xml/table/rec/numField)" xml/table.xml

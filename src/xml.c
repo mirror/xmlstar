@@ -1,4 +1,4 @@
-/*  $Id: xml.c,v 1.24 2003/04/23 02:43:36 mgrouch Exp $  */
+/*  $Id: xml.c,v 1.25 2003/05/07 04:06:10 mgrouch Exp $  */
 
 /*
 
@@ -111,7 +111,7 @@ main(int argc, char **argv)
     }
     else if (!strcmp(argv[1], "--version"))
     {
-        fprintf(stdout, "0.0.1\n");  /* TODO */
+        fprintf(stdout, "0.0.2\n");  /* TODO */
         ret = 0;
     }
     else

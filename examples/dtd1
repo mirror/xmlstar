@@ -1,1 +1,2 @@
+# Validate XML document against DTD
 ./xmlstarlet val --dtd dtd/table.dtd xml/tab-obj.xml >/dev/null 2>&1; echo $?

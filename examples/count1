@@ -1,1 +1,2 @@
+# Count elements matching XPath expression
 ./xmlstarlet sel -t -v "count(/xml/table/rec/numField)" xml/table.xml

@@ -1,1 +1,2 @@
+# Indent XML document with tabs
 cat xml/tab-obj.xml | ./xmlstarlet fo --indent-tab 
