@@ -24,6 +24,7 @@ where <command> is one of:
    ls    (or list)      - List directory as XML
    esc   (or escape)    - Escape special XML characters
    unesc (or unescape)  - Unescape special XML characters
+   pyx   (or xmln)      - Convert XML into PYX format (based on ESIS - ISO 8879)
 <options> are:
    --version           - show version
    --help              - show help
@@ -236,7 +237,83 @@ XML documents (for more information see http://xmlstar.sourceforge.net/)
 
 
 
-8. Examples:
+
+8. Escape/Unescape special XML characters
+====================================================
+
+xml esc --help
+XMLStarlet Toolkit: Escape special XML characters
+Usage: xml esc [<options>] [<string>]
+where <options> are
+   --help      - print usage
+   (TODO: more to be added in future)
+if <string> is missing stdin is used instead.
+
+XMLStarlet is a command line toolkit to query/edit/check/transform
+XML documents (for more information see http://xmlstar.sourceforge.net/)
+
+
+
+
+9. List directory as XML
+====================================================
+
+xml ls --help
+XMLStarlet Toolkit: List directory as XML
+Usage: xml ls
+Lists current directory in XML format.
+
+XMLStarlet is a command line toolkit to query/edit/check/transform
+XML documents (for more information see http://xmlstar.sourceforge.net/)
+
+
+
+
+10. XML canonicalization
+====================================================
+
+xml c14n --help
+XMLStarlet Toolkit: XML canonization
+Usage: xml c14n <mode> <xml-file> [<xpath-expr>] [<inclusive-ns-list>]
+where
+   <xml-file> - input XML document file name (stdin is used if '-')
+   <mode> is one of following:
+   --with-comments         XML file canonization w comments
+   --without-comments      XML file canonization w/o comments
+   --exc-with-comments     Exclusive XML file canonization w comments
+   --exc-without-comments  Exclusive XML file canonization w/o comments
+
+XMLStarlet is a command line toolkit to query/edit/check/transform
+XML documents (for more information see http://xmlstar.sourceforge.net/)
+
+
+
+
+11. Convert XML into PYX format (based on ESIS - ISO 8879)
+====================================================
+
+xml pyx --help
+XMLStarlet Toolkit: Convert XML into PYX format (based on ESIS - ISO 8879)
+Usage: xml pyx {<xml-file>}
+where
+   <xml-file> - input XML document file name (stdin is used if missing)
+
+The PYX format is a line-oriented representation of
+XML documents that is derived from the SGML ESIS format.
+(see ESIS - ISO 8879 Element Structure Information Set spec,
+ISO/IEC JTC1/SC18/WG8 N931 (ESIS))
+
+A non-validating, ESIS generating tool originally developed for
+pyxie project (see http://pyxie.sourceforge.net/)
+ESIS Generation by Sean Mc Grath http://www.digitome.com/sean.html
+
+XMLStarlet is a command line toolkit to query/edit/check/transform
+XML documents (for more information see http://xmlstar.sourceforge.net/)
+
+
+
+
+12. Examples:
 ====================================================
 
 Input1
