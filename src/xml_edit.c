@@ -1,4 +1,4 @@
-/*  $Id: xml_edit.c,v 1.28 2003/08/06 17:42:38 mgrouch Exp $  */
+/*  $Id: xml_edit.c,v 1.29 2003/08/26 04:16:44 mgrouch Exp $  */
 
 /*
 
@@ -58,6 +58,14 @@ THE SOFTWARE.
 
 #define MAX_NS_ARGS    256
 
+typedef struct _edOptions {   /* Global 'edit' options */
+    int noblanks;             /* Remove insignificant spaces from XML tree */
+    int preserveFormat;       /* Preserve original XML formatting */
+    int omit_decl;            /* Ommit XML declaration line <?xml version="1.0"?> */
+} edOptions;
+
+typedef edOptions *edOptionsPtr;
+
 typedef enum _XmlEdOp {
    XML_ED_DELETE,
    XML_ED_INSERT,
@@ -105,10 +113,14 @@ static const char edit_usage_str[] =
 "  <xml-file-or-uri> - input XML document file name/uri (stdin is used if missing)\n\n"
 
 "<global-options> are:\n"
-"  -N <name>=<value> - predefine namespaces (name without \'xmlns:\')\n"
-"                      ex: xsql=urn:oracle-xsql\n"
-"                      Multiple -N options are allowed.\n"
-"  --help or -h      - display help\n\n"
+"  -P (or --pf)        - preserve original formatting\n"
+"  -S (or --ps)        - preserve non-significant spaces\n"
+"  -O (or --omit-decl) - omit XML declaration (<?xml ...?>)\n"
+"  -N <name>=<value>   - predefine namespaces (name without \'xmlns:\')\n"
+"                        ex: xsql=urn:oracle-xsql\n"
+"                        Multiple -N options are allowed.\n"
+"                        -N options must be last global options.\n"
+"  --help or -h        - display help\n\n"
 
 "where <action>\n"
 "   -d or --delete <xpath>\n"
@@ -139,6 +151,55 @@ edUsage(int argc, char **argv)
     fprintf(o, edit_usage_str);
     fprintf(o, more_info);
     exit(1);
+}
+
+/**
+ *  Initialize global command line options
+ */
+void
+edInitOptions(edOptionsPtr ops)
+{
+    ops->noblanks = 1;
+    ops->omit_decl = 0;
+    ops->preserveFormat = 0;
+}
+
+/**
+ *  Parse global command line options
+ */
+int
+edParseOptions(edOptionsPtr ops, int argc, char **argv)
+{
+    int i;
+
+    i = 2;
+    while((i < argc) && (argv[i][0] == '-'))
+    {
+        if (!strcmp(argv[i], "-S") || !strcmp(argv[i], "--ps"))
+        {
+            ops->noblanks = 0;            /* preserve spaces */
+        }
+        else if (!strcmp(argv[i], "-P") || !strcmp(argv[i], "--pf"))
+        {
+            ops->preserveFormat = 1;      /* preserve format */
+        }
+        else if (!strcmp(argv[i], "-O") || !strcmp(argv[i], "--omit-decl"))
+        {
+            ops->omit_decl = 1;
+        }
+        else if (!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h") ||
+                 !strcmp(argv[i], "-?") || !strcmp(argv[i], "-Z"))
+        {
+            edUsage(argc, argv);
+        }
+        else
+        {
+            break;
+        }
+        i++;
+    }
+
+    return i;
 }
 
 /**
@@ -744,18 +805,22 @@ edProcess(xmlDocPtr doc, XmlEdAction* ops, int ops_count)
 int
 edMain(int argc, char **argv)
 {
-    int i, j, n;
+    int i, j, n, start = 0;
+    static edOptions g_ops;
 
     if (argc < 3) edUsage(argc, argv);
     if (!strcmp(argv[2], "--help") || !strcmp(argv[2], "-h")) edUsage(argc, argv);
 
-    edParseNSArr(ns_arr, &nCount, 2, argv+2);
+    edInitOptions(&g_ops);
+    start = edParseOptions(&g_ops, argc, argv);
+
+    edParseNSArr(ns_arr, &nCount, start, argv+start);
         
     /*
      *  Parse command line and fill array of operations
      */
     j = 0;
-    i = 2 + nCount;
+    i = start + nCount;
 
     while (i < argc)
     {
@@ -947,13 +1012,41 @@ edMain(int argc, char **argv)
     ops_count = j;
 
     xmlKeepBlanksDefault(0);
-    
+
+    if ((!g_ops.noblanks) || g_ops.preserveFormat) xmlKeepBlanksDefault(1);
+
     if (i >= argc)
     {
         xmlDocPtr doc = xmlParseFile("-");
 
         edProcess(doc, ops, ops_count);
-        xmlSaveFormatFile("-", doc, 1);
+
+        /* Print out result */
+        if (!g_ops.omit_decl)
+        {
+            xmlSaveFormatFile("-", doc, 1);
+        }
+        else
+        {
+            int format = 1;
+            int ret = 0;
+            char *encoding = NULL;
+            xmlOutputBufferPtr buf = NULL;
+            xmlCharEncodingHandlerPtr handler = NULL;
+            buf = xmlOutputBufferCreateFile(stdout, handler);
+
+            if (doc->children != NULL)
+            {
+               xmlNodePtr child = doc->children;
+               while (child != NULL)
+               {
+                  xmlNodeDumpOutput(buf, doc, child, 0, format, encoding);
+                  xmlOutputBufferWriteString(buf, "\n");
+                  child = child->next;
+               }
+            }
+            ret = xmlOutputBufferClose(buf);
+        }
     }
     
     for (n=i; n<argc; n++)
@@ -961,7 +1054,33 @@ edMain(int argc, char **argv)
         xmlDocPtr doc = xmlParseFile(argv[n]);
 
         edProcess(doc, ops, ops_count);
-        xmlSaveFormatFile("-", doc, 1);
+
+        /* Print out result */
+        if (!g_ops.omit_decl)
+        {
+            xmlSaveFormatFile("-", doc, 1);
+        }
+        else
+        {
+            int format = 1;
+            int ret = 0;
+            char *encoding = NULL;
+            xmlOutputBufferPtr buf = NULL;
+            xmlCharEncodingHandlerPtr handler = NULL;
+            buf = xmlOutputBufferCreateFile(stdout, handler);
+
+            if (doc->children != NULL)
+            {
+               xmlNodePtr child = doc->children;
+               while (child != NULL)
+               {
+                  xmlNodeDumpOutput(buf, doc, child, 0, format, encoding);
+                  xmlOutputBufferWriteString(buf, "\n");
+                  child = child->next;
+               }
+            }
+            ret = xmlOutputBufferClose(buf);
+        }
     }
 
     edCleanupNSArr(ns_arr);
