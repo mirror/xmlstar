@@ -1,4 +1,4 @@
-/*  $Id: xml_validate.c,v 1.17 2003/02/20 05:21:18 mgrouch Exp $  */
+/*  $Id: xml_validate.c,v 1.18 2003/02/20 07:21:42 mgrouch Exp $  */
 
 /*
 
@@ -237,6 +237,12 @@ valAgainstDtd(valOptionsPtr ops, char* dtdvalid, xmlDocPtr doc, char* filename)
     return result;
 }
 
+void foo (void *ctx,
+         const char *msg,
+         ...)
+{ 
+}
+
 /**
  *  This is the main function for 'validate' option
  */
@@ -270,7 +276,7 @@ valMain(int argc, char **argv)
                 xmlDefaultSAXHandlerInit();
                 xmlDefaultSAXHandler.error = NULL;
                 xmlDefaultSAXHandler.warning = NULL;
-            }
+            }                       
 
             doc = xmlParseFile(argv[i]);
             if (doc)
@@ -300,21 +306,47 @@ valMain(int argc, char **argv)
 
         /* TODO: Do not print debug stuff */
         ctxt = xmlSchemaNewParserCtxt(ops.schema);
-        xmlSchemaSetParserErrors(ctxt,
-            (xmlSchemaValidityErrorFunc) fprintf,
-            (xmlSchemaValidityWarningFunc) fprintf,
-            stderr);
+        if (!ops.err)
+        {
+            xmlSchemaSetParserErrors(ctxt,
+                (xmlSchemaValidityErrorFunc) NULL,
+                (xmlSchemaValidityWarningFunc) NULL,
+                NULL);
+            xmlGenericError = foo;
+            xmlGenericErrorContext = NULL;
+            xmlInitParser();
+        }
+        else
+        {
+            xmlSchemaSetParserErrors(ctxt,
+                (xmlSchemaValidityErrorFunc) fprintf,
+                (xmlSchemaValidityWarningFunc) fprintf,
+                stderr);
+        }
                
         schema = xmlSchemaParse(ctxt);
         xmlSchemaFreeParserCtxt(ctxt);
         if (schema != NULL)
         {  
             ctxt2 = xmlSchemaNewValidCtxt(schema);
-            xmlSchemaSetValidErrors(ctxt2,
-                (xmlSchemaValidityErrorFunc) fprintf,
-                (xmlSchemaValidityWarningFunc) fprintf,
-                stderr);
-        
+            if (!ops.err)
+            {
+                xmlSchemaSetValidErrors(ctxt2,
+                    (xmlSchemaValidityErrorFunc) NULL,
+                    (xmlSchemaValidityWarningFunc) NULL,
+                    NULL);
+                xmlGenericError = foo;
+                xmlGenericErrorContext = NULL;
+                xmlInitParser();
+            }
+            else
+            {
+                xmlSchemaSetValidErrors(ctxt2,
+                    (xmlSchemaValidityErrorFunc) fprintf,
+                    (xmlSchemaValidityWarningFunc) fprintf,
+                    stderr);
+            }
+                
             for (i=start; i<argc; i++)
             {
                 xmlDocPtr doc;
@@ -339,10 +371,6 @@ valMain(int argc, char **argv)
                 else
                 {
                     ret = 1; /* Malformed XML or could not open file */
-                    if (ops.listGood < 0)
-                    {
-                        fprintf(stdout, "%s\n", argv[i]);
-                    }
                 }
                 if (ret) invalidFound = 1;
 
