@@ -1,2 +1,2 @@
-# Include one XML document into another using XML include
+# Include one XML document into another using XInclude
 ./xmlstarlet tr --xinclude xsl/cat.xsl xml/document.xml
