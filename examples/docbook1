@@ -1,3 +1,2 @@
 ./xmlstarlet tr --omit-decl --docbook /usr/share/sgml/docbook/yelp/docbook/html/docbook.xsl  sgml/docbook1.sgml | \
-./xmlstarlet fo --html --indent-spaces 2
-
+    ./xmlstarlet fo --html --indent-spaces 2
