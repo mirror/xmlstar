@@ -11,7 +11,25 @@
 ====================================================
 
 xml
-./gen-doc: line 17: ../src/xml: No such file or directory
+XMLStarlet Toolkit: Command line utilities for XML
+Usage: xml [<options>] <command> [<cmd-options>]
+where <command> is one of:
+   ed   (or edit)      - Edit/Update XML document(s)
+   sel  (or select)    - Select data or query XML document(s) (XPATH, etc)
+   tr   (or transform) - Transform XML document(s) using XSLT
+   val  (or validate)  - Validate XML document(s) (well-formed/DTD/XSD)
+   fo   (or format)    - Format XML document(s)
+   el   (or elements)  - Display element structure of XML document
+<options> are:
+   --version           - show version
+   --help              - show help
+Wherever file name mentioned in command help it is assumed
+that URL can be used instead as well.
+
+Type: xml <command> --help <ENTER> for command help
+
+XMLStarlet is a command line toolkit to query/edit/check/transform
+XML documents (for more information see http://xmlstar.sourceforge.net/)
 
 
 
@@ -19,7 +37,79 @@ xml
 ====================================================
 
 xml sel --help
-./gen-doc: line 26: ../src/xml: No such file or directory
+XMLStarlet Toolkit: Select from XML document(s)
+Usage: xml sel <global-options> {<template>} [ <xml-file> ... ]
+where
+  <global-options> - global options for selecting
+  <xml-file> - input XML document file name/uri (stdin is used if missing)
+  <template> - template for querying XML document with following syntax:
+
+<global-options> are:
+  -C or --comp       - display generated XSLT
+  -R or --root       - print root element <xsl-select>
+  -T or --text       - output is text (default is XML)
+  -I or --indent     - indent output
+  -D or --xml-decl   - do not omit xml declaration line
+  -B or --noblanks   - remove insignificant spaces from XML tree
+  --net              - allow fetch DTDs or entities over network
+  --help             - display help
+
+Syntax for templates: -t|--template <options>
+where <options>
+  -c or --copy-of <xpath>  - print copy of XPATH expression
+  -v or --value-of <xpath> - print value of XPATH expression
+  -o or --output <string>  - output string literal
+  -n or --nl               - print new line
+  -f or --inp-name         - print input file name (or URL)
+  -m or --match <xpath>    - match XPATH expression
+  -i or --if <test-xpath>  - check condition <xsl:if test="test-xpath">
+  -e or --elem <name>      - print out element <xsl:element name="name">
+  -a or --attr <name>      - add attribute <xsl:attribute name="name">
+  -b or --break            - break nesting
+  -s or --sort op xpath    - sort in order (used after -m) where
+  op is X:Y:Z, 
+      X is A - for order="ascending"
+      X is D - for order="descending"
+      Y is N - for data-type="numeric"
+      Y is T - for data-type="text"
+      Z is U - for case-order="upper-first"
+      Z is L - for case-order="lower-first"
+
+There can be multiple --match, --copy-of, --value-of, etc options
+in a single template. The effect of applying command line templates
+can be illustrated with the following XSLT analogue
+
+xml sel -t -c "xpath0" -m "xpath1" -m "xpath2" -v "xpath3" \
+        -t -m "xpath4" -c "xpath5"
+
+is equivalent to applying the following XSLT
+
+<?xml version="1.0"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:template match="/">
+  <xsl:call-template name="t1"/>
+  <xsl:call-template name="t2"/>
+</xsl:template>
+<xsl:template name="t1">
+  <xsl:copy-of select="xpath0"/>
+  <xsl:for-each select="xpath1">
+    <xsl:for-each select="xpath2">
+      <xsl:value-of select="xpath3"/>
+    </xsl:for-each>
+  </xsl:for-each>
+</xsl:template>
+<xsl:template name="t2">
+  <xsl:for-each select="xpath4">
+    <xsl:copy-of select="xpath5"/>
+  </xsl:for-each>
+</xsl:template>
+</xsl:stylesheet>
+
+XMLStarlet is a command line toolkit to query/edit/check/transform
+XML documents (for more information see http://xmlstar.sourceforge.net/)
+
+Current implementation uses libxslt from GNOME codebase as XSLT processor
+(see http://xmlsoft.org/ for more details)
 
 
 
@@ -27,7 +117,20 @@ xml sel --help
 ====================================================
 
 xml ed --help
-./gen-doc: line 35: ../src/xml: No such file or directory
+XMLStarlet Toolkit: Edit XML document(s)
+Usage: xml ed {<action>} [ <xml-file-or-uri> ... ]
+where <action>
+   -d or --delete <xpath>
+   -i or --insert <xpath> -t (--type) elem|text|attr -v (--value) <value>
+   -a or --append <xpath> -t (--type) elem|text|attr -v (--value) <value>
+   -s or --subnode <xpath> -t (--type) elem|text|attr -v (--value) <value>
+   -m or --move <xpath1> <xpath2>
+   -r or --rename <xpath1> -v <new-name>
+   -u or --update <xpath> -v (--value) <value>
+			  -x (--expr) <xpath>
+
+XMLStarlet is a command line toolkit to query/edit/check/transform
+XML documents (for more information see http://xmlstar.sourceforge.net/)
 
 
 
@@ -35,7 +138,32 @@ xml ed --help
 ====================================================
 
 xml tr --help
-./gen-doc: line 44: ../src/xml: No such file or directory
+XMLStarlet Toolkit: Transform XML document(s) using XSLT
+Usage: xml tr [<options>] <xsl-file> {-p|-s <name>=<value>} [ <xml-file-or-uri> ... ]
+where
+   <xsl-file>      - main XSLT stylesheet for transformation
+   <xml-file>      - input XML document file name (stdin is used if missing)
+   <name>=<value>  - name and value of the parameter passed to XSLT processor
+   -p              - parameter is XPATH expression ("'string'" to quote string)
+   -s              - parameter is a string literal
+<options> are:
+   --omit-decl     - omit xml declaration <?xml version="1.0"?>
+   --show-ext      - show list of extensions
+   --val           - allow validate against DTDs or schemas
+   --net           - allow fetch DTDs or entities over network
+   --xinclude      - do XInclude processing on document input
+   --maxdepth val  - increase the maximum depth
+   --html          - input document(s) is(are) in HTML format
+   --docbook       - input document(s) is(are) in SGML docbook format
+   --catalogs      - use SGML catalogs from $SGML_CATALOG_FILES
+                     otherwise XML catalogs starting from
+                     file:///etc/xml/catalog are activated by default
+
+XMLStarlet is a command line toolkit to query/edit/check/transform
+XML documents (for more information see http://xmlstar.sourceforge.net/)
+
+Current implementation uses libxslt from GNOME codebase as XSLT processor
+(see http://xmlsoft.org/ for more details)
 
 
 
@@ -43,7 +171,18 @@ xml tr --help
 ====================================================
 
 xml fo --help
-./gen-doc: line 53: ../src/xml: No such file or directory
+XMLStarlet Toolkit: Format XML document(s)
+Usage: xml fo [<options>] <xml-file>
+where <options> are
+   -n or --noindent            - do not indent
+   -t or --indent-tab          - indent output with tabulation
+   -s or --indent-spaces <num> - indent output with <num> spaces
+   -o or --omit-decl           - omit xml declaration <?xml version="1.0"?>
+   -H or --html                - input is HTML
+   -h or --help                - print help
+
+XMLStarlet is a command line toolkit to query/edit/check/transform
+XML documents (for more information see http://xmlstar.sourceforge.net/)
 
 
 
@@ -51,7 +190,22 @@ xml fo --help
 ====================================================
 
 xml val --help
-./gen-doc: line 62: ../src/xml: No such file or directory
+XMLStarlet Toolkit: Validate XML document(s)
+Usage: xml val <options> [ <xml-file-or-uri> ... ]
+where <options>
+   -d or --dtd <dtd-file>  - validate against DTD
+   -s or --xsd <xsd-file>  - validate against schema
+   -e or --err             - print verbose error messages on stderr
+   -b or --list-bad        - list only files which do not validate (default)
+   -g or --list-good       - list only files which validate
+   -n or --none            - do not list files (return result code only)
+   -w or --well-formed     - check only if XML is well-formed (default)
+
+NOTE: XML Schemas are not fully supported yet due to its incomplete
+      support in libxml (see http://xmlsoft.org)
+
+XMLStarlet is a command line toolkit to query/edit/check/transform
+XML documents (for more information see http://xmlstar.sourceforge.net/)
 
 
 
@@ -59,7 +213,16 @@ xml val --help
 ====================================================
 
 xml el --help
-./gen-doc: line 71: ../src/xml: No such file or directory
+XMLStarlet Toolkit: Display element structure of XML document
+Usage: xml el [<options>] <xml-file>
+where
+   <xml-file> - input XML document file name (stdin is used if missing)
+   <options>:
+   -a  - show attributes as well
+   -v  - show attributes and their values
+
+XMLStarlet is a command line toolkit to query/edit/check/transform
+XML documents (for more information see http://xmlstar.sourceforge.net/)
 
 
 
