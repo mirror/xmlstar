@@ -1388,8 +1388,7 @@ Aid 1
 
       <para>Here is an article which describes how PYX format can be used to
       grep XML. <ulink
-      url="???">http://www-106.ibm.com/developerworks/xml/library/x-matters17.html</ulink>
-      </para>
+      url="???">http://www-106.ibm.com/developerworks/xml/library/x-matters17.html</ulink></para>
     </sect1>
 
     <sect1>
@@ -1497,7 +1496,7 @@ XML documents (for more information see http://xmlstar.sourceforge.net/)
       <para>For example the following XHTML document has a default namespace
       declaration</para>
 
-      <para> <programlisting>&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+      <para><programlisting>&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
 &lt;head&gt;
 &lt;title&gt;Query Page&lt;/title&gt;
 &lt;meta http-equiv="Content-Style-Type" content="text/css" /&gt;
@@ -1514,7 +1513,7 @@ XML documents (for more information see http://xmlstar.sourceforge.net/)
       <para>And the following (initially looking correct) query to print all
       links</para>
 
-      <para><programlisting>xml sel -t -m '//a' -c . -n </programlisting></para>
+      <para><programlisting>xml sel -t -m "//a" -c . -n </programlisting></para>
 
       <para>would return nothing. The issue with this query is that it is not
       addressing element &lt;a&gt; in the right namespace. XPath requires all
@@ -1526,7 +1525,26 @@ XML documents (for more information see http://xmlstar.sourceforge.net/)
 
       <para><programlisting>xml sel -N x="http://www.w3.org/1999/xhtml" -t -m "//x:a" -c . -n</programlisting></para>
 
-      <para>TODO: Example of deleting namespace declarations.</para>
+      <para>Example of deleting namespace declarations.</para>
+
+      <para>Delete namespace declarations and all elements from non default
+      namespace from the following XML document:</para>
+
+      <para>Input (file ns2.xml)<programlisting>&lt;doc xmlns="http://www.a.com/xyz" xmlns:ns="http://www.c.com/xyz"&gt;
+  &lt;A&gt;test&lt;/A&gt;
+  &lt;B&gt;
+    &lt;ns:C&gt;xyz&lt;/ns:C&gt;
+  &lt;/B&gt;
+&lt;/doc&gt;
+</programlisting></para>
+
+      <para>Command:<programlisting>xml ed -N N="http://www.c.com/xyz" -d '//N:*' ns2.xml | sed -e 's/ xmlns.*=".*"//g'</programlisting></para>
+
+      <para>Output<programlisting>&lt;doc&gt;
+  &lt;A&gt;test&lt;/A&gt;
+  &lt;B/&gt;
+&lt;/doc&gt;
+</programlisting></para>
     </sect1>
 
     <sect1>
@@ -1538,7 +1556,7 @@ XML documents (for more information see http://xmlstar.sourceforge.net/)
 
       <para>You should not forget about the fact that your command lines are
       executed by shell and shell does substitutions of its special characters
-      too. So for example, one may ask: </para>
+      too. So for example, one may ask:</para>
 
       <para>"Why does the following query return nothing?"<programlisting>echo '&lt;X name="foo"&gt;EEE&lt;/X&gt;' | xml sel -t -m /X[@name='foo'] -v .</programlisting></para>
 
@@ -1549,7 +1567,7 @@ XML documents (for more information see http://xmlstar.sourceforge.net/)
       <para><programlisting>echo '&lt;X name="foo"&gt;EEE&lt;/X&gt;' | xml sel -t -m "/X[@name='foo']" -v .</programlisting></para>
 
       <para>Another example involves XML special characters. Question: How to
-      search for &amp;apos; in text nodes? </para>
+      search for &amp;apos; in text nodes?</para>
 
       <para>The following should help<programlisting>xml sel -t -m "//line[contains(text(),&amp;quot;'&amp;quot;)]" -c .
 </programlisting></para>
