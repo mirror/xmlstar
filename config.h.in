@@ -105,3 +105,12 @@
 /* Version number of package */
 #undef VERSION
 
+/* Using the Win32 Socket implementation */
+#undef _WINSOCKAPI_
+
+/* Win32 Std C name mangling work-around */
+#undef snprintf
+
+/* Win32 Std C name mangling work-around */
+#undef vsnprintf
+
