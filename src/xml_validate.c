@@ -1,4 +1,4 @@
-/*  $Id: xml_validate.c,v 1.28 2003/12/17 06:26:01 mgrouch Exp $  */
+/*  $Id: xml_validate.c,v 1.29 2004/02/04 18:49:39 mgrouch Exp $  */
 
 /*
 
@@ -228,21 +228,29 @@ valAgainstDtd(valOptionsPtr ops, char* dtdvalid, xmlDocPtr doc, char* filename)
         }
         else
         {
-            xmlValidCtxt cvp;
+            xmlValidCtxtPtr cvp;
+
+            if ((cvp = xmlNewValidCtxt()) == NULL) 
+            {
+                xmlGenericError(xmlGenericErrorContext,
+                    "Couldn't allocate validation context\n");
+                exit(-1);
+            }
+        
             if (ops->err)
             {
-                cvp.userData = (void *) stderr;
-                cvp.error    = (xmlValidityErrorFunc) fprintf;
-                cvp.warning  = (xmlValidityWarningFunc) fprintf;
+                cvp->userData = (void *) stderr;
+                cvp->error    = (xmlValidityErrorFunc) fprintf;
+                cvp->warning  = (xmlValidityWarningFunc) fprintf;
             }
             else
             {
-                cvp.userData = (void *) NULL;
-                cvp.error    = (xmlValidityErrorFunc) NULL;
-                cvp.warning  = (xmlValidityWarningFunc) NULL;
+                cvp->userData = (void *) NULL;
+                cvp->error    = (xmlValidityErrorFunc) NULL;
+                cvp->warning  = (xmlValidityWarningFunc) NULL;
             }
                         
-            if (!xmlValidateDtd(&cvp, doc, dtd))
+            if (!xmlValidateDtd(cvp, doc, dtd))
             {
                 if ((ops->listGood < 0) && !ops->show_val_res)
                 {
