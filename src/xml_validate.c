@@ -1,4 +1,4 @@
-/*  $Id: xml_validate.c,v 1.14 2003/02/19 03:52:59 mgrouch Exp $  */
+/*  $Id: xml_validate.c,v 1.15 2003/02/19 04:01:26 mgrouch Exp $  */
 
 /*
 
@@ -341,6 +341,10 @@ valMain(int argc, char **argv)
             }
             if (ret) invalidFound = 1;
 
+            if ((ops.listGood > 0) && (ret == 0))
+                fprintf(stdout, "%s\n", argv[i]);
+            if ((ops.listGood < 0) && (ret != 0))
+                fprintf(stdout, "%s\n", argv[i]);
             /*
             if (ret == 0)
                 fprintf(stderr, "%s - validates\n", argv[i]);
