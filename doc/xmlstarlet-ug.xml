@@ -5,7 +5,7 @@
   <title>XmlStarlet Command Line XML Toolkit User's Guide</title>
 
   <bookinfo>
-    <date>Nov 24, 2003</date>
+    <date>June 16, 2004</date>
 
     <author>
       <firstname>Mikhail</firstname>
@@ -167,6 +167,12 @@
       <itemizedlist>
         <listitem>
           <para>FreeBSD</para>
+        </listitem>
+      </itemizedlist>
+
+      <itemizedlist>
+        <listitem>
+          <para>HP-UX</para>
         </listitem>
       </itemizedlist>
 
@@ -1362,7 +1368,11 @@ Aid 1
       (and very efficient) when used in combination with regular line oriented
       UNIX command such as sed, grep, awk.</para>
 
-      <para>EXAMPLE (Delete all attributes)</para>
+      <para>'depyx' option is used for conversion back from PYX into
+      XML.</para>
+
+      <para>EXAMPLE (Delete all attributes). This should work really fast for
+      very large XML documents.</para>
 
       <programlisting>xml pyx input.xml | grep -v  "^A" | xml depyx</programlisting>
 
@@ -1376,7 +1386,10 @@ Aid 1
 &lt;/book&gt;
 &lt;/books&gt;</programlisting>
 
-      <para></para>
+      <para>Here is an article which describes how PYX format can be used to
+      grep XML. <ulink
+      url="???">http://www-106.ibm.com/developerworks/xml/library/x-matters17.html</ulink>
+      </para>
     </sect1>
 
     <sect1>
@@ -1466,6 +1479,99 @@ XML documents (for more information see http://xmlstar.sourceforge.net/)
 &lt;d a="rwxr-xr-x" acc="2004.02.13 00:04:52" mod="2004.02.13 00:04:52" sz="4096"  n="old-resumes"/&gt;
 &lt;/xml&gt;
 </programlisting>
+    </sect1>
+  </chapter>
+
+  <chapter>
+    <title id="s.5">Common problems</title>
+
+    <sect1>
+      <title id="s.5.1">Namespaces and default namespace</title>
+
+      <para>One of the commonly asked questions about XmlStarlet 'select' or
+      'edit' options is: "Why nothing matched for my XPath expression which
+      seems right to me?". Common cause of these problems is not properly
+      defining a namespace for XPath. This chapter will show several examples
+      to illustrate these issues you might encounter.</para>
+
+      <para>For example the following XHTML document has a default namespace
+      declaration</para>
+
+      <para> <programlisting>&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+&lt;head&gt;
+&lt;title&gt;Query Page&lt;/title&gt;
+&lt;meta http-equiv="Content-Style-Type" content="text/css" /&gt;
+&lt;meta http-equiv="Content-Script-Type" content="text/javascript" /&gt;
+&lt;meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" /&gt;
+&lt;meta name="robots" content="noindex,nofollow" /&gt;
+&lt;/head&gt;
+&lt;body&gt;
+...
+&lt;/body&gt;
+&lt;/html&gt;
+</programlisting></para>
+
+      <para>And the following (initially looking correct) query to print all
+      links</para>
+
+      <para><programlisting>xml sel -t -m '//a' -c . -n </programlisting></para>
+
+      <para>would return nothing. The issue with this query is that it is not
+      addressing element &lt;a&gt; in the right namespace. XPath requires all
+      namespaces used in XPath expression be defined. So for declared
+      namespace &lt;html xmlns="http://www.w3.org/1999/xhtml"&gt; in input
+      XML, you have to do same for XPath (or XSLT). There is another important
+      detail: namespace equivalency is determined not by namespace prefix, but
+      by URI. See query below, which would return expected result</para>
+
+      <para><programlisting>xml sel -N x="http://www.w3.org/1999/xhtml" -t -m "//x:a" -c . -n</programlisting></para>
+
+      <para>TODO: Example of deleting namespace declarations.</para>
+    </sect1>
+
+    <sect1>
+      <title id="s.5.2">Special characters</title>
+
+      <para>Sometimes issues appear with handling of special characters, where
+      'special' means in XML sence as well as in 'shell' terms. Examples below
+      should clear at least some of the confusions.</para>
+
+      <para>You should not forget about the fact that your command lines are
+      executed by shell and shell does substitutions of its special characters
+      too. So for example, one may ask: </para>
+
+      <para>"Why does the following query return nothing?"<programlisting>echo '&lt;X name="foo"&gt;EEE&lt;/X&gt;' | xml sel -t -m /X[@name='foo'] -v .</programlisting></para>
+
+      <para>The answer lies in the way shell substitues 'foo', which simply
+      becomes foo before the command is run. So the correct way to write that
+      would be</para>
+
+      <para><programlisting>echo '&lt;X name="foo"&gt;EEE&lt;/X&gt;' | xml sel -t -m "/X[@name='foo']" -v .</programlisting></para>
+
+      <para>Another example involves XML special characters. Question: How to
+      search for &amp;apos; in text nodes? </para>
+
+      <para>The following should help<programlisting>xml sel -t -m "//line[contains(text(),&amp;quot;'&amp;quot;)]" -c .
+</programlisting></para>
+    </sect1>
+
+    <sect1>
+      <title id="s.5.3">Sorting</title>
+
+      <para>TODO.</para>
+    </sect1>
+
+    <sect1>
+      <title id="s.5.4">Validation</title>
+
+      <para>Many questions are asked about XSD (XML schema) validation. Well,
+      XmlStarlet relies on libxml2 which has incomplete support for XML
+      schemas. Untill it is done in libxml2 it will not be in
+      XmlStarlet.</para>
+
+      <para></para>
+
+      <para></para>
     </sect1>
   </chapter>
 </book>
