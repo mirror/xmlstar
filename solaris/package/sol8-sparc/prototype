@@ -1,0 +1,4 @@
+i pkginfo
+d none bin ? ? ?
+f none bin/xml=../../../src/xml 0755 root bin
+
