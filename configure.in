@@ -6,13 +6,16 @@ PACKAGE=xmlstarlet
 AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
 AM_MAINTAINER_MODE
 AC_CANONICAL_HOST
+AC_PROG_CC
 
 CFLAGS="-Wall -g -pedantic"
 EXTRA_LIBS=
 
 case "${host}" in
-  hp* )
-      CFLAGS="-Ae"
+  *-hpux* )
+      if test "$GCC" != "yes"; then
+        CFLAGS="-Ae"
+      fi
       ;;
   * )
       ;;
@@ -204,7 +207,7 @@ case "${host}" in
       LIBXML_LIBS=`echo "$LIBXML_LIBS" | sed -e 's/ -lz//g' -e 's/ -lpthread//g'`
       LIBXSLT_LIBS=`echo "$LIBXSLT_LIBS" | sed -e 's/ -lz//g' -e 's/ -lpthread//g'`
       ;;
-  hp* )
+  *-hpux* )
       LIBXML_LIBS=`echo "$LIBXML_LIBS" | sed -e 's/ -lz//g'`
       LIBXSLT_LIBS=`echo "$LIBXSLT_LIBS" | sed -e 's/ -lz//g'`
       ;;
