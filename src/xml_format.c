@@ -1,4 +1,4 @@
-/*  $Id: xml_format.c,v 1.19 2003/12/17 06:26:01 mgrouch Exp $  */
+/*  $Id: xml_format.c,v 1.20 2004/02/12 23:28:26 mgrouch Exp $  */
 
 /*
 
@@ -72,21 +72,21 @@ static const char format_usage_str_1[] =
 "XMLStarlet Toolkit: Format XML document\n"
 "Usage: xml fo [<options>] <xml-file>\n"
 "where <options> are\n"
-"   -n or --noindent            - do not indent\n"
-"   -t or --indent-tab          - indent output with tabulation\n"
-"   -s or --indent-spaces <num> - indent output with <num> spaces\n"
-"   -o or --omit-decl           - omit xml declaration <?xml version=\"1.0\"?>\n";
+"  -n or --noindent            - do not indent\n"
+"  -t or --indent-tab          - indent output with tabulation\n"
+"  -s or --indent-spaces <num> - indent output with <num> spaces\n"
+"  -o or --omit-decl           - omit xml declaration <?xml version=\"1.0\"?>\n";
 
 static const char format_usage_str_2[] =
-"   -R or --recover             - try to recover what is parsable\n"
-"   -D or --dropdtd             - remove the DOCTYPE of the input docs\n"
-"   -C or --nocdata             - replace cdata section with text nodes\n"
-"   -N or --nsclean             - remove redundant namespace declarations\n"
-"   -e or --encode <encoding>   - output in the given encoding (utf-8, unicode...)\n"
+"  -R or --recover             - try to recover what is parsable\n"
+"  -D or --dropdtd             - remove the DOCTYPE of the input docs\n"
+"  -C or --nocdata             - replace cdata section with text nodes\n"
+"  -N or --nsclean             - remove redundant namespace declarations\n"
+"  -e or --encode <encoding>   - output in the given encoding (utf-8, unicode...)\n"
 #ifdef LIBXML_HTML_ENABLED
-"   -H or --html                - input is HTML\n"
+"  -H or --html                - input is HTML\n"
 #endif
-"   -h or --help                - print help\n\n";
+"  -h or --help                - print help\n\n";
 
 const char *encoding = NULL;
 

@@ -1,4 +1,4 @@
-/*  $Id: xml.c,v 1.34 2003/12/17 06:26:01 mgrouch Exp $  */
+/*  $Id: xml.c,v 1.35 2004/02/12 23:28:25 mgrouch Exp $  */
 
 /*
 
@@ -53,25 +53,25 @@ static const char usage_str_1[] =
 
 static const char usage_str_2[] = 
 "where <command> is one of:\n"
-"   ed    (or edit)      - Edit/Update XML document(s)\n"
-"   sel   (or select)    - Select data or query XML document(s) (XPATH, etc)\n"
-"   tr    (or transform) - Transform XML document(s) using XSLT\n"
-"   val   (or validate)  - Validate XML document(s) (well-formed/DTD/XSD/RelaxNG)\n"
-"   fo    (or format)    - Format XML document(s)\n"
-"   el    (or elements)  - Display element structure of XML document\n";
+"  ed    (or edit)      - Edit/Update XML document(s)\n"
+"  sel   (or select)    - Select data or query XML document(s) (XPATH, etc)\n"
+"  tr    (or transform) - Transform XML document(s) using XSLT\n"
+"  val   (or validate)  - Validate XML document(s) (well-formed/DTD/XSD/RelaxNG)\n"
+"  fo    (or format)    - Format XML document(s)\n"
+"  el    (or elements)  - Display element structure of XML document\n";
 
 static const char usage_str_3[] = 
-"   c14n  (or canonic)   - XML canonicalization\n"
-"   ls    (or list)      - List directory as XML\n"
-"   esc   (or escape)    - Escape special XML characters\n"
-"   unesc (or unescape)  - Unescape special XML characters\n"
-"   pyx   (or xmln)      - Convert XML into PYX format (based on ESIS - ISO 8879)\n"
-"   p2x   (or depyx)     - Convert PYX into XML\n";
+"  c14n  (or canonic)   - XML canonicalization\n"
+"  ls    (or list)      - List directory as XML\n"
+"  esc   (or escape)    - Escape special XML characters\n"
+"  unesc (or unescape)  - Unescape special XML characters\n"
+"  pyx   (or xmln)      - Convert XML into PYX format (based on ESIS - ISO 8879)\n"
+"  p2x   (or depyx)     - Convert PYX into XML\n";
 
 static const char usage_str_4[] = 
 "<options> are:\n"
-"   --version            - show version\n"
-"   --help               - show help\n"
+"  --version            - show version\n"
+"  --help               - show help\n"
 "Wherever file name mentioned in command help it is assumed\n"
 "that URL can be used instead as well.\n\n"
 "Type: xml <command> --help <ENTER> for command help\n\n";
