@@ -1,8 +1,8 @@
 #
 SUBDIRS = \
- 	src
+ 	src doc
 
-DIST_SUBDIRS = src
+DIST_SUBDIRS = src doc
 
 EXTRA_DIST = \
 	README TODO Copyright COPYING
