@@ -1,4 +1,4 @@
-/*  $Id: xml_edit.c,v 1.16 2002/12/05 22:19:32 mgrouch Exp $  */
+/*  $Id: xml_edit.c,v 1.17 2003/04/19 00:27:09 mgrouch Exp $  */
 
 /*
 
@@ -91,7 +91,7 @@ XmlEdAction ops[MAX_XML_ED_OPS];
 
 static const char edit_usage_str[] =
 "XMLStarlet Toolkit: Edit XML document(s)\n"
-"Usage: xml ed {<action>} [ <xml-file> ... ]\n"
+"Usage: xml ed {<action>} [ <xml-file-or-uri> ... ]\n"
 "where <action>\n"
 "   -d or --delete <xpath>\n"
 "   -i or --insert <xpath> -t (--type) elem|text|attr -v (--value) <value>\n"

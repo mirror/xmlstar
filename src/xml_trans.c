@@ -1,4 +1,4 @@
-/*  $Id: xml_trans.c,v 1.29 2002/12/09 02:29:45 mgrouch Exp $  */
+/*  $Id: xml_trans.c,v 1.30 2003/04/19 00:27:09 mgrouch Exp $  */
 
 /*
 
@@ -46,7 +46,7 @@ THE SOFTWARE.
 
 static const char trans_usage_str[] =
 "XMLStarlet Toolkit: Transform XML document(s) using XSLT\n"
-"Usage: xml tr [<options>] <xsl-file> {-p|-s <name>=<value>} [ <xml-file> ... ]\n"
+"Usage: xml tr [<options>] <xsl-file> {-p|-s <name>=<value>} [ <xml-file-or-uri> ... ]\n"
 "where\n"
 "   <xsl-file>      - main XSLT stylesheet for transformation\n"
 "   <xml-file>      - input XML document file name (stdin is used if missing)\n"

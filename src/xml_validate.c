@@ -1,4 +1,4 @@
-/*  $Id: xml_validate.c,v 1.20 2003/02/21 03:01:38 mgrouch Exp $  */
+/*  $Id: xml_validate.c,v 1.21 2003/04/19 00:27:09 mgrouch Exp $  */
 
 /*
 
@@ -60,7 +60,7 @@ typedef valOptions *valOptionsPtr;
 
 static const char validate_usage_str[] =
 "XMLStarlet Toolkit: Validate XML document(s)\n"
-"Usage: xml val <options> [ <xml-file> ... ]\n"
+"Usage: xml val <options> [ <xml-file-or-uri> ... ]\n"
 "where <options>\n"
 "   -d or --dtd <dtd-file>  - validate against DTD\n"
 #ifdef LIBXML_SCHEMAS_ENABLED
