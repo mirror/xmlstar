@@ -1,10 +1,10 @@
-/*  $Id: xml_validate.c,v 1.32 2004/11/11 03:39:34 mgrouch Exp $  */
+/*  $Id: xml_validate.c,v 1.33 2004/11/22 00:48:02 mgrouch Exp $  */
 
 /*
 
 XMLStarlet: Command Line Toolkit to query/edit/check/transform XML documents
 
-Copyright (c) 2002 Mikhail Grushinskiy.  All Rights Reserved.
+Copyright (c) 2002-2004 Mikhail Grushinskiy.  All Rights Reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -308,6 +308,7 @@ valMain(int argc, char **argv)
         {
             xmlDocPtr doc;
             int ret;
+            int options = 0;
 
             ret = 0;
             doc = NULL;
@@ -319,7 +320,8 @@ valMain(int argc, char **argv)
                 xmlDefaultSAXHandler.warning = NULL;
             }                       
 
-            doc = xmlParseFile(argv[i]);
+            options |= XML_PARSE_DTDVALID;
+            doc = xmlReadFile(argv[i], NULL, options);
             if (doc)
             {
                 /* TODO: precompile DTD once */                
