@@ -1,5 +1,5 @@
 /*
- *  $Id: xml_C14N.c,v 1.4 2003/10/30 04:22:26 mgrouch Exp $
+ *  $Id: xml_C14N.c,v 1.5 2003/11/05 01:41:45 mgrouch Exp $
  *
  *  Canonical XML implementation test program
  *  (http://www.w3.org/TR/2001/REC-xml-c14n-20010315)
@@ -47,7 +47,7 @@ static const char c14n_usage_str[] =
 "    </XPath>\n"
 "\n"
 "  <mode> is one of following:\n"
-"  --with-comments         XML file canonicalization w comments\n"
+"  --with-comments         XML file canonicalization w comments (default)\n"
 "  --without-comments      XML file canonicalization w/o comments\n"
 "  --exc-with-comments     Exclusive XML file canonicalization w comments\n"
 "  --exc-without-comments  Exclusive XML file canonicalization w/o comments\n"
@@ -156,8 +156,7 @@ int c14nMain(int argc, char **argv) {
      * Parse command line and process file
      */
     if( argc < 4 ) {
-        /* fprintf(stderr, "Error: wrong number of arguments.\n"); */
-        c14nUsage(argv[1]);
+        ret = run_c14n((argc > 2)? argv[2] : "-", 1, 0, NULL, NULL);
     } else if(strcmp(argv[2], "--with-comments") == 0) {
         ret = run_c14n(argv[3], 1, 0, (argc > 4) ? argv[4] : NULL, NULL);
     } else if(strcmp(argv[2], "--without-comments") == 0) {
@@ -177,7 +176,7 @@ int c14nMain(int argc, char **argv) {
         ret = run_c14n(argv[3], 0, 1, (argc > 4) ? argv[4] : NULL, list);
         if(list != NULL) xmlFree(list);
     } else {
-        fprintf(stderr, "Error: bad option.\n");
+        fprintf(stderr, "error: bad arguments.\n");
         c14nUsage(argv[1]);
     }
 
