@@ -48,10 +48,15 @@ AC_ARG_WITH(libxml-src,
         LIBXML_CFLAGS="-I$withval/include/libxml2 -I$withval/include/libxml -I$withval/include"
 )
 
+AC_DEFUN(VERSION_TO_NUMBER,
+	 [`$1 | sed -e 's/libxml //' | awk 'BEGIN { FS = "."; } { printf "%d", ([$]1 * 1000 + [$]2) * 1000 + [$]3;}'`])
+
+LIBXML_REQUIRED_VERSION=2.6.2
+
 if test "x$LIBXML_SRC" = "x"
 then
-	LIBXML_VERSION=`$LIBXML_PREFIX/bin/xml2-config --version | sed -e 's/\.//g' -e 's/^\(.\{3\}\).*/\1/'`
-	if test "$LIBXML_VERSION" -lt 262; then
+	XMLVERS=`$LIBXML_PREFIX/bin/xml2-config --version`
+	if test VERSION_TO_NUMBER(echo $XMLVERS) -lt VERSION_TO_NUMBER(echo $LIBXML_REQUIRED_VERSION); then
         	AC_MSG_ERROR(xmlstarlet needs at least libxml2 version 2.6.2 (http://www.xmlsoft.org/))
 	fi
 fi
