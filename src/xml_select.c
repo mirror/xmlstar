@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.22 2002/11/23 06:19:31 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.23 2002/11/23 19:13:47 mgrouch Exp $  */
 
 #include <string.h>
 #include <stdio.h>
@@ -7,6 +7,8 @@
 #include <libxml/xmlmemory.h>
 #include <libxml/debugXML.h>
 #include <libxml/xmlIO.h>
+#include <libxml/parser.h>
+#include <libxml/tree.h>
 #include <libxml/HTMLtree.h>
 #include <libxml/xinclude.h>
 #include <libxml/parserInternals.h>
