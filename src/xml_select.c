@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.41 2002/12/11 01:54:23 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.42 2002/12/12 04:37:53 mgrouch Exp $  */
 
 /*
 
@@ -39,7 +39,18 @@ THE SOFTWARE.
 /*
  *  TODO:
  *
- *   1. How about sorting ?
+ *   1. How about sorting  -s <ops> <xpath> ?
+                           -s A:N:L @id
+                              D:T:U
+Syntax:
+            <xsl:sort
+                    select=expression
+                    lang="lang"
+                    data-type="text"|"number"
+                    order ="ascending" | "descending"
+                    case-order="upper-first"|"lower-first"
+            />
+                           
  *   2. strip spaces
  *   3. How to list files which match templates ?
  *   4. free memory
@@ -83,9 +94,16 @@ static const char select_usage_str[] =
 "  -v or --value-of <xpath> - print value of XPATH expression\n"
 "  -o or --output <string>  - print string literal \n"
 "  -n or --nl               - print new line\n"
-"  -s or --sort <order>     - sort in order (used after -m)\n"
 "  -f or --inp-name         - print input file name (or URL)\n"
-"  -m or --match <xpath>    - match XPATH expression\n\n"
+"  -m or --match <xpath>    - match XPATH expression\n"
+"  -s or --sort op xpath    - sort in order (used after -m) where\n"
+"  op is X:Y:Z, \n"
+"      X is A - for order=\"ascending\"\n"
+"      X is D - for order=\"descending\"\n"
+"      Y is N - for data-type=\"numeric\"\n"
+"      Y is T - for data-type=\"text\"\n"
+"      Z is U - for case-order=\"upper-first\"\n"
+"      Z is L - for case-order=\"lower-first\"\n\n"
 "There can be multiple --match, --copy-of, value-of, etc options\n"
 "in a single template. The effect of applying command line templates\n"
 "can be illustrated with the following XSLT analogue\n\n"
@@ -276,6 +294,45 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
             c += sprintf(xsl_buf + c, "<xsl:for-each select=\"%s\">\n", argv[i+1]);
             m++;
             i++;
+            if ((i+1 < argc) && (!strcmp(argv[i+1], "-s") || !strcmp(argv[i+1], "--sort")))
+            {
+                char Order, Type, Case, *Select;
+                i++;
+                if ((i+1) >= argc)
+                {
+                    fprintf(stderr, "-s missing argument\n");
+                    exit (1);
+                }
+                i++;
+
+                /* TODO: more validation here */
+                Order = argv[i][0];
+                Type = argv[i][2];
+                Case = argv[i][4];
+
+                if ((i+1) >= argc)
+                {
+                    fprintf(stderr, "-s missing argument\n");
+                    exit (1);
+                }
+                i++;
+                Select=argv[i];
+                
+                for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
+
+                if (Order == 'A') c += sprintf(xsl_buf + c, "<xsl:sort order=\"ascending\"");
+                else c += sprintf(xsl_buf + c, "<xsl:sort order=\"descending\"");
+
+                if (Type == 'N') c += sprintf(xsl_buf + c, " data-type=\"number\"");
+                else c += sprintf(xsl_buf + c, " data-type=\"text\"");
+
+                if (Case == 'L') c += sprintf(xsl_buf + c, " case-order=\"lower-first\"");
+                else c += sprintf(xsl_buf + c, " case-order=\"upper-first\"");
+
+                c += sprintf(xsl_buf + c, " select=\"%s\"", Select);
+                
+                c += sprintf(xsl_buf + c, "/>\n");
+            }
         }
         else if(!strcmp(argv[i], "-t") || !strcmp(argv[i], "--template"))
         {
