@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.5 2002/11/15 02:52:43 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.6 2002/11/15 04:19:25 mgrouch Exp $  */
 
 #include <string.h>
 #include <stdio.h>
@@ -9,7 +9,11 @@
  *  TODO:
  *
  *   1. How about sorting ?
- *
+ *   2.  -m  ->   -f  --for-each
+ *       -p  ->   -c  --copy-of
+ *           ->   -v  --value-of
+ *       -s  ->   -o  --output
+ *       -o  ->   -s  --sort
  */
 
 #define MAX_XSL_BUF  256*1014
