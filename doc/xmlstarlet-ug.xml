@@ -5,7 +5,7 @@
   <title>XmlStarlet Command Line XML Toolkit User&#39;s Guide</title>
 
   <bookinfo>
-    <date>Nov 23, 2003</date>
+    <date>Nov 24, 2003</date>
 
     <author>
       <firstname>Mikhail</firstname>
@@ -136,7 +136,7 @@
     <sect1>
       <title id="s.1.3">Supported Platforms</title>
 
-      <para></para>
+      <para>Here is a list of platforms on which XmlStarlet is known to work.</para>
 
       <itemizedlist>
         <listitem>
@@ -167,6 +167,8 @@
           <para>FreeBSD</para>
         </listitem>
       </itemizedlist>
+
+      <para>You might be able to compile and make it on others too.</para>
     </sect1>
   </chapter>
 
@@ -183,8 +185,7 @@
       <title id="s.2.2">Installation on Solaris</title>
 
       <para>Execute the following commands as root<programlisting>gunzip xmlstarlet-x.x.x-sol8-sparc-local.gz
-
-pkgadd -d xmlstarlet-x.x.x-sol8-sparc-local</programlisting></para>
+pkgadd -d xmlstarlet-x.x.x-sol8-sparc-local all</programlisting></para>
     </sect1>
 
     <sect1>
