@@ -1,4 +1,4 @@
-/*  $Id: xml_format.c,v 1.11 2003/05/24 02:31:03 mgrouch Exp $  */
+/*  $Id: xml_format.c,v 1.12 2003/08/06 17:41:04 mgrouch Exp $  */
 
 /*
 
@@ -72,10 +72,13 @@ static const char format_usage_str[] =
 "   -s or --indent-spaces <num> - indent output with <num> spaces\n"
 "   -o or --omit-decl           - omit xml declaration <?xml version=\"1.0\"?>\n"
 "   -R or --recover             - try to recover what is parsable\n"
+"   -e or --encode              - output in the given encoding (utf-8, unicode...)\n"
 #ifdef LIBXML_HTML_ENABLED
 "   -H or --html                - input is HTML\n"
 #endif
 "   -h or --help                - print help\n\n";
+
+const char *encoding = NULL;
 
 /**
  *  Print small help for command line options
@@ -165,6 +168,12 @@ foParseOptions(foOptionsPtr ops, int argc, char **argv)
         if (!strcmp(argv[i], "--noindent") || !strcmp(argv[i], "-n"))
         {
             ops->indent = 0;
+            i++;
+        }
+        if (!strcmp(argv[i], "--encode") || !strcmp(argv[i], "-e"))
+        {
+            i++;
+            encoding = argv[i];
             i++;
         }
         else if (!strcmp(argv[i], "--indent-tab") || !strcmp(argv[i], "-t"))
@@ -267,13 +276,19 @@ foProcess(foOptionsPtr ops, int start, int argc, char **argv)
     
     if (!ops->omit_decl)
     {
-       xmlSaveFormatFile("-", doc, 1);
+        if (encoding != NULL)
+        {
+            xmlSaveFormatFileEnc("-", doc, encoding, 1);
+        }
+        else
+        {
+            xmlSaveFormatFile("-", doc, 1);
+        }
     }
     else
     {
         int format = 1;
         int ret = 0;
-        const char *encoding = NULL;
         xmlOutputBufferPtr buf = NULL;
         xmlCharEncodingHandlerPtr handler = NULL;
         buf = xmlOutputBufferCreateFile(stdout, handler);
