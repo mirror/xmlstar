@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.44 2003/03/19 23:52:50 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.45 2003/03/19 23:55:44 mgrouch Exp $  */
 
 /*
 
@@ -97,6 +97,7 @@ static const char select_usage_str[] =
 "  -n or --nl               - print new line\n"
 "  -f or --inp-name         - print input file name (or URL)\n"
 "  -m or --match <xpath>    - match XPATH expression\n"
+"  -e or --end              - break nesting\n"
 "  -s or --sort op xpath    - sort in order (used after -m) where\n"
 "  op is X:Y:Z, \n"
 "      X is A - for order=\"ascending\"\n"
