@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.33 2002/12/01 19:02:50 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.34 2002/12/01 23:28:07 mgrouch Exp $  */
 
 /*
 
@@ -25,6 +25,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 */
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include <string.h>
 #include <stdio.h>
@@ -193,7 +197,8 @@ selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops,
     c = 0;
 
     c += sprintf(xsl_buf, "<?xml version=\"1.0\"?>\n");
-    c += sprintf(xsl_buf + c, "<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">\n");
+    c += sprintf(xsl_buf + c,
+      "<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">\n");
 
     if (ops->no_omit_decl) c += sprintf(xsl_buf + c, "<xsl:output omit-xml-declaration=\"no\"");
     else c += sprintf(xsl_buf + c, "<xsl:output omit-xml-declaration=\"yes\"");
@@ -312,7 +317,8 @@ selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops,
             if (templateEmpty)
             {
                 fprintf(stderr, "error in arguments:");
-                fprintf(stderr, " -t or --template option must be followed by --match or other options\n");
+                fprintf(stderr, " -t or --template option must be followed by");
+                fprintf(stderr, " --match or other options\n");
                 /*selUsage(argc, argv);*/
                 exit(3);
             }

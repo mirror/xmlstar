@@ -1,4 +1,8 @@
-/*  $Id: xml_validate.c,v 1.5 2002/11/26 05:32:19 mgrouch Exp $  */
+/*  $Id: xml_validate.c,v 1.6 2002/12/01 23:28:07 mgrouch Exp $  */
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include <stdio.h>
 

@@ -1,4 +1,4 @@
-/*  $Id: xml_edit.c,v 1.12 2002/11/26 02:47:20 mgrouch Exp $  */
+/*  $Id: xml_edit.c,v 1.13 2002/12/01 23:28:07 mgrouch Exp $  */
 
 #include <string.h>
 #include <stdio.h>
@@ -72,16 +72,6 @@ static const char edit_usage_str[] =
 
    xml ed --update "//elem/@weight" -x "./@weight+1"?
 */
-
-void edUsage(int argc, char **argv)
-{
-    extern const char more_info[];
-    FILE* o = stderr;
-    fprintf(o, edit_usage_str);
-    fprintf(o, more_info);
-    exit(1);
-}
-
 
 #if 0
 void
@@ -187,8 +177,24 @@ xml_XPathDebugDumpObject(FILE *output, xmlXPathObjectPtr cur, int depth) {
 }
 #endif
 
+/**
+ *  display short help message
+ */
+void
+edUsage(int argc, char **argv)
+{
+    extern const char more_info[];
+    FILE* o = stderr;
+    fprintf(o, edit_usage_str);
+    fprintf(o, more_info);
+    exit(1);
+}
 
-void xml_ed_delete(xmlDocPtr doc, char *str)
+/**
+ *  'delete' operation
+ */
+void
+edDelete(xmlDocPtr doc, char *str)
 {
     int xptr = 0;
     int expr = 0;
@@ -198,37 +204,45 @@ void xml_ed_delete(xmlDocPtr doc, char *str)
     xmlXPathContextPtr ctxt;
 
 #if defined(LIBXML_XPTR_ENABLED)
-    if (xptr) {
+    if (xptr)
+    {
         ctxt = xmlXPtrNewContext(doc, NULL, NULL);
         res = xmlXPtrEval(BAD_CAST str, ctxt);
-    } else {
+    }
+    else
+    {
 #endif
         ctxt = xmlXPathNewContext(doc);
         ctxt->node = xmlDocGetRootElement(doc);
         if (expr)
             res = xmlXPathEvalExpression(BAD_CAST str, ctxt);
-        else {
+        else
+        {
             /* res = xmlXPathEval(BAD_CAST str, ctxt); */
             xmlXPathCompExprPtr comp;
 
             comp = xmlXPathCompile(BAD_CAST str);
-            if (comp != NULL) {
+            if (comp != NULL)
+            {
                 if (tree)
                     xmlXPathDebugDumpCompExpr(stdout, comp, 0);
 
                 res = xmlXPathCompiledEval(comp, ctxt);
                 xmlXPathFreeCompExpr(comp);
-            } else
+            }
+            else
                 res = NULL;
         }
 #if defined(LIBXML_XPTR_ENABLED)
     }
 #endif
     /*xmlXPathDebugDumpObject(stderr, res, 0);*/
-    if (res == NULL) {
+    if (res == NULL)
+    {
         return;
     }
-    switch(res->type) {
+    switch(res->type)
+    {
         case XPATH_NODESET:
         {
             int i;
@@ -237,7 +251,8 @@ void xml_ed_delete(xmlDocPtr doc, char *str)
             fprintf(stderr, "Object is a Node Set :\n");
             fprintf(stderr, "Set contains %d nodes:\n", cur->nodeNr);
             */
-            for (i = 0; i < cur->nodeNr; i++) {
+            for (i = 0; i < cur->nodeNr; i++)
+            {
                 /*
                 fprintf(output, shift);
                 fprintf(output, "%d", i + 1);
@@ -263,7 +278,11 @@ void xml_ed_delete(xmlDocPtr doc, char *str)
     xmlXPathFreeContext(ctxt);
 }
 
-int xml_ed_process(xmlDocPtr doc, XmlEdAction* ops, int ops_count)
+/**
+ *  Loop through array of operations and perform them
+ */
+int
+edProcess(xmlDocPtr doc, XmlEdAction* ops, int ops_count)
 {
     int res = 0;
     int k;
@@ -273,7 +292,7 @@ int xml_ed_process(xmlDocPtr doc, XmlEdAction* ops, int ops_count)
         switch (ops[k].op)
         {
             case XML_ED_DELETE:
-                xml_ed_delete(doc, ops[k].arg1);
+                edDelete(doc, ops[k].arg1);
                 break;
             default:
                 break;
@@ -283,12 +302,19 @@ int xml_ed_process(xmlDocPtr doc, XmlEdAction* ops, int ops_count)
     return res;
 }
 
-int edMain(int argc, char **argv)
+/**
+ *  This is the main function for 'edit' option
+ */
+int
+edMain(int argc, char **argv)
 {
     int i, j, n;
 
     if (argc < 3) edUsage(argc, argv);
     
+    /*
+     *  Parse command line and fill array of operations
+     */
     j = 0;
     i = 2;
     while (i < argc)
@@ -331,7 +357,7 @@ int edMain(int argc, char **argv)
     if (i >= argc)
     {
         xmlDocPtr doc = xmlParseFile("-");
-        xml_ed_process(doc, ops, ops_count);
+        edProcess(doc, ops, ops_count);
         /* xmlSaveFormatFile("-", doc, 0); */
         xmlSaveFile("-", doc);
     }
@@ -339,7 +365,7 @@ int edMain(int argc, char **argv)
     for (n=i; n<argc; n++)
     {
         xmlDocPtr doc = xmlParseFile(argv[n]);
-        xml_ed_process(doc, ops, ops_count);
+        edProcess(doc, ops, ops_count);
         /* xmlSaveFormatFile("-", doc, 0); */
         xmlSaveFile("-", doc);
         /* xmlDocFormatDump(stdout, doc, 0); */
