@@ -1,4 +1,4 @@
-/*  $Id: xml_elem.c,v 1.20 2004/09/14 00:11:06 mgrouch Exp $  */
+/*  $Id: xml_elem.c,v 1.21 2004/11/11 04:28:59 mgrouch Exp $  */
 
 /*
 
@@ -59,7 +59,8 @@ typedef struct _elOptions {
     int show_attr;            /* show attributes */
     int show_attr_and_val;    /* show attributes and values */
     int sort_uniq;            /* do sort and uniq on output */
-} etOptions;
+    int check_depth;          /* limit depth */
+} elOptions;
 
 
 static const char elem_usage_str[] =
@@ -68,18 +69,20 @@ static const char elem_usage_str[] =
 "where\n"
 "  <xml-file> - input XML document file name (stdin is used if missing)\n"
 "  <options>:\n"
-"  -a  - show attributes as well\n"
-"  -v  - show attributes and their values\n"
-"  -u  - print out sorted unique lines\n"
+"  -a    - show attributes as well\n"
+"  -v    - show attributes and their values\n"
+"  -u    - print out sorted unique lines\n"
+"  -d<n> - print out sorted unique lines up to depth <n>\n" 
 "\n";
 
 static xmlSAXHandler xmlSAX_handler;
-static etOptions elOps;
+static elOptions elOps;
 static SortedArray sorted = NULL;
 
 #define LINE_BUF_SZ  4*1024
 
 static char curXPath[LINE_BUF_SZ]; /* TODO: do not hardcode size */
+static int depth = 0;
 
 /**
  *  Display usage syntax
@@ -103,6 +106,7 @@ void elStartElement(void *user_data, const xmlChar *name, const xmlChar **attrs)
     
     if (*curXPath != (char)0) strcat(curXPath, "/");
     strncat(curXPath, (char*) name, LINE_BUF_SZ - 1);
+    depth++;
 
     if (elOps.show_attr)
     {
@@ -134,15 +138,19 @@ void elStartElement(void *user_data, const xmlChar *name, const xmlChar **attrs)
     {
         if (elOps.sort_uniq)
         {
-            int idx;
-            tmpXPath = strdup(curXPath);
-            idx = array_binary_insert(sorted, tmpXPath);
-            if (idx < 0)
-            {
-                free(tmpXPath);
-                tmpXPath = NULL;
+            if ((elOps.check_depth == 0) || (elOps.check_depth != 0 && depth <= elOps.check_depth))
+            { 
+                int idx;
+                tmpXPath = strdup(curXPath);
+	    
+                idx = array_binary_insert(sorted, tmpXPath);
+                if (idx < 0)
+                {
+                   free(tmpXPath);
+                   tmpXPath = NULL;
+                }
             }
-        }
+	}
         else fprintf(stdout, "%s\n", curXPath);
     }
 }
@@ -153,6 +161,7 @@ void elStartElement(void *user_data, const xmlChar *name, const xmlChar **attrs)
 void elEndElement(void *user_data, const xmlChar *name)
 {
     *(curXPath + strlen(curXPath) - strlen((char*) name) - 1) = '\0';
+    depth--;
 }
 
 /**
@@ -172,24 +181,19 @@ parse_xml_file(const char *filename)
 
     ret = xmlSAXUserParseFile(&xmlSAX_handler, NULL, filename);
     xmlCleanupParser();
-
-    if (ret < 0)
-    {
-        return ret;
-    }
-    else
-        return ret;
+    return ret;
 }
 
 /**
  *  Initialize options values
  */
 void
-elInitOptions(etOptions *ops)
+elInitOptions(elOptions *ops)
 {
     ops->show_attr = 0;  
     ops->show_attr_and_val = 0;
     ops->sort_uniq = 0;
+    ops->check_depth = 0; 
 }
 
 /**
@@ -234,6 +238,15 @@ elMain(int argc, char **argv)
             sorted = array_create();
             errorno = parse_xml_file(inp_file);
         }
+        else if (!strncmp(argv[2], "-d", 2)) 
+        { 
+            elOps.check_depth = atoi(argv[2]+2); 
+            /* printf("Checking depth (%d)\n", elOps.check_depth); */ 
+            elOps.sort_uniq = 1; 
+            if (argc >= 4) inp_file = argv[3]; 
+            sorted = array_create(); 
+            errorno = parse_xml_file(inp_file); 
+        }
         else if (argv[2][0] != '-')
         {
             errorno = parse_xml_file(argv[2]);
@@ -261,3 +274,4 @@ elMain(int argc, char **argv)
 
     return errorno;
 }
+
