@@ -1,4 +1,4 @@
-/* $Id: xml_edit.c,v 1.8 2002/11/23 18:18:33 mgrouch Exp $ */
+/* $Id: xml_edit.c,v 1.10 2002/11/23 21:16:33 mgrouch Exp $ */
 
 #include <string.h>
 #include <stdio.h>
@@ -63,23 +63,22 @@ static const char edit_usage_str[] =
 "   -m or --move <xpath1> <xpath2>\n"
 "   -r or --rename <xpath1> -v <new-name>\n"
 "   -u or --update <xpath> -v (--value) <value>\n"
-"                          -x (--expr) <xpath>\n\n"
-
-"XMLStarlet is a command line toolkit to query/edit/check/transform\n"
-"XML documents (for more information see http://xmlstar.sourceforge.net/)\n";
+                  "\t\t\t  -x (--expr) <xpath>\n\n";
 
 /*
    How to increment value of every attribute @weight?
    How in --update refer to current value?
    How to insert from a file?
 
-   xml ed --update "//*@weight" -x "./@weight+1"?
+   xml ed --update "//elem/@weight" -x "./@weight+1"?
 */
 
 void edit_usage(int argc, char **argv)
 {
+    extern const char more_info[];
     FILE* o = stderr;
     fprintf(o, edit_usage_str);
+    fprintf(o, more_info);
     exit(1);
 }
 
@@ -225,7 +224,7 @@ void xml_ed_delete(xmlDocPtr doc, char *str)
 #if defined(LIBXML_XPTR_ENABLED)
     }
 #endif
-    xmlXPathDebugDumpObject(stderr, res, 0);
+    /*xmlXPathDebugDumpObject(stderr, res, 0);*/
     if (res == NULL) {
         return;
     }
@@ -234,9 +233,10 @@ void xml_ed_delete(xmlDocPtr doc, char *str)
         {
             int i;
             xmlNodeSetPtr cur = res->nodesetval;
+            /*
             fprintf(stderr, "Object is a Node Set :\n");
             fprintf(stderr, "Set contains %d nodes:\n", cur->nodeNr);
-            
+            */
             for (i = 0; i < cur->nodeNr; i++) {
                 /*
                 fprintf(output, shift);
@@ -248,8 +248,8 @@ void xml_ed_delete(xmlDocPtr doc, char *str)
                  *  delete node
                  */
                  xmlUnlinkNode(cur->nodeTab[i]);
-                 fprintf(stderr, "unlinked\n");
-                 //xmlFreeNode(cur->nodeTab[i]);
+                 /*fprintf(stderr, "unlinked\n");*/
+                 /*xmlFreeNode(cur->nodeTab[i]);*/
             }
             /*
             xmlXPathDebugDumpNodeSet(output, cur->nodesetval, depth);
@@ -332,7 +332,7 @@ int xml_edit(int argc, char **argv)
     {
         xmlDocPtr doc = xmlParseFile("-");
         xml_ed_process(doc, ops, ops_count);
-        //xmlSaveFormatFile("-", doc, 0);
+        /* xmlSaveFormatFile("-", doc, 0); */
         xmlSaveFile("-", doc);
     }
     
@@ -340,10 +340,10 @@ int xml_edit(int argc, char **argv)
     {
         xmlDocPtr doc = xmlParseFile(argv[n]);
         xml_ed_process(doc, ops, ops_count);
-        //xmlSaveFormatFile("-", doc, 0);
+        /* xmlSaveFormatFile("-", doc, 0); */
         xmlSaveFile("-", doc);
-        //xmlDocFormatDump(stdout, doc, 0);
-        //xmlDocDump(stdout, doc);
+        /* xmlDocFormatDump(stdout, doc, 0); */
+        /* xmlDocDump(stdout, doc); */
     }
 
     return 0;

@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.24 2002/11/23 19:19:07 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.25 2002/11/23 21:16:33 mgrouch Exp $  */
 
 #include <string.h>
 #include <stdio.h>
@@ -23,7 +23,6 @@
 #include <libxslt/security.h>
 #endif
 
-
 /*
  *  TODO:
  *
@@ -41,6 +40,8 @@ char xsl_buf[MAX_XSL_BUF];
 
 extern int nbparams;
 extern const char *params[];
+extern void xsltProcess(xmlDocPtr doc, xsltStylesheetPtr cur, const char *filename);
+
 
 static const char select_usage_str[] =
 "XMLStarlet Toolkit: Select from XML document(s)\n"
@@ -92,20 +93,16 @@ static const char select_usage_str[] =
 "    <xsl:copy-of select=\"xpath5\"/>\n"
 "  </xsl:for-each>\n"
 "</xsl:template>\n"
-"</xsl:stylesheet>\n\n"
-
-"XMLStarlet is a command line toolkit to query/edit/check/transform\n"
-"XML documents (for more information see http://xmlstar.sourceforge.net/)\n\n"
-
-"Current implementation uses libxslt from GNOME codebase as XSLT processor\n"
-"(see http://xmlsoft.org/ for more details)\n";
-
-
+"</xsl:stylesheet>\n\n";
 
 void select_usage(int argc, char **argv)
 {
+    extern const char more_info[];
+    extern const char libxslt_more_info[];
     FILE* o = stderr;
     fprintf(o, select_usage_str);
+    fprintf(o, more_info);
+    fprintf(o, libxslt_more_info);
     exit(1);
 }
 
@@ -243,7 +240,7 @@ int xml_select(int argc, char **argv)
             c += sprintf(xsl_buf + c, "</xsl:template>\n");
         }
 
-        //printf("%s\n", argv[i]);
+        /* printf("%s\n", argv[i]); */
 
         if (argv[i][0] != '-') break;
         
@@ -257,7 +254,7 @@ int xml_select(int argc, char **argv)
     
     for (n=i; n<argc; n++)
     {
-        char *value;
+        xmlChar *value;
 
         /*
          *  Pass input file name as predefined parameter 'inputFile'
@@ -265,11 +262,11 @@ int xml_select(int argc, char **argv)
         nbparams = 2;
         params[0] = "inputFile";
         value = xmlStrdup((const xmlChar *)"'");
-        value = xmlStrcat(value, argv[n]);
-        value = xmlStrcat(value, (const xmlChar *)"'");
-        params[1] = value;
+        value = xmlStrcat((xmlChar *)value, (const xmlChar *)argv[n]);
+        value = xmlStrcat((xmlChar *)value, (const xmlChar *)"'");
+        params[1] = (char *) value;
 
-        //printf("%s\n", argv[n]);
+        /* printf("%s\n", argv[n]); */
 
         /*
          *  Parse XSLT stylesheet
@@ -293,7 +290,7 @@ int xml_select(int argc, char **argv)
         xsltStylesheetPtr cur = xsltParseStylesheetDoc(style);
         xmlDocPtr doc = xmlParseFile("-");
         xsltProcess(doc, cur, "-");
-//        xsltFreeStylesheet(cur);
+        /* xsltFreeStylesheet(cur); */
     }
         
     return 0;

@@ -1,4 +1,4 @@
-/*  $Id: xml_trans.c,v 1.9 2002/11/23 19:38:00 mgrouch Exp $  */
+/*  $Id: xml_trans.c,v 1.10 2002/11/23 21:16:33 mgrouch Exp $  */
 
 /*
  *  TODO:
@@ -60,24 +60,24 @@ static const char trans_usage_str[] =
 "where\n"
 "   <xsl-file>     - main XSLT stylesheet for transformation\n"
 "   <name>=<value> - name and value of the parameter passed to XSLT processor\n"
-"   <xml-file>     - input XML document file name (standard input is used if missing)\n\n"
-
-"XMLStarlet is a command line toolkit to query/edit/check/transform\n"
-"XML documents (for more information see http://xmlstar.sourceforge.net/)\n\n"
-
-"Current implementation uses libxslt from GNOME codebase as XSLT processor\n"
-"(see http://xmlsoft.org/ for more details)\n";
+"   <xml-file>     - input XML document file name (standard input is used if missing)\n\n";
 
 void trans_usage(int argc, char **argv)
 {
+    extern const char more_info[];
+    extern const char libxslt_more_info[];
     FILE* o = stderr;
     fprintf(o, trans_usage_str);
+    fprintf(o, more_info);
+    fprintf(o, libxslt_more_info);
     exit(1);
 }
 
 static int debug = 0;
+/*
 static int dumpextensions = 0;
 static int novalid = 0;
+*/
 static int noout = 0;
 #ifdef LIBXML_DOCB_ENABLED
 static int docbook = 0;
@@ -98,7 +98,10 @@ static xmlChar *paths[MAX_PATHS + 1];
 static int nbpaths = 0;
 static const char *output = NULL;
 static int errorno = 0;
+
+/*
 static const char *writesubtree = NULL;
+*/
 
 xmlExternalEntityLoader defaultEntityLoader = NULL;
 
@@ -131,7 +134,7 @@ xslExternalEntityLoader(const char *URL, const char *ID,
         len = xmlStrlen(paths[i]) + xmlStrlen(BAD_CAST URL) + 5;
         newURL = xmlMalloc(len);
         if (newURL != NULL) {
-            snprintf(newURL, len, "%s/%s", paths[i], URL);
+            snprintf((char *) newURL, len, "%s/%s", paths[i], URL);
             ret = defaultEntityLoader((const char *)newURL, ID, ctxt);
             xmlFree(newURL);
             if (ret != NULL) {

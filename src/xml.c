@@ -1,4 +1,4 @@
-/* $Id: xml.c,v 1.12 2002/11/23 18:42:21 mgrouch Exp $ */
+/* $Id: xml.c,v 1.13 2002/11/23 21:16:33 mgrouch Exp $ */
 
 /*
 
@@ -38,15 +38,22 @@ static const char usage_str[] =
 "   sel  (or select)    - Select data or query XML document(s)\n"
 "   tr   (or transform) - Transform XML document(s)\n"
 "   val  (or validate)  - Validate XML document(s)\n"
-"Type: xml <command> --help <ENTER> for command help\n\n"
+"Type: xml <command> --help <ENTER> for command help\n\n";
 
+const char more_info[] =
 "XMLStarlet is a command line toolkit to query/edit/check/transform\n"
 "XML documents (for more information see http://xmlstar.sourceforge.net/)\n";
+
+const char libxslt_more_info[] =
+"\n"
+"Current implementation uses libxslt from GNOME codebase as XSLT processor\n"
+"(see http://xmlsoft.org/ for more details)\n";
 
 void usage(int argc, char **argv)
 {
     FILE* o = stderr;
     fprintf(o, usage_str);
+    fprintf(o, more_info);
     exit(1);
 }  
 
