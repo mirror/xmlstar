@@ -1,4 +1,4 @@
-/*  $Id: xml_format.c,v 1.10 2003/02/18 21:13:03 mgrouch Exp $  */
+/*  $Id: xml_format.c,v 1.11 2003/05/24 02:31:03 mgrouch Exp $  */
 
 /*
 
@@ -55,6 +55,7 @@ typedef struct _foOptions {
     int indent_tab;           /* Indent output with tab */
     int indent_spaces;        /* Num spaces for indentation */
     int omit_decl;            /* omit xml declaration */
+    int recovery;             /* try to recover what is parsable */
 #ifdef LIBXML_HTML_ENABLED
     int html;                 /* inputs are in HTML format */
 #endif
@@ -70,6 +71,7 @@ static const char format_usage_str[] =
 "   -t or --indent-tab          - indent output with tabulation\n"
 "   -s or --indent-spaces <num> - indent output with <num> spaces\n"
 "   -o or --omit-decl           - omit xml declaration <?xml version=\"1.0\"?>\n"
+"   -R or --recover             - try to recover what is parsable\n"
 #ifdef LIBXML_HTML_ENABLED
 "   -H or --html                - input is HTML\n"
 #endif
@@ -98,6 +100,7 @@ foInitOptions(foOptionsPtr ops)
     ops->indent_tab = 0;
     ops->indent_spaces = 2;
     ops->omit_decl = 0;
+    ops->recovery = 0;
 #ifdef LIBXML_HTML_ENABLED
     ops->html = 0;
 #endif
@@ -174,6 +177,11 @@ foParseOptions(foOptionsPtr ops, int argc, char **argv)
             ops->omit_decl = 1;
             i++;
         }
+        else if (!strcmp(argv[i], "--recover") || !strcmp(argv[i], "-R"))
+        {
+            ops->recovery = 1;
+            i++;
+        }
         else if (!strcmp(argv[i], "--indent-spaces") || !strcmp(argv[i], "-s"))
         {
             int value;
@@ -236,10 +244,17 @@ foProcess(foOptionsPtr ops, int start, int argc, char **argv)
     {
         fileName = argv[start];   
     }
-    
+
+    if (ops->recovery)
+    {
+        doc = xmlRecoverFile(fileName);
+    }
+    else    
 #ifdef LIBXML_HTML_ENABLED
     if (ops->html)
+    {
         doc = htmlParseFile(fileName, NULL);
+    }
     else
 #endif
         doc = xmlParseFile(fileName);
