@@ -1,4 +1,4 @@
-/*  $Id: xml_edit.c,v 1.22 2003/05/28 17:36:11 mgrouch Exp $  */
+/*  $Id: xml_edit.c,v 1.23 2003/05/28 18:42:23 mgrouch Exp $  */
 
 /*
 
@@ -51,6 +51,9 @@ THE SOFTWARE.
              ./xml ed -m /xml /xml/table/rec/object ../examples/xml/tab-obj.xml 
 
           2. Other options insert/append/update/rename/subnode
+
+          3. Code clean-up is needed. (Too much code replication to find nodeset
+             by xpath expression).
 */
 
 typedef enum _XmlEdOp {
@@ -77,11 +80,11 @@ typedef enum _XmlNodeType {
 
 typedef char* XmlEdArg;
 
-
 typedef struct _XmlEdAction {
   XmlEdOp       op;
   XmlEdArg      arg1;
   XmlEdArg      arg2;
+  XmlEdArg      arg3;
   XmlNodeType   type;
 } XmlEdAction;
 
@@ -95,9 +98,9 @@ static const char edit_usage_str[] =
 "Usage: xml ed {<action>} [ <xml-file-or-uri> ... ]\n"
 "where <action>\n"
 "   -d or --delete <xpath>\n"
-"   -i or --insert <xpath> -t (--type) elem|text|attr -v (--value) <value>\n"
-"   -a or --append <xpath> -t (--type) elem|text|attr -v (--value) <value>\n"
-"   -s or --subnode <xpath> -t (--type) elem|text|attr -v (--value) <value>\n"
+"   -i or --insert <xpath> -t (--type) elem|text|attr -n <name> -v (--value) <value>\n"
+"   -a or --append <xpath> -t (--type) elem|text|attr -n <name> -v (--value) <value>\n"
+"   -s or --subnode <xpath> -t (--type) elem|text|attr -n <name> -v (--value) <value>\n"
 "   -m or --move <xpath1> <xpath2>\n"
 "   -r or --rename <xpath1> -v <new-name>\n"
 "   -u or --update <xpath> -v (--value) <value>\n"
@@ -111,110 +114,6 @@ static const char edit_usage_str[] =
 
    xml ed --update "//elem/@weight" -x "./@weight+1"?
 */
-
-#if 0
-void
-xml_XPathDebugDumpObject(FILE *output, xmlXPathObjectPtr cur, int depth) {
-    int i;
-    char shift[100];
-
-    for (i = 0;((i < depth) && (i < 25));i++)
-        shift[2 * i] = shift[2 * i + 1] = ' ';
-    shift[2 * i] = shift[2 * i + 1] = 0;
-
-    fprintf(output, shift);
-
-    if (cur == NULL) {
-        fprintf(output, "Object is empty (NULL)\n");
-	return;
-    }
-    switch(cur->type) {
-        case XPATH_UNDEFINED:
-	    fprintf(output, "Object is uninitialized\n");
-	    break;
-        case XPATH_NODESET:
-	    fprintf(output, "Object is a Node Set :\n");
-	    xmlXPathDebugDumpNodeSet(output, cur->nodesetval, depth);
-	    break;
-	case XPATH_XSLT_TREE:
-	    fprintf(output, "Object is an XSLT value tree :\n");
-	    xmlXPathDebugDumpValueTree(output, cur->nodesetval, depth);
-	    break;
-        case XPATH_BOOLEAN:
-	    fprintf(output, "Object is a Boolean : ");
-	    if (cur->boolval) fprintf(output, "true\n");
-	    else fprintf(output, "false\n");
-	    break;
-        case XPATH_NUMBER:
-	    switch (xmlXPathIsInf(cur->floatval)) {
-	    case 1:
-		fprintf(output, "Object is a number : Infinity\n");
-		break;
-	    case -1:
-		fprintf(output, "Object is a number : -Infinity\n");
-		break;
-	    default:
-		if (xmlXPathIsNaN(cur->floatval)) {
-		    fprintf(output, "Object is a number : NaN\n");
-		} else if (cur->floatval == 0 && xmlXPathGetSign(cur->floatval) != 0) {
-		    fprintf(output, "Object is a number : 0\n");
-		} else {
-		    fprintf(output, "Object is a number : %0g\n", cur->floatval);
-		}
-	    }
-	    break;
-        case XPATH_STRING:
-	    fprintf(output, "Object is a string : ");
-	    xmlDebugDumpString(output, cur->stringval);
-	    fprintf(output, "\n");
-	    break;
-	case XPATH_POINT:
-	    fprintf(output, "Object is a point : index %d in node", cur->index);
-	    xmlXPathDebugDumpNode(output, (xmlNodePtr) cur->user, depth + 1);
-	    fprintf(output, "\n");
-	    break;
-	case XPATH_RANGE:
-	    if ((cur->user2 == NULL) ||
-		((cur->user2 == cur->user) && (cur->index == cur->index2))) {
-		fprintf(output, "Object is a collapsed range :\n");
-		fprintf(output, shift);
-		if (cur->index >= 0)
-		    fprintf(output, "index %d in ", cur->index);
-		fprintf(output, "node\n");
-		xmlXPathDebugDumpNode(output, (xmlNodePtr) cur->user,
-			              depth + 1);
-	    } else  {
-		fprintf(output, "Object is a range :\n");
-		fprintf(output, shift);
-		fprintf(output, "From ");
-		if (cur->index >= 0)
-		    fprintf(output, "index %d in ", cur->index);
-		fprintf(output, "node\n");
-		xmlXPathDebugDumpNode(output, (xmlNodePtr) cur->user,
-			              depth + 1);
-		fprintf(output, shift);
-		fprintf(output, "To ");
-		if (cur->index2 >= 0)
-		    fprintf(output, "index %d in ", cur->index2);
-		fprintf(output, "node\n");
-		xmlXPathDebugDumpNode(output, (xmlNodePtr) cur->user2,
-			              depth + 1);
-		fprintf(output, "\n");
-	    }
-	    break;
-	case XPATH_LOCATIONSET:
-#if defined(LIBXML_XPTR_ENABLED)
-	    fprintf(output, "Object is a Location Set:\n");
-	    xmlXPathDebugDumpLocationSet(output,
-		    (xmlLocationSetPtr) cur->user, depth);
-#endif
-	    break;
-	case XPATH_USERS:
-	    fprintf(output, "Object is user defined\n");
-	    break;
-    }
-}
-#endif
 
 /**
  *  display short help message
@@ -235,10 +134,6 @@ edUsage(int argc, char **argv)
 void
 edUpdate(xmlDocPtr doc, const char *loc, const char *val, XmlNodeType type)
 {
-  /*
-    fprintf(stderr, "update is not implemented loc=%s val=%s type=%d\n", loc, val, type);
-   */
-   
     int xptr = 0;
     int expr = 0;
     int tree = 0;
@@ -295,6 +190,88 @@ edUpdate(xmlDocPtr doc, const char *loc, const char *val, XmlNodeType type)
                  *  update node
                  */
                 xmlNodeSetContent(cur->nodeTab[i], BAD_CAST val);
+            }
+            break;
+        }
+        default:
+            break;
+    }
+    xmlXPathFreeObject(res);
+    xmlXPathFreeContext(ctxt);
+}
+
+/**
+ *  'insert' operation
+ */
+void
+edInsert(xmlDocPtr doc, const char *loc, const char *val, const char *name, XmlNodeType type)
+{
+    int xptr = 0;
+    int expr = 0;
+    int tree = 0;
+
+    xmlXPathObjectPtr res;
+    xmlXPathContextPtr ctxt;
+
+#if defined(LIBXML_XPTR_ENABLED)
+    if (xptr)
+    {
+        ctxt = xmlXPtrNewContext(doc, NULL, NULL);
+        res = xmlXPtrEval(BAD_CAST loc, ctxt);
+    }
+    else
+    {
+#endif
+        ctxt = xmlXPathNewContext(doc);
+        ctxt->node = xmlDocGetRootElement(doc);
+        if (expr)
+            res = xmlXPathEvalExpression(BAD_CAST loc, ctxt);
+        else
+        {
+            xmlXPathCompExprPtr comp;
+
+            comp = xmlXPathCompile(BAD_CAST loc);
+            if (comp != NULL)
+            {
+                if (tree)
+                    xmlXPathDebugDumpCompExpr(stdout, comp, 0);
+
+                res = xmlXPathCompiledEval(comp, ctxt);
+                xmlXPathFreeCompExpr(comp);
+            }
+            else res = NULL;
+        }
+#if defined(LIBXML_XPTR_ENABLED)
+    }
+#endif
+    if (res == NULL) return;
+
+    /* Found loc */
+    switch(res->type)
+    {
+        case XPATH_NODESET:
+        {
+            int i;
+            xmlNodeSetPtr cur = res->nodesetval;
+            for (i = 0; i < cur->nodeNr; i++)
+            {
+                /*
+                 *  update node
+                 */
+                if (type == XML_ATTR)
+                {
+                    xmlNewProp(cur->nodeTab[i], BAD_CAST name, BAD_CAST val);
+                }
+                else if (type == XML_ELEM)
+                {
+                    xmlNodePtr node = xmlNewDocNode(doc, NULL /* TODO: NS */, BAD_CAST name, BAD_CAST val);
+                    xmlAddPrevSibling(cur->nodeTab[i], node);
+                }
+                else if (type == XML_TEXT)
+                {
+                    xmlNodePtr node = xmlNewDocText(doc, BAD_CAST val);
+                    xmlAddPrevSibling(cur->nodeTab[i], node);
+                }
             }
             break;
         }
@@ -611,6 +588,9 @@ edProcess(xmlDocPtr doc, XmlEdAction* ops, int ops_count)
             case XML_ED_RENAME:
                 edRename(doc, ops[k].arg1, ops[k].arg2, ops[k].type);
                 break;
+            case XML_ED_INSERT:
+                edInsert(doc, ops[k].arg1, ops[k].arg2, ops[k].arg3, ops[k].type);
+                break;
             default:
                 break;
         }
@@ -686,6 +666,45 @@ edMain(int argc, char **argv)
             ops[j].type = XML_UNDEFINED;
             ops[j].op = XML_ED_RENAME;
             ops[j].arg1 = argv[i];
+            i++;
+            if (i >= argc) edUsage(argc, argv);
+            if (strcmp(argv[i], "-v") && strcmp(argv[i], "--value")) edUsage(argc, argv);
+            i++;
+            if (i >= argc) edUsage(argc, argv);
+            ops[j].arg2 = argv[i];
+            j++;
+        }
+        else if (!strcmp(argv[i], "-i") || !strcmp(argv[i], "--insert"))
+        {
+            i++;
+            if (i >= argc) edUsage(argc, argv);
+            ops[j].type = XML_UNDEFINED;
+            ops[j].op = XML_ED_INSERT;
+            ops[j].arg1 = argv[i];
+            i++;
+            if (i >= argc) edUsage(argc, argv);
+            if (strcmp(argv[i], "-t") && strcmp(argv[i], "--type")) edUsage(argc, argv);
+            i++;
+            if (i >= argc) edUsage(argc, argv);
+            if (!strcmp(argv[i], "elem"))
+            {
+                ops[j].type = XML_ELEM;
+            }
+            else if (!strcmp(argv[i], "attr"))
+            {
+                ops[j].type = XML_ATTR;
+            }
+            else if (!strcmp(argv[i], "text"))
+            {
+                ops[j].type = XML_TEXT;
+            }
+            else edUsage(argc, argv);
+            i++;
+            if (i >= argc) edUsage(argc, argv);
+            if (strcmp(argv[i], "-n") && strcmp(argv[i], "--name")) edUsage(argc, argv);
+            i++;
+            if (i >= argc) edUsage(argc, argv);
+            ops[j].arg3 = argv[i];
             i++;
             if (i >= argc) edUsage(argc, argv);
             if (strcmp(argv[i], "-v") && strcmp(argv[i], "--value")) edUsage(argc, argv);
