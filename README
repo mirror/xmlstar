@@ -1,0 +1,6 @@
+
+This project pursues a goal to create command line XML toolkit to transform, 
+query, validate, and edit XML documents and files using  simple set of shell 
+commands in similar way it is done for plain text files  using grep/sed/awk/
+tr/diff/patch.
+
