@@ -243,6 +243,7 @@ AC_OUTPUT([
 xmlstarlet.spec
 Makefile
 src/Makefile
+doc/Makefile
 solaris/package/sol8-sparc/pkginfo
 ])
 
