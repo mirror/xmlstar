@@ -1,4 +1,4 @@
-/*  $Id: xml_edit.c,v 1.36 2003/11/05 00:34:38 mgrouch Exp $  */
+/*  $Id: xml_edit.c,v 1.37 2003/11/05 00:51:15 mgrouch Exp $  */
 
 /*
 
@@ -754,7 +754,7 @@ edMove(xmlDocPtr doc, char *from, char *to)
             int i;
             xmlNodeSetPtr cur = res->nodesetval;
             xmlNodeSetPtr cur_to = res_to->nodesetval;
-            if (cur && cur_to)
+            if (cur && cur_to && (cur_to->nodeNr == 1))
             {
                 for (i = 0; i < cur->nodeNr; i++)
                 {
