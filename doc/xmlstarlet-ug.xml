@@ -761,6 +761,33 @@ a1.a13.a131</programlisting>
 
       <para></para>
 
+      <para>EXAMPLE</para>
+
+      <para>Print all links of xhtml document</para>
+
+      <programlisting>xml sel --net --html -T -t -m "//*[local-name()='a']" \
+   -o 'NAME: ' -v "translate(. , '&amp;#10;', ' ')" -n \
+   -o 'LINK: ' -v @href -n -n \
+   http://xmlstar.sourceforge.net/</programlisting>
+
+      <para>Sample output</para>
+
+      <programlisting>NAME: XmlStarlet SourceForge Site
+LINK: http://sourceforge.net/projects/xmlstar/
+
+NAME: XmlStarlet CVS Source
+LINK: http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/xmlstar/
+
+NAME: XmlStarlet on Freshmeat.Net
+LINK: http://freshmeat.net/projects/xmlstarlet/
+
+NAME: XMLStarlet Sourceforge forums
+LINK: http://sourceforge.net/forum/?group_id=66612
+
+NAME: XMLStarlet mailing list
+LINK: http://lists.sourceforge.net/lists/listinfo/xmlstar-devel
+</programlisting>
+
       <para></para>
     </sect1>
 
