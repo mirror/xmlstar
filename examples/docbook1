@@ -1,0 +1,1 @@
+./xmlstarlet tr --docbook /usr/share/sgml/docbook/yelp/docbook/html/docbook.xsl  sgml/docbook1.sgml

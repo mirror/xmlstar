@@ -1,0 +1,124 @@
+#! /bin/sh
+
+echo ""
+echo ""
+echo "                                           XMLSTARLET USER'S GUIDE"
+echo ""
+echo "                                  see also http://xmlstar.sourceforge.net/"
+echo ""
+echo ""
+
+echo ""
+echo ""
+echo "1. BASIC COMMAND LINE OPTIONS"
+echo "===================================================="
+echo ""
+echo "xml"
+../src/xml 2>&1
+
+echo ""
+echo ""
+echo ""
+echo "2. Select/Query XML documents"
+echo "===================================================="
+echo ""
+echo "xml sel --help"
+../src/xml sel --help 2>&1
+
+echo ""
+echo ""
+echo ""
+echo "3. Editing XML documents"
+echo "===================================================="
+echo ""
+echo "xml ed --help"
+../src/xml ed --help 2>&1
+
+echo ""
+echo ""
+echo ""
+echo "4. Using XSLT to transform XML documents"
+echo "===================================================="
+echo ""
+echo "xml tr --help"
+../src/xml tr --help 2>&1
+
+echo ""
+echo ""
+echo ""
+echo "5. Formatting XML documents"
+echo "===================================================="
+echo ""
+echo "xml fo --help"
+../src/xml fo --help 2>&1
+
+echo ""
+echo ""
+echo ""
+echo "6. Validating XML documents"
+echo "===================================================="
+echo ""
+echo "xml val --help"
+../src/xml val --help 2>&1
+
+echo ""
+echo ""
+echo ""
+echo "7. Examples:"
+echo "===================================================="
+echo ""
+echo "Input1"
+echo "examples/xml/table.xml"
+echo ""
+cat ../examples/xml/table.xml
+echo ""
+echo ""
+echo "Input2"
+echo "examples/xml/tab-obj.xml"
+echo ""
+cat ../examples/xml/tab-obj.xml
+echo ""
+echo ""
+echo "Input3"
+echo "examples/html/hello1.html"
+echo ""
+cat ../examples/html/hello1.html
+echo ""
+echo ""
+echo "Stylesheet1"
+echo "examples/xsl/sum1.xsl"
+echo ""
+cat ../examples/xsl/sum1.xsl
+echo ""
+echo ""
+echo "Stylesheet2"
+echo "examples/xsl/hello1.xsl"
+echo ""
+cat ../examples/xsl/hello1.xsl
+echo ""
+echo ""
+echo "Stylesheet3"
+echo "examples/xsl/param1.xsl"
+echo ""
+cat ../examples/xsl/param1.xsl
+echo ""
+echo ""
+
+echo ""
+
+for i in `ls ../examples/*[0-9]`
+do
+	f=`basename $i`
+	if [ -x ../examples/$f ]
+	then
+		echo "Command:"
+		cat ../examples/$f
+		echo "Result Output:"
+		cat ../examples/results/$f.out
+		echo ""
+		echo ""
+	fi
+done
+
+echo ""
+
