@@ -1,4 +1,4 @@
-/*  $Id: trans.c,v 1.13 2003/04/19 01:55:56 mgrouch Exp $  */
+/*  $Id: trans.c,v 1.14 2003/08/01 23:18:19 mgrouch Exp $  */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -91,7 +91,7 @@ xsltInitLibXml(xsltOptionsPtr ops)
     xmlSetExternalEntityLoader(xsltExternalEntityLoader);
     if (ops->nonet) {
         defaultEntityLoader = xmlNoNetExternalEntityLoader;
-        xmlSubstituteEntitiesDefault(0);
+        /*xmlSubstituteEntitiesDefault(0);*/
     }
     
     xmlKeepBlanksDefault(1);
