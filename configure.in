@@ -8,6 +8,7 @@ AC_SUBST(VERSION)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE($PACKAGE, $VERSION, no-define)
 AM_MAINTAINER_MODE
+AC_CANONICAL_HOST
 
 CFLAGS="-Wall -g -pedantic"
 EXTRA_LIBS=
@@ -120,9 +121,8 @@ AC_SUBST(WITH_TRIO)
 
 case "${host}" in
   *sun* )
-      LIBXML_LIBS="${CFLAGS} -lsocket -lnsl"
+      LIBXML_LIBS="${LIBXML_LIBS} -lsocket -lnsl"
 esac
-
 
 AC_SUBST(CFLAGS)
 AC_SUBST(CPPFLAGS)
