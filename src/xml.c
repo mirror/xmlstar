@@ -1,3 +1,5 @@
+/* $Id: xml.c,v 1.5 2002/11/13 06:19:29 mgrouch Exp $ */
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,9 +18,9 @@ void usage(int argc, char **argv)
     
     fprintf(o, "Usage: %s <command> [<options>]\n", cmd);
     fprintf(o, "where <command> is one of:\n");
-    fprintf(o, "      tr  (or transform) - Transform XML document\n");
     fprintf(o, "      ed  (or edit)      - Edit XML document\n");
     fprintf(o, "      sel (or select)    - Select data or query XML document(s)\n");
+    fprintf(o, "      tr  (or transform) - Transform XML document\n");
     fprintf(o, "      val (or validate)  - Validate XML document(s)\n");
     fprintf(o, "Type: %s <command> --help <ENTER> for more options\n", cmd);
 
