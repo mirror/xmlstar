@@ -1,4 +1,4 @@
-/*  $Id: xml_validate.c,v 1.11 2003/02/18 23:44:40 mgrouch Exp $  */
+/*  $Id: xml_validate.c,v 1.12 2003/02/18 23:46:08 mgrouch Exp $  */
 
 /*
 
@@ -226,39 +226,6 @@ valAgainstDtd(valOptionsPtr ops, char* dtdvalid, xmlDocPtr doc, char* filename)
     return result;
 }
 
-xmlSAXHandler emptySAXHandlerStruct = {
-    NULL, /* internalSubset */
-    NULL, /* isStandalone */
-    NULL, /* hasInternalSubset */
-    NULL, /* hasExternalSubset */
-    NULL, /* resolveEntity */
-    NULL, /* getEntity */
-    NULL, /* entityDecl */
-    NULL, /* notationDecl */
-    NULL, /* attributeDecl */
-    NULL, /* elementDecl */
-    NULL, /* unparsedEntityDecl */
-    NULL, /* setDocumentLocator */
-    NULL, /* startDocument */
-    NULL, /* endDocument */
-    NULL, /* startElement */
-    NULL, /* endElement */
-    NULL, /* reference */
-    NULL, /* characters */
-    NULL, /* ignorableWhitespace */
-    NULL, /* processingInstruction */
-    NULL, /* comment */
-    NULL, /* xmlParserWarning */
-    NULL, /* xmlParserError */
-    NULL, /* xmlParserError */
-    NULL, /* getParameterEntity */
-    NULL, /* cdataBlock */
-    NULL, /* externalSubset */
-    1
-};
-
-xmlSAXHandlerPtr emptySAXHandler = &emptySAXHandlerStruct;
-
 /**
  *  This is the main function for 'validate' option
  */
@@ -289,15 +256,9 @@ valMain(int argc, char **argv)
 
             if (!ops.err)
             {
-                /*
-                xmlGenericError = NULL;
-                xmlInitParser();
-                initGenericErrorDefaultFunc(NULL);
-                */
                 xmlDefaultSAXHandlerInit();
                 xmlDefaultSAXHandler.error = NULL;
                 xmlDefaultSAXHandler.warning = NULL;
-                /*doc = xmlSAXParseFileWithData(emptySAXHandler, argv[i], 0, NULL);*/
             }
 
             doc = xmlParseFile(argv[i]);
@@ -335,15 +296,9 @@ valMain(int argc, char **argv)
 
             if (!ops.err)
             {
-                /*
-                xmlGenericError = NULL;
-                xmlInitParser();
-                initGenericErrorDefaultFunc(NULL);
-                */
                 xmlDefaultSAXHandlerInit();
                 xmlDefaultSAXHandler.error = NULL;
                 xmlDefaultSAXHandler.warning = NULL;
-                /*doc = xmlSAXParseFileWithData(emptySAXHandler, argv[i], 0, NULL);*/
             }
 
             doc = xmlParseFile(argv[i]);
