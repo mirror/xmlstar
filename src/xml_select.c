@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.31 2002/11/30 22:00:15 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.32 2002/11/30 23:13:52 mgrouch Exp $  */
 
 /*
 
@@ -36,16 +36,24 @@ THE SOFTWARE.
  *  TODO:
  *
  *   1. How about sorting ?
- *   2. Disable <?xml ...?>
- *   3. strip spaces
- *   4. indent options
- *   5. How to list files which match templates ?
- *   6. free memory
+ *   2. strip spaces
+ *   3. How to list files which match templates ?
+ *   4. free memory
  */
 
 #define MAX_XSL_BUF  256*1024
 
 char xsl_buf[MAX_XSL_BUF];
+
+typedef struct _selOptions {
+    int printXSLT;            /* Display prepared XSLT */
+    int printRoot;            /* Print root element in output (if XML) */
+    int outText;              /* Output is text */
+    int indent;               /* Indent output */
+    int no_omit_decl;         /* Print XML declaration line <?xml version="1.0"?> */
+} selOptions;
+
+typedef selOptions *selOptionsPtr;
 
 static const char select_usage_str[] =
 "XMLStarlet Toolkit: Select from XML document(s)\n"
@@ -101,6 +109,9 @@ static const char select_usage_str[] =
 "</xsl:template>\n"
 "</xsl:stylesheet>\n\n";
 
+/**
+ *  Print small help for command line options
+ */
 void selUsage(int argc, char **argv)
 {
     extern const char more_info[];
@@ -112,74 +123,90 @@ void selUsage(int argc, char **argv)
     exit(1);
 }
 
-static int printXSLT = 0;
-static int printRoot = 0;
-static int out_text = 0;
-static int indent = 0;
-static int no_omit_decl = 0;
-
-int selMain(int argc, char **argv)
+/**
+ *  Initialize global command line options
+ */
+void
+selInitOptions(selOptionsPtr ops)
 {
-    static xsltOptions ops;
-    static const char *params[2 * MAX_PARAMETERS + 1];
-    int c, i, j, k, m, n, t;
-    int nbparams;
-  
-    if (argc <= 2) selUsage(argc, argv);
+    ops->printXSLT = 0;
+    ops->printRoot = 0;
+    ops->outText = 0;
+    ops->indent = 0;
+    ops->no_omit_decl = 0;
+}
 
-    /*
-     *   Parse global options
-     */     
+/**
+ *  Parse global command line options
+ */
+int
+selParseOptions(selOptionsPtr ops, int argc, char **argv)
+{
+    int i;
+
     i = 2;
     while((i < argc) && (strcmp(argv[i], "-t")) && strcmp(argv[i], "--template"))
     {
         if (!strcmp(argv[i], "-C"))
         {
-            printXSLT = 1;
+            ops->printXSLT = 1;
         }
         else if (!strcmp(argv[i], "-T"))
         {
-            out_text = 1;
+            ops->outText = 1;
         }
         else if (!strcmp(argv[i], "-R"))
         {
-            printRoot = 1;
+            ops->printRoot = 1;
         }
         else if (!strcmp(argv[i], "-I"))
         {
-            indent = 1;
+            ops->indent = 1;
         }
         else if (!strcmp(argv[i], "-D"))
         {
-            no_omit_decl = 1;
+            ops->no_omit_decl = 1;
         }
         else if (!strcmp(argv[i], "--help"))
         {
             selUsage(argc, argv);
         }
-        i++;  
+        i++;
     }
-    xsltInitOptions(&ops);
+
+    return i-1;
+}
+
+/**
+ *  Prepare XSLT stylesheet based on command line options
+ */
+int
+selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops,
+               int start, int argc, char **argv)
+{
+    int c, i, j, k, m, t;
 
     xsl_buf[0] = 0;
+    *len = 0;
     c = 0;
-    
+
     c += sprintf(xsl_buf, "<?xml version=\"1.0\"?>\n");
     c += sprintf(xsl_buf + c, "<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">\n");
 
-    if (no_omit_decl) c += sprintf(xsl_buf + c, "<xsl:output omit-xml-declaration=\"no\"");
+    if (ops->no_omit_decl) c += sprintf(xsl_buf + c, "<xsl:output omit-xml-declaration=\"no\"");
     else c += sprintf(xsl_buf + c, "<xsl:output omit-xml-declaration=\"yes\"");
-    if (indent) c += sprintf(xsl_buf + c, " indent=\"yes\"");
+    if (ops->indent) c += sprintf(xsl_buf + c, " indent=\"yes\"");
     else c += sprintf(xsl_buf + c, " indent=\"no\"");
-    if (out_text) c += sprintf(xsl_buf + c, " method=\"text\"");
+    if (ops->outText) c += sprintf(xsl_buf + c, " method=\"text\"");
     c += sprintf(xsl_buf + c, "/>\n");
 
     c += sprintf(xsl_buf + c, "<xsl:param name=\"inputFile\">-</xsl:param>\n");
 
     c += sprintf(xsl_buf + c, "<xsl:template match=\"/\">\n");
-    if (!out_text && printRoot) c += sprintf(xsl_buf + c, "<xml-select>\n");
+    if (!ops->outText && ops->printRoot) c += sprintf(xsl_buf + c, "<xml-select>\n");
+
     t = 0;
-    i = 2;
+    i = start;
     while(i < argc)
     {
         if(!strcmp(argv[i], "-t") || !strcmp(argv[i], "--template"))
@@ -187,11 +214,11 @@ int selMain(int argc, char **argv)
             t++;
             c += sprintf(xsl_buf + c, "  <xsl:call-template name=\"t%d\"/>\n", t);
         }
-        i++;  
+        i++;
     }
-    if (!out_text && printRoot) c += sprintf(xsl_buf + c, "</xml-select>\n");
+    if (!ops->outText && ops->printRoot) c += sprintf(xsl_buf + c, "</xml-select>\n");
     c += sprintf(xsl_buf + c, "</xsl:template>\n");
-   
+
     t = 0;
     i = 2;
     while(i < argc)
@@ -247,7 +274,7 @@ int selMain(int argc, char **argv)
                         break;
                     }
                 }
-                
+
                 i++;
             }
 /*
@@ -267,14 +294,38 @@ int selMain(int argc, char **argv)
         }
 
         if (argv[i][0] != '-') break;
-        
+
         i++;
     }
-    
+
     c += sprintf(xsl_buf + c, "</xsl:stylesheet>\n");
+    *len = c;
 
-    if (printXSLT) fprintf(stdout, "%s", xsl_buf);
+    return i;
+}
 
+
+/**
+ *  This is the main function for 'select' option
+ */
+int selMain(int argc, char **argv)
+{
+    static xsltOptions xsltOps;
+    static selOptions ops;
+    static const char *params[2 * MAX_PARAMETERS + 1];
+    int start, c, i, n;
+    int nbparams;
+  
+    if (argc <= 2) selUsage(argc, argv);
+
+    selInitOptions(&ops);
+    xsltInitOptions(&xsltOps);
+    start = selParseOptions(&ops, argc, argv);    
+
+    c = sizeof(xsl_buf);    
+    i = selPrepareXslt(xsl_buf, &c, &ops, start, argc, argv);
+    
+    if (ops.printXSLT) fprintf(stdout, "%s", xsl_buf);
     
     for (n=i; n<argc; n++)
     {
@@ -297,7 +348,7 @@ int selMain(int argc, char **argv)
             xmlDocPtr style = xmlParseMemory(xsl_buf, c);
             xsltStylesheetPtr cur = xsltParseStylesheetDoc(style);
             xmlDocPtr doc = xmlParseFile(argv[n]);
-            xsltProcess(&ops, doc, params, cur, argv[n]);
+            xsltProcess(&xsltOps, doc, params, cur, argv[n]);
             xsltFreeStylesheet(cur);
         }
     }
@@ -310,7 +361,7 @@ int selMain(int argc, char **argv)
         xmlDocPtr style = xmlParseMemory(xsl_buf, c);
         xsltStylesheetPtr cur = xsltParseStylesheetDoc(style);
         xmlDocPtr doc = xmlParseFile("-");
-        xsltProcess(&ops, doc, params, cur, "-");
+        xsltProcess(&xsltOps, doc, params, cur, "-");
         /* xsltFreeStylesheet(cur); */
     }
         
