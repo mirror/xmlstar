@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.12 2002/11/16 02:55:29 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.13 2002/11/16 03:39:46 mgrouch Exp $  */
 
 #include <string.h>
 #include <stdio.h>
@@ -31,6 +31,7 @@
  *           ->   -v  --value-of
  *       -s  ->   -o  --output
  *       -o  ->   -s  --sort
+ *   3. How to list files which match templates ?
  */
 
 #define MAX_XSL_BUF  256*1014
