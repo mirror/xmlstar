@@ -1,4 +1,4 @@
-/*  $Id: xml_validate.c,v 1.10 2002/12/09 02:29:45 mgrouch Exp $  */
+/*  $Id: xml_validate.c,v 1.11 2003/02/18 23:44:40 mgrouch Exp $  */
 
 /*
 
@@ -45,6 +45,8 @@ THE SOFTWARE.
 
 typedef struct _valOptions {
     char *dtd;                /* External DTD URL or file name */
+    char *schema;             /* External Schema URL or file name */
+    int   err;                /* Allow stderr messages */
     int   wellFormed;         /* Check if well formed only */
     int   listGood;           /* >0 list good, <0 list bad */
 } valOptions;
@@ -57,11 +59,12 @@ static const char validate_usage_str[] =
 "where <options>\n"
 "   -d or --dtd <dtd-file>  - validate against DTD\n"
 "   -s or --xsd <xsd-file>  - validate against schema\n"
-"   -n or --line-num        - print line numbers for validation errors\n"
 "   -x or --xml-out         - print result as xml\n"
-"   -b or --list-bad        - list only files which do not validate\n"
+"   -e or --err             - print verbose error messages on stderr\n"
+"   -b or --list-bad        - list only files which do not validate (default)\n"
 "   -g or --list-good       - list only files which validate\n"
-"   -w or --well-formed     - check only if XML is well-formed\n\n";
+"   -n or --none            - do not list files (return result code only)\n"
+"   -w or --well-formed     - check only if XML is well-formed (default)\n\n";
 
 /**
  *  display short help message
@@ -82,9 +85,11 @@ valUsage(int argc, char **argv)
 void
 valInitOptions(valOptionsPtr ops)
 {
-    ops->wellFormed = 0;
-    ops->listGood = 0;
+    ops->wellFormed = 1;
+    ops->listGood = -1;
+    ops->err = 0;
     ops->dtd = 0;
+    ops->schema = 0;
 }
 
 /**
@@ -103,6 +108,11 @@ valParseOptions(valOptionsPtr ops, int argc, char **argv)
             ops->wellFormed = 1;
             i++;
         }
+        if (!strcmp(argv[i], "--err") || !strcmp(argv[i], "-e"))
+        {
+            ops->err = 1;
+            i++;
+        }
         if (!strcmp(argv[i], "--list-good") || !strcmp(argv[i], "-g"))
         {
             ops->listGood = 1;
@@ -113,11 +123,23 @@ valParseOptions(valOptionsPtr ops, int argc, char **argv)
             ops->listGood = -1;
             i++;
         }
+        if (!strcmp(argv[i], "--none") || !strcmp(argv[i], "-n"))
+        {
+            ops->listGood = 0;
+            i++;
+        }
         if (!strcmp(argv[i], "--dtd") || !strcmp(argv[i], "-d"))
         {
             i++;
             if (i >= argc) valUsage(argc, argv);
             ops->dtd = argv[i];
+            i++;
+        }
+        if (!strcmp(argv[i], "--schema") || !strcmp(argv[i], "-s"))
+        {
+            i++;
+            if (i >= argc) valUsage(argc, argv);
+            ops->schema = argv[i];
             i++;
         }
         else if (!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h"))
@@ -165,19 +187,19 @@ valAgainstDtd(valOptionsPtr ops, char* dtdvalid, xmlDocPtr doc, char* filename)
         else
         {
             xmlValidCtxt cvp;
-            cvp.userData = (void *) stderr;
-            if (ops->listGood == 0)
+            if (ops->err)
             {
+                cvp.userData = (void *) stderr;
                 cvp.error    = (xmlValidityErrorFunc) fprintf;
                 cvp.warning  = (xmlValidityWarningFunc) fprintf;
             }
             else
             {
+                cvp.userData = (void *) NULL;
                 cvp.error    = (xmlValidityErrorFunc) NULL;
                 cvp.warning  = (xmlValidityWarningFunc) NULL;
             }
-            
-            
+                        
             if (!xmlValidateDtd(&cvp, doc, dtd))
             {
                 if (ops->listGood < 0)
@@ -204,6 +226,39 @@ valAgainstDtd(valOptionsPtr ops, char* dtdvalid, xmlDocPtr doc, char* filename)
     return result;
 }
 
+xmlSAXHandler emptySAXHandlerStruct = {
+    NULL, /* internalSubset */
+    NULL, /* isStandalone */
+    NULL, /* hasInternalSubset */
+    NULL, /* hasExternalSubset */
+    NULL, /* resolveEntity */
+    NULL, /* getEntity */
+    NULL, /* entityDecl */
+    NULL, /* notationDecl */
+    NULL, /* attributeDecl */
+    NULL, /* elementDecl */
+    NULL, /* unparsedEntityDecl */
+    NULL, /* setDocumentLocator */
+    NULL, /* startDocument */
+    NULL, /* endDocument */
+    NULL, /* startElement */
+    NULL, /* endElement */
+    NULL, /* reference */
+    NULL, /* characters */
+    NULL, /* ignorableWhitespace */
+    NULL, /* processingInstruction */
+    NULL, /* comment */
+    NULL, /* xmlParserWarning */
+    NULL, /* xmlParserError */
+    NULL, /* xmlParserError */
+    NULL, /* getParameterEntity */
+    NULL, /* cdataBlock */
+    NULL, /* externalSubset */
+    1
+};
+
+xmlSAXHandlerPtr emptySAXHandler = &emptySAXHandlerStruct;
+
 /**
  *  This is the main function for 'validate' option
  */
@@ -229,11 +284,28 @@ valMain(int argc, char **argv)
             xmlDocPtr doc;
             int ret;
 
+            ret = 0;
+            doc = NULL;
+
+            if (!ops.err)
+            {
+                /*
+                xmlGenericError = NULL;
+                xmlInitParser();
+                initGenericErrorDefaultFunc(NULL);
+                */
+                xmlDefaultSAXHandlerInit();
+                xmlDefaultSAXHandler.error = NULL;
+                xmlDefaultSAXHandler.warning = NULL;
+                /*doc = xmlSAXParseFileWithData(emptySAXHandler, argv[i], 0, NULL);*/
+            }
+
             doc = xmlParseFile(argv[i]);
             if (doc)
             {
-                /* TODO: precompile DTD once */
+                /* TODO: precompile DTD once */                
                 ret = valAgainstDtd(&ops, ops.dtd, doc, argv[i]);
+                xmlFreeDoc(doc);
             }
             else
             {
@@ -246,6 +318,54 @@ valMain(int argc, char **argv)
             if (ret) invalidFound = 1;     
         }
     }
+    else if (ops.schema)
+    {
+        /* TODO: here */
+    }
+    else if (ops.wellFormed)
+    {
+        int i;
+        for (i=start; i<argc; i++)
+        {
+            xmlDocPtr doc;
+            int ret;
 
+            ret = 0;
+            doc = NULL;
+
+            if (!ops.err)
+            {
+                /*
+                xmlGenericError = NULL;
+                xmlInitParser();
+                initGenericErrorDefaultFunc(NULL);
+                */
+                xmlDefaultSAXHandlerInit();
+                xmlDefaultSAXHandler.error = NULL;
+                xmlDefaultSAXHandler.warning = NULL;
+                /*doc = xmlSAXParseFileWithData(emptySAXHandler, argv[i], 0, NULL);*/
+            }
+
+            doc = xmlParseFile(argv[i]);
+            if (doc != NULL)
+            {
+                if (ops.listGood > 0)
+                {
+                    fprintf(stdout, "%s\n", argv[i]);
+                }
+                xmlFreeDoc(doc);
+            }
+            else
+            {
+                ret = 1; /* Malformed XML or could not open file */
+                if (ops.listGood < 0)
+                {
+                    fprintf(stdout, "%s\n", argv[i]);
+                }
+            }
+            if (ret) invalidFound = 1;
+        }
+    }
+    
     return invalidFound;
 }  
