@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.57 2003/09/18 01:22:31 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.58 2003/09/18 03:17:02 mgrouch Exp $  */
 
 /*
 
@@ -742,8 +742,9 @@ selMain(int argc, char **argv)
         {
             xmlDocPtr style = xmlParseMemory(xsl_buf, c);
             xsltStylesheetPtr cur = xsltParseStylesheetDoc(style);
+            xmlDocPtr doc = NULL;
             if (!cur) exit(2);
-            xmlDocPtr doc = xmlParseFile(argv[n]);
+            doc = xmlParseFile(argv[n]);
             xsltProcess(&xsltOps, doc, params, cur, argv[n]);
             xsltFreeStylesheet(cur);
         }
@@ -756,8 +757,9 @@ selMain(int argc, char **argv)
          */
         xmlDocPtr style = xmlParseMemory(xsl_buf, c);
         xsltStylesheetPtr cur = xsltParseStylesheetDoc(style);
+        xmlDocPtr doc = NULL;
         if (!cur) exit(2);
-        xmlDocPtr doc = xmlParseFile("-");
+        doc = xmlParseFile("-");
         xsltProcess(&xsltOps, doc, params, cur, "-");
         /* xsltFreeStylesheet(cur); */
     }
