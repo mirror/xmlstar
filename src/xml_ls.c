@@ -1,4 +1,4 @@
-/*  $Id: xml_ls.c,v 1.13 2004/11/23 01:49:29 mgrouch Exp $  */
+/*  $Id: xml_ls.c,v 1.14 2005/03/12 03:49:41 mgrouch Exp $  */
 
 /*
 
@@ -86,6 +86,8 @@ get_file_type(mode_t mode)
        case S_IFSOCK:
             return("s"); /* socket */
 #endif
+       default:
+            return("u"); /* unknown */
    }
    return(NULL);
 }
