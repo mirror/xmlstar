@@ -1,4 +1,4 @@
-/*  $Id: xml_trans.c,v 1.15 2002/11/26 04:02:46 mgrouch Exp $  */
+/*  $Id: xml_trans.c,v 1.16 2002/11/26 04:14:27 mgrouch Exp $  */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -90,6 +90,14 @@ trParseOptions(xsltOptionsPtr ops, int argc, char **argv)
             else if (!strcmp(argv[i], "--nonet"))
             {
                 ops->nonet = 1;
+            }
+            else if (!strcmp(argv[i], "--maxdepth"))
+            {
+                int value;
+                i++;
+                if (i >= argc) trUsage(0, NULL);
+                if (sscanf(argv[i], "%d", &value) == 1)
+                    if (value > 0) xsltMaxDepth = value;
             }
 #ifdef LIBXML_XINCLUDE_ENABLED
             else if (!strcmp(argv[i], "--xinclude"))
