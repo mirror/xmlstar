@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.32 2002/11/30 23:13:52 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.33 2002/12/01 19:02:50 mgrouch Exp $  */
 
 /*
 
@@ -112,7 +112,8 @@ static const char select_usage_str[] =
 /**
  *  Print small help for command line options
  */
-void selUsage(int argc, char **argv)
+void
+selUsage(int argc, char **argv)
 {
     extern const char more_info[];
     extern const char libxslt_more_info[];
@@ -185,7 +186,8 @@ selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops,
                int start, int argc, char **argv)
 {
     int c, i, j, k, m, t;
-
+    int templateEmpty = 1;
+    
     xsl_buf[0] = 0;
     *len = 0;
     c = 0;
@@ -219,12 +221,24 @@ selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops,
     if (!ops->outText && ops->printRoot) c += sprintf(xsl_buf + c, "</xml-select>\n");
     c += sprintf(xsl_buf + c, "</xsl:template>\n");
 
+    /*
+     *  At least one -t option must be found
+     */
+    if (t == 0)
+    {
+        fprintf(stderr, "error in arguments:");
+        fprintf(stderr, " none -t or --template options found\n");
+        /*selUsage(argc, argv);*/
+        exit(2);
+    }
+    
     t = 0;
     i = 2;
     while(i < argc)
     {
         if(!strcmp(argv[i], "-t") || !strcmp(argv[i], "--template"))
         {
+            templateEmpty = 1;
             t++;
             c += sprintf(xsl_buf + c, "<xsl:template name=\"t%d\">\n", t);
 
@@ -234,29 +248,34 @@ selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops,
             {
                 if(!strcmp(argv[i], "-c") || !strcmp(argv[i], "--copy-of"))
                 {
+                    templateEmpty = 0;
                     for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
                     c += sprintf(xsl_buf + c, "<xsl:copy-of select=\"%s\"/>\n", argv[i+1]);
                     i++;
                 }
                 else if(!strcmp(argv[i], "-v") || !strcmp(argv[i], "--value-of"))
                 {
+                    templateEmpty = 0;
                     for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
                     c += sprintf(xsl_buf + c, "<xsl:value-of select=\"%s\"/>\n", argv[i+1]);
                     i++;
                 }
                 else if(!strcmp(argv[i], "-o") || !strcmp(argv[i], "--output"))
                 {
+                    templateEmpty = 0;
                     for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
                     c += sprintf(xsl_buf + c, "<xsl:value-of select=\"'%s'\"/>\n", argv[i+1]);
                     i++;
                 }
                 else if(!strcmp(argv[i], "-n") || !strcmp(argv[i], "--nl"))
                 {
+                    templateEmpty = 0;
                     for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
                     c += sprintf(xsl_buf + c, "<xsl:value-of select=\"'&#10;'\"/>\n");
                 }
                 else if(!strcmp(argv[i], "-m") || !strcmp(argv[i], "--match"))
                 {
+                    templateEmpty = 0;
                     for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
                     c += sprintf(xsl_buf + c, "<xsl:for-each select=\"%s\">\n", argv[i+1]);
                     m++;
@@ -290,9 +309,18 @@ selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops,
                 c += sprintf(xsl_buf + c, "</xsl:for-each>\n");
             }
 
+            if (templateEmpty)
+            {
+                fprintf(stderr, "error in arguments:");
+                fprintf(stderr, " -t or --template option must be followed by --match or other options\n");
+                /*selUsage(argc, argv);*/
+                exit(3);
+            }
+            
             c += sprintf(xsl_buf + c, "</xsl:template>\n");
         }
 
+        if (i >= argc) break;
         if (argv[i][0] != '-') break;
 
         i++;
@@ -304,11 +332,11 @@ selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops,
     return i;
 }
 
-
 /**
  *  This is the main function for 'select' option
  */
-int selMain(int argc, char **argv)
+int
+selMain(int argc, char **argv)
 {
     static xsltOptions xsltOps;
     static selOptions ops;
@@ -331,6 +359,9 @@ int selMain(int argc, char **argv)
     {
         xmlChar *value;
 
+/*
+printf("%d %s\n", n, argv[n]);
+*/
         /*
          *  Pass input file name as predefined parameter 'inputFile'
          */
