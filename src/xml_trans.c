@@ -1,4 +1,4 @@
-/*  $Id: xml_trans.c,v 1.23 2002/12/07 18:25:48 mgrouch Exp $  */
+/*  $Id: xml_trans.c,v 1.24 2002/12/07 19:17:43 mgrouch Exp $  */
 
 /*
 
@@ -70,7 +70,7 @@ static const char trans_usage_str[] =
 #endif
 #ifdef LIBXML_CATALOG_ENABLED
 "   --catalogs      - use SGML catalogs from $SGML_CATALOG_FILES\n"
-"                     otherwise XML Catalogs starting from\n"
+"                     otherwise XML catalogs starting from\n"
 "                     file:///etc/xml/catalog are activated by default\n\n";
 #endif
 

@@ -1,4 +1,4 @@
-/*  $Id: trans.c,v 1.8 2002/11/30 22:00:15 mgrouch Exp $  */
+/*  $Id: trans.c,v 1.9 2002/12/07 19:17:43 mgrouch Exp $  */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -11,7 +11,7 @@
  *  (see also http://xmlsoft.org/)
  */
 
-/* TODO */
+/* TODO: 1. preloading entities */
 xmlChar *paths[MAX_PATHS + 1];
 int nbpaths = 0;
 
@@ -72,7 +72,7 @@ xsltExternalEntityLoader(const char *URL, const char *ID, xmlParserCtxtPtr ctxt)
     }
 
     /* preload resources */
-    /* TODO */
+    /* TODO 1. preloading entities */
     for (i = 0; i < nbpaths; i++)
     {
         xmlChar *newURL;

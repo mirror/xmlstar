@@ -1,4 +1,4 @@
-/*  $Id: xml_format.c,v 1.6 2002/12/07 18:25:48 mgrouch Exp $  */
+/*  $Id: xml_format.c,v 1.7 2002/12/07 19:17:43 mgrouch Exp $  */
 
 /*
 
@@ -55,6 +55,9 @@ typedef struct _foOptions {
     int indent;               /* Indent output */
     int indent_tab;           /* Indent output with tab */
     int indent_spaces;        /* Num spaces for indentation */
+#ifdef LIBXML_HTML_ENABLED
+    int html;                 /* inputs are in HTML format */
+#endif
 } foOptions;
 
 typedef foOptions *foOptionsPtr;
@@ -66,6 +69,9 @@ static const char format_usage_str[] =
 "   -t or --indent-tab          - indent output with tabulation\n"
 "   -s or --indent-spaces <num> - indent output with <num> spaces\n"
 "   -n or --noindent            - do not indent\n"
+#ifdef LIBXML_HTML_ENABLED
+"   --html                      - input is HTML\n"
+#endif
 "   -h or --help                - print help\n\n";
 
 /**
@@ -90,6 +96,9 @@ foInitOptions(foOptionsPtr ops)
     ops->indent = 1;
     ops->indent_tab = 0;
     ops->indent_spaces = 2;
+#ifdef LIBXML_HTML_ENABLED
+    ops->html = 0;
+#endif
 }
 
 /**
@@ -174,6 +183,13 @@ foParseOptions(foOptionsPtr ops, int argc, char **argv)
             ops->indent_tab = 0;
             i++;
         }
+#ifdef LIBXML_HTML_ENABLED
+        else if (!strcmp(argv[i], "--html"))
+        {
+            ops->html = 1;
+            i++;
+        }
+#endif
         else if (!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h"))
         {
             foUsage(argc, argv);
@@ -214,7 +230,12 @@ foProcess(foOptionsPtr ops, int start, int argc, char **argv)
         fileName = argv[start];   
     }
     
-    doc = xmlParseFile(fileName);
+#ifdef LIBXML_HTML_ENABLED
+    if (ops->html)
+        doc = htmlParseFile(fileName, NULL);
+    else
+#endif
+        doc = xmlParseFile(fileName);
     xmlSaveFormatFile("-", doc, 1);
 
     return ret;
