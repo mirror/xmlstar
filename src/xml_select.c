@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.42 2002/12/12 04:37:53 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.43 2003/03/19 23:18:07 mgrouch Exp $  */
 
 /*
 
@@ -35,6 +35,7 @@ THE SOFTWARE.
 #include <stdlib.h>
 
 #include "trans.h"
+#include "stack.h"
 
 /*
  *  TODO:
@@ -220,6 +221,9 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
     int templateEmpty = 1;
     int nextTempl = 0;
 
+    Stack stack = NULL;
+    int max_depth = 256;  /* TODO: make it optional */
+
     c = *len;
     i = start;
     t = num;
@@ -235,6 +239,9 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
     templateEmpty = 1;
     c += sprintf(xsl_buf + c, "<xsl:template name=\"t%d\">\n", t);
 
+    /* TODO: implement better control of nesting */
+    stack = stack_create(max_depth);
+    
     i++;
     m = 0;
     while(i < argc)
@@ -252,6 +259,7 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
             if ((i+1) >= argc)
             {
                 fprintf(stderr, "-v option requires argument\n");
+                stack_free(stack);
                 exit (1);
             }
             for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
@@ -264,6 +272,7 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
             if ((i+1) >= argc)
             {
                 fprintf(stderr, "-o option requires argument\n");
+                stack_free(stack);
                 exit (1);
             }
             for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
@@ -288,6 +297,7 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
             if ((i+1) >= argc)
             {
                 fprintf(stderr, "-m option requires argument\n");
+                stack_free(stack);
                 exit (1);
             }
             for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
@@ -301,6 +311,7 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
                 if ((i+1) >= argc)
                 {
                     fprintf(stderr, "-s missing argument\n");
+                    stack_free(stack);
                     exit (1);
                 }
                 i++;
@@ -313,6 +324,7 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
                 if ((i+1) >= argc)
                 {
                     fprintf(stderr, "-s missing argument\n");
+                    stack_free(stack);
                     exit (1);
                 }
                 i++;
@@ -353,6 +365,7 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
             else
             {
                 fprintf(stderr, "unknown option: %s\n", argv[i]);
+                stack_free(stack);
                 exit(1);
             }
         }
@@ -377,12 +390,15 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
         fprintf(stderr, "error in arguments:");
         fprintf(stderr, " -t or --template option must be followed by");
         fprintf(stderr, " --match or other options\n");
+        stack_free(stack);
         exit(3);
     }
 
     c += sprintf(xsl_buf + c, "</xsl:template>\n");
 
     *len = c;
+
+    stack_free(stack);
 
     if (!nextTempl)
     {
