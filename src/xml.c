@@ -1,4 +1,4 @@
-/*  $Id: xml.c,v 1.15 2002/11/23 23:45:05 mgrouch Exp $  */
+/*  $Id: xml.c,v 1.16 2002/11/26 02:47:20 mgrouch Exp $  */
 
 /*
 
@@ -66,28 +66,28 @@ main(int argc, char **argv)
 {
     int ret = 0;
 
-    extern int xml_edit(int argc, char **argv);
-    extern int xml_select(int argc, char **argv);
-    extern int xml_trans(int argc, char **argv);
-    extern int xml_validate(int argc, char **argv);
+    extern int edMain(int argc, char **argv);
+    extern int selMain(int argc, char **argv);
+    extern int trMain(int argc, char **argv);
+    extern int valMain(int argc, char **argv);
     
     if (argc <= 1) usage(argc, argv);
 
     if (!strcmp(argv[1], "ed") || !strcmp(argv[1], "edit"))
     {
-        ret = xml_edit(argc, argv);
+        ret = edMain(argc, argv);
     }
     else if (!strcmp(argv[1], "sel") || !strcmp(argv[1], "select"))
     {
-        ret = xml_select(argc, argv);
+        ret = selMain(argc, argv);
     }
     else if (!strcmp(argv[1], "tr") || !strcmp(argv[1], "transform"))
     {
-        ret = xml_trans(argc, argv);
+        ret = trMain(argc, argv);
     }
     else if (!strcmp(argv[1], "val") || !strcmp(argv[1], "validate"))
     {
-        ret = xml_validate(argc, argv);
+        ret = valMain(argc, argv);
     }
     else if (!strcmp(argv[1], "--version"))
     {

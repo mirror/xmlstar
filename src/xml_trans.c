@@ -1,4 +1,14 @@
-/*  $Id: xml_trans.c,v 1.13 2002/11/24 00:15:15 mgrouch Exp $  */
+/*  $Id: xml_trans.c,v 1.14 2002/11/26 02:47:20 mgrouch Exp $  */
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+ 
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "trans.h"
 
 /*
  *  TODO:
@@ -11,16 +21,6 @@
  *        7. -s for string parameters instead of -p
  *        8. check embedded stylesheet support
  */
-
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
- 
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "trans.h"
 
 static const char trans_usage_str[] =
 "XMLStarlet Toolkit: Transform XML document(s) using XSLT\n"
@@ -43,8 +43,11 @@ static const char trans_usage_str[] =
 "                     otherwise XML Catalogs starting from\n"
 "                     file:///etc/xml/catalog are activated by default\n\n";
 
+/**
+ *  Display usage syntax
+ */
 void
-trans_usage(int argc, char **argv)
+trUsage(int argc, char **argv)
 {
     extern const char more_info[];
     extern const char libxslt_more_info[];
@@ -55,138 +58,138 @@ trans_usage(int argc, char **argv)
     exit(1);
 }
 
-/*
- *  This is  main function for 'tr' option
+/**
+ *  Parse global command line options
  */
-
-int
-xml_trans(int argc, char **argv)
+void
+trParseOptions(xsltOptionsPtr ops, int argc, char **argv)
 {
-    xsltStylesheetPtr cur = NULL;
-    xmlDocPtr doc, style;
-
-    int i = 0;
-    int errorno = 0;
-
-    transOpts.html = 0;
+    int i;
     
-    if (argc <= 2) trans_usage(argc, argv);
+    if (argc <= 2) return;
+    for (i=2; i<argc; i++)
+    {
+        if (argv[i][0] == '-')
+        {
+            if (!strcmp(argv[i], "--show-ext"))
+            {
+                ops->show_extensions = 1;
+            }
+            else if (!strcmp(argv[i], "--noval"))
+            {
+                ops->noval = 1;
+            }
+            else if (!strcmp(argv[i], "--nonet"))
+            {
+                ops->nonet = 1;
+            }
+            else if (!strcmp(argv[i], "--xinclude"))
+            {
+                ops->xinclude = 1;
+            }
+            else if (!strcmp(argv[i], "--html"))
+            {
+                ops->html = 1;
+            }
+            else if (!strcmp(argv[i], "--docbook"))
+            {
+                ops->docbook = 1;
+            }
+            else if (!strcmp(argv[i], "--nonet"))
+            {
+                ops->nonet = 1;
+            }
+        }
+        else
+            break;
+    }
+}
 
+/**
+ *  Initialize LibXML
+ */
+void
+trInitLibXml(void)
+{
+    /*
+     * Initialize library memory
+     */
     xmlInitMemory();
 
     LIBXML_TEST_VERSION
 
+    /*
+     * Store line numbers in the document tree
+     */
     xmlLineNumbersDefault(1);
 
     /*
      * Register the EXSLT extensions
      */
     exsltRegisterAll();
+
     /*
      * Register the test module
-    xsltRegisterTestModule();
     */
-    
+    xsltRegisterTestModule();
+
+    /*
+     * Register entity loader
+     */
     defaultEntityLoader = xmlGetExternalEntityLoader();
-    xmlSetExternalEntityLoader(xslExternalEntityLoader);
+    xmlSetExternalEntityLoader(xsltExternalEntityLoader);
 
     /*
      * Replace entities with their content.
      */
     xmlSubstituteEntitiesDefault(1);
+}
 
-    /*
-     * Compile XSLT Sylesheet
-     */
-    
-    {
-        style = xmlParseFile((const char *) argv[2]);
-        {
-            if (style == NULL) {
-                fprintf(stderr,  "cannot parse %s\n", argv[2]);
-                cur = NULL;
-                errorno = 4;
-            } else {
-                cur = xsltLoadStylesheetPI(style);
-                if (cur != NULL) {
-                    /* it is an embedded stylesheet */
-                    xsltProcess(style, cur, argv[3]);
-                    xsltFreeStylesheet(cur);
-                    goto done;
-                }
-                cur = xsltParseStylesheetDoc(style);
-                if (cur != NULL) {
-                    if (cur->errors != 0) {
-                        errorno = 5;
-                        goto done;
-                    }
-                    if (cur->indent == 1)
-                        xmlIndentTreeOutput = 1;
-                    else
-                        xmlIndentTreeOutput = 0;
-                } else {
-                    xmlFreeDoc(style);
-                    errorno = 5;
-                    goto done;
-                }
-            }
-        }
-    }
-    
-    /*
-     * disable CDATA from being built in the document tree
-     */
-    xmlDefaultSAXHandlerInit();
-    xmlDefaultSAXHandler.cdataBlock = NULL;
-
-    /*
-     * run XSLT
-     */
-    
-    if ((cur != NULL) && (cur->errors == 0)) {
-        for (i=3; i < argc; i++) {
-            doc = NULL;
-#ifdef LIBXML_HTML_ENABLED
-            if (transOpts.html)
-                doc = htmlParseFile(argv[i], NULL);
-            else
-#endif
-#ifdef LIBXML_DOCB_ENABLED
-            if (transOpts.docbook)
-                doc = docbParseFile(argv[i], NULL);
-            else
-#endif
-                doc = xmlParseFile(argv[i]);
-            if (doc == NULL) {
-                fprintf(stderr, "unable to parse %s\n", argv[i]);
-                errorno = 6;
-                continue;
-            }
-            xsltProcess(doc, cur, argv[i]);
-        }
-
-        if (argc == 3)
-        {
-            /* stdio */
-            doc = xmlParseFile("-");
-            xsltProcess(doc, cur, "-");
-        }
-    }
-    if (cur != NULL)
-        xsltFreeStylesheet(cur);
-
-    for (i = 0; i < nbstrparams; i++)
-        xmlFree(strparams[i]);
-
-    /*
-     *  Clean up
-     */
-    
-done:
+/**
+ *  Cleanup memory
+ */
+void
+trCleanup()
+{
     xsltCleanupGlobals();
     xmlCleanupParser();
 #if 0
     xmlMemoryDump();
 #endif
-    return(errorno);    
+}
+
+/**
+ *  This is the main function for 'tr' option
+ */
+int
+trMain(int argc, char **argv)
+{
+    xsltOptions ops;
+
+    int errorno = 0;
+    int i;
+    
+    if (argc <= 2) trUsage(argc, argv);
+
+    xsltInitOptions(&ops);
+    trParseOptions(&ops, argc, argv);
+    trInitLibXml();
+
+    /* find xsl file name */
+    for (i=2; i<argc; i++)
+        if (argv[i][0] != '-') break;
+
+    /* set parameters */
+    /* TODO */
+/*
+printf ("%s\n", argv[i]);
+printf ("ops->html %d\n", ops.html);
+*/
+        
+    /* run transformation */
+    errorno = xsltRun(&ops, argv[i], argc-i-1, argv+i+1);
+
+    trCleanup();
+    
+    return(errorno);                                                
 }

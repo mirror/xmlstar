@@ -1,27 +1,10 @@
-/*  $Id: xml_select.c,v 1.25 2002/11/23 21:16:33 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.26 2002/11/26 02:47:20 mgrouch Exp $  */
 
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <libxml/xmlmemory.h>
-#include <libxml/debugXML.h>
-#include <libxml/xmlIO.h>
-#include <libxml/parser.h>
-#include <libxml/tree.h>
-#include <libxml/HTMLtree.h>
-#include <libxml/xinclude.h>
-#include <libxml/parserInternals.h>
-#include <libxml/uri.h>
-
-#include <libxslt/xslt.h>
-#include <libxslt/xsltInternals.h>
-#include <libxslt/transform.h>
-#include <libxslt/xsltutils.h>
-#include <libxslt/extensions.h>
-#if 0
-#include <libxslt/security.h>
-#endif
+#include "trans.h"
 
 /*
  *  TODO:
@@ -37,11 +20,6 @@
 #define MAX_XSL_BUF  256*1014
 
 char xsl_buf[MAX_XSL_BUF];
-
-extern int nbparams;
-extern const char *params[];
-extern void xsltProcess(xmlDocPtr doc, xsltStylesheetPtr cur, const char *filename);
-
 
 static const char select_usage_str[] =
 "XMLStarlet Toolkit: Select from XML document(s)\n"
@@ -95,7 +73,7 @@ static const char select_usage_str[] =
 "</xsl:template>\n"
 "</xsl:stylesheet>\n\n";
 
-void select_usage(int argc, char **argv)
+void selUsage(int argc, char **argv)
 {
     extern const char more_info[];
     extern const char libxslt_more_info[];
@@ -110,11 +88,12 @@ static int printXSLT = 0;
 static int printRoot = 0;
 static int out_text = 0;
 
-int xml_select(int argc, char **argv)
+int selMain(int argc, char **argv)
 {
+    xsltOptions ops;
     int c, i, j, k, m, n, t;
   
-    if (argc <= 2) select_usage(argc, argv);
+    if (argc <= 2) selUsage(argc, argv);
 
     /*
      *   Parse global options
@@ -137,10 +116,11 @@ int xml_select(int argc, char **argv)
         }
         else if (!strcmp(argv[i], "--help"))
         {
-            select_usage(argc, argv);
+            selUsage(argc, argv);
         }
         i++;  
     }
+    xsltInitOptions(&ops);
 
     xsl_buf[0] = 0;
     c = 0;
@@ -275,7 +255,7 @@ int xml_select(int argc, char **argv)
             xmlDocPtr style = xmlParseMemory(xsl_buf, c);
             xsltStylesheetPtr cur = xsltParseStylesheetDoc(style);
             xmlDocPtr doc = xmlParseFile(argv[n]);
-            xsltProcess(doc, cur, argv[n]);
+            xsltProcess(&ops, doc, cur, argv[n]);
             xsltFreeStylesheet(cur);
         }
     }
@@ -289,7 +269,7 @@ int xml_select(int argc, char **argv)
         xmlDocPtr style = xmlParseMemory(xsl_buf, c);
         xsltStylesheetPtr cur = xsltParseStylesheetDoc(style);
         xmlDocPtr doc = xmlParseFile("-");
-        xsltProcess(doc, cur, "-");
+        xsltProcess(&ops, doc, cur, "-");
         /* xsltFreeStylesheet(cur); */
     }
         

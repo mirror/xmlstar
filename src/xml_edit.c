@@ -1,4 +1,4 @@
-/*  $Id: xml_edit.c,v 1.11 2002/11/23 21:45:35 mgrouch Exp $  */
+/*  $Id: xml_edit.c,v 1.12 2002/11/26 02:47:20 mgrouch Exp $  */
 
 #include <string.h>
 #include <stdio.h>
@@ -73,7 +73,7 @@ static const char edit_usage_str[] =
    xml ed --update "//elem/@weight" -x "./@weight+1"?
 */
 
-void edit_usage(int argc, char **argv)
+void edUsage(int argc, char **argv)
 {
     extern const char more_info[];
     FILE* o = stderr;
@@ -283,11 +283,11 @@ int xml_ed_process(xmlDocPtr doc, XmlEdAction* ops, int ops_count)
     return res;
 }
 
-int xml_edit(int argc, char **argv)
+int edMain(int argc, char **argv)
 {
     int i, j, n;
 
-    if (argc < 3) edit_usage(argc, argv);
+    if (argc < 3) edUsage(argc, argv);
     
     j = 0;
     i = 2;
@@ -296,7 +296,7 @@ int xml_edit(int argc, char **argv)
         if (!strcmp(argv[i], "-d") || !strcmp(argv[i], "--delete"))
         {
             i++;
-            if (i >= argc) edit_usage(argc, argv);
+            if (i >= argc) edUsage(argc, argv);
             ops[j].op = XML_ED_DELETE;
             ops[j].arg1 = argv[i];
             ops[j].arg2 = 0;
@@ -306,11 +306,11 @@ int xml_edit(int argc, char **argv)
         else if (!strcmp(argv[i], "-m") || !strcmp(argv[i], "--move"))
         {
             i++;
-            if (i >= argc) edit_usage(argc, argv);
+            if (i >= argc) edUsage(argc, argv);
             ops[j].op = XML_ED_MOVE;
             ops[j].arg1 = argv[i];
             i++;
-            if (i >= argc) edit_usage(argc, argv);
+            if (i >= argc) edUsage(argc, argv);
             ops[j].arg2 = argv[i];
             ops[j].type = XML_UNDEFINED;
             j++;
