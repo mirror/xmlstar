@@ -31,7 +31,7 @@ AC_ARG_WITH(libxml-prefix,
         [  --with-libxml-prefix=[PFX]		Specify location of libxml],
         LIBXML_PREFIX=$withval
         LIBXML_CFLAGS="-I$withval/include/libxml2 -I$withval/include/libxml"
-        LIBXML_LIBS="$withval/lib/libxml2.a -lz -lm -lpthread"
+        LIBXML_LIBS="$withval/lib/libxml2.a -lz -lm -lpthread -ldl"
 )
         
 AC_ARG_WITH(libxml-include-prefix,
