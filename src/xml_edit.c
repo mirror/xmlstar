@@ -1,4 +1,4 @@
-/*  $Id: xml_edit.c,v 1.42 2004/11/11 03:39:34 mgrouch Exp $  */
+/*  $Id: xml_edit.c,v 1.43 2005/01/07 01:43:17 mgrouch Exp $  */
 
 /*
 
@@ -623,15 +623,22 @@ edDelete(xmlDocPtr doc, char *str)
                 /*
                 fprintf(stderr, "Set contains %d nodes:\n", cur->nodeNr);
                 */
-                for (i = 0; i < cur->nodeNr; i++)
+                /*for (i = 0; i < cur->nodeNr; i++)*/
+                for (i = cur->nodeNr - 1; i >= 0; i--)
                 {
                     /*
                      *  delete node
                      */
                     xmlUnlinkNode(cur->nodeTab[i]);
-                    /* xmlFreeNode(cur->nodeTab[i]); ??? */
+                    
+                    /*
+                     * Free node and children
+                     */
+                    xmlFreeNode(cur->nodeTab[i]);
+                    cur->nodeTab[i] = NULL;
                 }
             }
+            
             break;
         }
         default:
@@ -1118,8 +1125,12 @@ edMain(int argc, char **argv)
             }
             ret = xmlOutputBufferClose(buf);
         }
+        
+        xmlFreeDoc(doc);
     }
 
     edCleanupNSArr(ns_arr);
+    xmlCleanupParser();
+    xmlCleanupGlobals();
     return 0;
 }
