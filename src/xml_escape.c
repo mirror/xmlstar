@@ -1,4 +1,4 @@
-/*  $Id: xml_escape.c,v 1.3 2003/05/21 03:20:45 mgrouch Exp $  */
+/*  $Id: xml_escape.c,v 1.4 2003/05/30 05:13:03 mgrouch Exp $  */
 
 /*
 
@@ -168,7 +168,8 @@ escMain(int argc, char **argv, int escape)
 
     if (argc > 2)
     {
-        if (!strcmp(argv[2], "--help")) escUsage(argc, argv, escape);
+        if (!strcmp(argv[2], "--help") || !strcmp(argv[2], "-h") ||
+           !strcmp(argv[2], "-?") || !strcmp(argv[2], "-Z")) escUsage(argc, argv, escape);
         if (!strcmp(argv[2], "-")) readStdIn = 1;
     }
     else
