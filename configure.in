@@ -22,12 +22,12 @@ AC_ARG_WITH(libxml-prefix,
         
 AC_ARG_WITH(libxml-include-prefix,
         [  --with-libxml-include-prefix=[PFX]	Specify location of libxml headers],
-        LIBXML_CFLAGS="-I$withval/libxml2"
+        LIBXML_CFLAGS="-I$withval/libxml2 -I$withval/libxml -I$withval"
 )
 
 AC_ARG_WITH(libxml-libs-prefix,
         [  --with-libxml-libs-prefix=[PFX]	Specify location of libxml libs],
-        LIBXML_LIBS="$withval/libxml2.a -lz -lm"
+        LIBXML_LIBS="$withval/libxml2.a -lz -lm -lsocket  -lnsl"
 )
 
 dnl
@@ -43,7 +43,7 @@ AC_ARG_WITH(libxslt-prefix,
         
 AC_ARG_WITH(libxslt-include-prefix,
         [  --with-libxslt-include-prefix=[PFX]	Specify location of libxslt headers],
-        LIBXSLT_CFLAGS="-I$withval/libxslt -I$withval/libexslt"
+        LIBXSLT_CFLAGS="-I$withval/libxslt -I$withval/libexslt -I$withval"
 )
 
 AC_ARG_WITH(libxslt-libs-prefix,
