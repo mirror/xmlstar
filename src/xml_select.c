@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.19 2002/11/22 06:22:16 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.20 2002/11/23 05:20:57 mgrouch Exp $  */
 
 #include <string.h>
 #include <stdio.h>
@@ -40,67 +40,70 @@ char xsl_buf[MAX_XSL_BUF];
 extern int nbparams;
 extern const char *params[];
 
+static const char select_usage_str[] =
+"XMLStarlet Toolkit: Select from XML document(s)\n"
+"Usage: xml sel <global-options> {<template>} {<xml-file>}\n"
+"where\n"
+"  <global-options> - global options for selecting\n"
+"  <xml-file> - input XML document file name (stdin is used if missing)\n"
+"  <template> - template for querying XL document with following syntax:\n\n"
+
+"<global-options> are:\n"
+"  -C     - display generated XSLT\n"
+"  -R     - print root element <xsl-select>\n"
+"  -T     - output is text (default is XML)\n"
+"  --help - display help\n\n"
+
+"Syntax for templates: -t|--template <options>\n"
+"where <options>\n"
+"  -c or --copy-of <xpath>  - print copy of XPATH expression\n"
+"  -v or --value-of <xpath> - print value of XPATH expression\n"
+"  -o or --output <string>  - print string literal \n"
+"  -n or --nl               - print new line\n"
+"  -s or --sort <order>     - sort in order (used after -m)\n"
+"  -m or --match <xpath>    - match XPATH expression\n\n"
+"There can be multiple --match, --copy-of, value-of, etc options\n"
+"in a single template. The effect of applying command line templates\n"
+"can be illustrated with the following XSLT analogue\n\n"
+
+"xml sel -t -c \"xpath0\" -m \"xpath1\" -m \"xpath2\" -v \"xpath3\" \\\n"
+"        -t -m \"xpath4\" -c \"xpath5\"\n\n"
+
+"is equivalent to applying the following XSLT\n\n"
+
+"<?xml version=\"1.0\"?>\n"
+"<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">\n"
+"<xsl:template match=\"/\">\n"
+"  <xsl:call-template name=\"t1\"/>\n"
+"  <xsl:call-template name=\"t2\"/>\n"
+"</xsl:template>\n"
+"<xsl:template name=\"t1\">\n"
+"  <xsl:copy-of select=\"xpath0\"/>\n"
+"  <xsl:for-each select=\"xpath1\">\n"
+"    <xsl:for-each select=\"xpath2\">\n"
+"      <xsl:value-of select=\"xpath3\"/>\n"
+"    </xsl:for-each>\n"
+"  </xsl:for-each>\n"
+"</xsl:template>\n"
+"<xsl:template name=\"t2\">\n"
+"  <xsl:for-each select=\"xpath4\">\n"
+"    <xsl:copy-of select=\"xpath5\"/>\n"
+"  </xsl:for-each>\n"
+"</xsl:template>\n"
+"</xsl:stylesheet>\n\n"
+
+"XMLStarlet is a command line toolkit to query/edit/check/transform\n"
+"XML documents (for more information see http://xmlstar.sourceforge.net/)\n\n"
+
+"Current implementation uses libxslt from GNOME codebase as XSLT processor\n"
+"(see http://xmlsoft.org/ for more details)\n";
+
+
+
 void select_usage(int argc, char **argv)
 {
     FILE* o = stderr;
-
-    fprintf(o, "XMLStarlet Toolkit: Select from XML document(s)\n");
-    fprintf(o, "Usage: xml sel <global-options> {<template>} {<xml-file>}\n");
-    fprintf(o, "where\n");
-    fprintf(o, "  <global-options> - global options for selecting\n");
-    fprintf(o, "  <xml-file> - input XML document file name (stdin is used if missing)\n");
-    fprintf(o, "  <template> - template for querying XL document with following syntax:\n\n");
-
-    fprintf(o, "<global-options> are:\n");
-    fprintf(o, "  -C     - display generated XSLT\n");
-    fprintf(o, "  -R     - print root element <xsl-select>\n");
-    fprintf(o, "  -T     - output is text (default is XML)\n");
-    fprintf(o, "  --help - display help\n\n");
-    
-    fprintf(o, "Syntax for templates: -t|--template <options>\n");
-    fprintf(o, "where <options>\n");
-    fprintf(o, "  -c or --copy-of <xpath>  - print copy of XPATH expression\n");
-    fprintf(o, "  -v or --value-of <xpath> - print value of XPATH expression\n");
-    fprintf(o, "  -o or --output <string>  - print string literal \n");
-    fprintf(o, "  -n or --nl               - print new line\n");
-    fprintf(o, "  -s or --sort <order>     - sort in order (used after -m)\n");
-    fprintf(o, "  -m or --match <xpath>    - match XPATH expression\n\n");
-    fprintf(o, "There can be multiple --match, --copy-of, value-of, etc options\n");
-    fprintf(o, "in a single template. The effect of applying command line templates\n");
-    fprintf(o, "can be illustrated with the following XSLT analogue\n\n");
- 
-    fprintf(o, "xml sel -t -c \"xpath0\" -m \"xpath1\" -m \"xpath2\" -v \"xpath3\" \\\n");
-    fprintf(o, "        -t -m \"xpath4\" -c \"xpath5\"\n\n");
-
-    fprintf(o, "is equivalent to applying the following XSLT\n\n");
-
-    fprintf(o, "<?xml version=\"1.0\"?>\n");
-    fprintf(o, "<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">\n");
-    fprintf(o, "<xsl:template match=\"/\">\n");
-    fprintf(o, "  <xsl:call-template name=\"t1\"/>\n");
-    fprintf(o, "  <xsl:call-template name=\"t2\"/>\n");
-    fprintf(o, "</xsl:template>\n");
-    fprintf(o, "<xsl:template name=\"t1\">\n");
-    fprintf(o, "  <xsl:copy-of select=\"xpath0\"/>\n");
-    fprintf(o, "  <xsl:for-each select=\"xpath1\">\n");
-    fprintf(o, "    <xsl:for-each select=\"xpath2\">\n");
-    fprintf(o, "      <xsl:value-of select=\"xpath3\"/>\n");
-    fprintf(o, "    </xsl:for-each>\n");
-    fprintf(o, "  </xsl:for-each>\n");
-    fprintf(o, "</xsl:template>\n");
-    fprintf(o, "<xsl:template name=\"t2\">\n");
-    fprintf(o, "  <xsl:for-each select=\"xpath4\">\n");
-    fprintf(o, "    <xsl:copy-of select=\"xpath5\"/>\n");
-    fprintf(o, "  </xsl:for-each>\n");
-    fprintf(o, "</xsl:template>\n");
-    fprintf(o, "</xsl:stylesheet>\n\n");  
-        
-    fprintf(o, "XMLStarlet is a command line toolkit to query/edit/check/transform\n");
-    fprintf(o, "XML documents (for more information see http://xmlstar.sourceforge.net/)\n\n");
-
-    fprintf(o, "Current implementation uses libxslt from GNOME codebase as XSLT processor\n");
-    fprintf(o, "(see http://xmlsoft.org/ for more details)\n");
-
+    fprintf(o, select_usage_str);
     exit(1);
 }
 

@@ -1,4 +1,4 @@
-/*  $Id: xml_trans.c,v 1.7 2002/11/22 05:30:36 mgrouch Exp $  */
+/*  $Id: xml_trans.c,v 1.8 2002/11/23 05:20:57 mgrouch Exp $  */
 
 /*
  *  TODO:
@@ -54,23 +54,24 @@
 #define MAX_PARAMETERS 256
 #define MAX_PATHS 256
 
+static const char trans_usage_str[] =
+"XMLStarlet Toolkit: Transform XML document(s) using XSLT\n"
+"Usage: xml tr <xsl-file> {-p <name>=<value> } [ <xml-file> ... ]\n"
+"where\n"
+"   <xsl-file>     - main XSLT stylesheet for transformation\n"
+"   <name>=<value> - name and value of the parameter passed to XSLT processor\n"
+"   <xml-file>     - input XML document file name (standard input is used if missing)\n\n"
+
+"XMLStarlet is a command line toolkit to query/edit/check/transform\n"
+"XML documents (for more information see http://xmlstar.sourceforge.net/)\n\n"
+
+"Current implementation uses libxslt from GNOME codebase as XSLT processor\n"
+"(see http://xmlsoft.org/ for more details)\n";
+
 void trans_usage(int argc, char **argv)
 {
     FILE* o = stderr;
-
-    fprintf(o, "XMLStarlet Toolkit: Transform XML document using XSLT\n");
-    fprintf(o, "Usage: xml tr <xsl-file> {-p <name>=<value> } [ <xml-file> ... ]\n");
-    fprintf(o, "where\n");
-    fprintf(o, "      <xsl-file>         - main XSLT stylesheet for transformation\n");
-    fprintf(o, "      <name>=<value>     - name and value of the parameter passed to XSLT processor\n");
-    fprintf(o, "      <xml-file>         - input XML document file name (standard input is used if missing)\n\n");
-
-    fprintf(o, "XMLStarlet is a command line toolkit to query/edit/check/transform\n");
-    fprintf(o, "XML documents (for more information see http://xmlstar.sourceforge.net/)\n\n");
-
-    fprintf(o, "Current implementation uses libxslt from GNOME codebase as XSLT processor\n");
-    fprintf(o, "(see http://xmlsoft.org/ for more details)\n");
-
+    fprintf(o, trans_usage_str);
     exit(1);
 }
 
