@@ -240,11 +240,38 @@ XML documents (for more information see http://xmlstar.sourceforge.net/)</progra
 
       <para>Let&#39;s say you have the following XML document (table.xml)</para>
 
-      <para></para>
+      <programlisting>&#60;xml&#62;
+  &#60;table&#62;
+    &#60;rec id=&#34;1&#34;&#62;
+      &#60;numField&#62;123&#60;/numField&#62;
+      &#60;stringField&#62;String Value&#60;/stringField&#62;
+    &#60;/rec&#62;
+    &#60;rec id=&#34;2&#34;&#62;
+      &#60;numField&#62;346&#60;/numField&#62;
+      &#60;stringField&#62;Text Value&#60;/stringField&#62;
+    &#60;/rec&#62;
+    &#60;rec id=&#34;3&#34;&#62;
+      &#60;numField&#62;-23&#60;/numField&#62;
+      &#60;stringField&#62;stringValue&#60;/stringField&#62;
+    &#60;/rec&#62;
+  &#60;/table&#62;
+&#60;/xml&#62;</programlisting>
 
       <programlisting>xml el table.xml</programlisting>
 
       <para>would produce the following output.</para>
+
+      <programlisting>xml
+xml/table
+xml/table/rec
+xml/table/rec/numField
+xml/table/rec/stringField
+xml/table/rec
+xml/table/rec/numField
+xml/table/rec/stringField
+xml/table/rec
+xml/table/rec/numField
+xml/table/rec/stringField</programlisting>
 
       <para>Every line in this output is an XPath expression which indicates a
       &#39;path&#39; to elements in XML document. You would use these XPath
@@ -257,46 +284,65 @@ XML documents (for more information see http://xmlstar.sourceforge.net/)</progra
       in structure but not order of the elements you can use -u switch
       combined with &#39;el&#39; option.</para>
 
-      <para>EX:</para>
+      <para>EXAMPLE:</para>
 
       <programlisting>xml el -u table.xml</programlisting>
 
-      <para></para>
-
       <para>Output:</para>
 
-      <para></para>
+      <programlisting>xml
+xml/table
+xml/table/rec
+xml/table/rec/numField
+xml/table/rec/stringField</programlisting>
 
       <para>If you are interested not just in elements of your XML document,
       but you want to see attributes as well you can use -a switch with
       &#39;el&#39; option. And every line of the output will still be a valid
       XPath expression.</para>
 
-      <para>EX:</para>
+      <para>EXAMPLE:</para>
 
       <programlisting>xml el -a table.xml</programlisting>
 
-      <para></para>
-
       <para>Output:</para>
 
-      <para></para>
+      <programlisting>xml
+xml/table
+xml/table/rec
+xml/table/rec/@id
+xml/table/rec/numField
+xml/table/rec/stringField
+xml/table/rec
+xml/table/rec/@id
+xml/table/rec/numField
+xml/table/rec/stringField
+xml/table/rec
+xml/table/rec/@id
+xml/table/rec/numField
+xml/table/rec/stringField</programlisting>
 
       <para>If you are looking for attribute values as well use -v switch of
       &#39;el&#39; option. And again - every line of output is a valid XPath
       expression.</para>
 
-      <para>EX:</para>
+      <para>EXAMPLE:</para>
 
       <programlisting>xml el -v table.xml</programlisting>
 
-      <para></para>
-
       <para>Output:</para>
 
-      <para></para>
-
-      <para></para>
+      <programlisting>xml
+xml/table
+xml/table/rec[@id=&#39;1&#39;]
+xml/table/rec/numField
+xml/table/rec/stringField
+xml/table/rec[@id=&#39;2&#39;]
+xml/table/rec/numField
+xml/table/rec/stringField
+xml/table/rec[@id=&#39;3&#39;]
+xml/table/rec/numField
+xml/table/rec/stringField</programlisting>
     </sect1>
   </chapter>
 </book>
