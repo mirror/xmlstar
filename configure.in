@@ -7,6 +7,7 @@ AM_INIT_AUTOMAKE($PACKAGE, $VERSION, no-define)
 AM_MAINTAINER_MODE
 
 CFLAGS="-Wall -g -pedantic"
+EXTRA_LIBS=
 
 dnl
 dnl The following parameters offer
@@ -26,7 +27,7 @@ AC_ARG_WITH(libxml-include-prefix,
 
 AC_ARG_WITH(libxml-libs-prefix,
         [  --with-libxml-libs-prefix=[PFX]	Specify location of libxml libs],
-        LIBXML_LIBS="-L$withval -lxml -lz"
+        LIBXML_LIBS="$withval/libxml2.a -lz -lm"
 )
 
 dnl
@@ -44,39 +45,22 @@ AC_SUBST(CPPFLAGS)
 AC_SUBST(LDFLAGS)
 
 dnl
-dnl find libxml
+dnl Set LIBXML include path
 dnl
-XML_CONFIG="xml-config"
-AC_MSG_CHECKING(for libxml libraries >= 2.x) 
-if test "x$LIBXML_PREFIX" != "x"
+if test "x$LIBXML_CFLAGS" = "x"
 then
-	if ${LIBXML_PREFIX}/bin/xml-config --libs print > /dev/null 2>&1
-	then
-		XML_CONFIG=${LIBXML_PREFIX}/bin/xml-config
-	else
-		XML_CONFIG=xml-config
-	fi
+	LIBXML_CFLAGS="-I${LIBXML_PREFIX}/include/libxml2"
 fi
 
 dnl
-dnl test version and init our variables
+dnl Set LIBXML libraries location
 dnl
-if test "x$XML_CONFIG" != "x"
+if test "x$LIBXML_LIBS" = "x"
 then
-	vers=`$XML_CONFIG --version | sed -e 's/libxml //' | awk 'BEGIN { FS = "."; } { printf "%d", ($1 * 1000 + $2) * 1000 + $3;}'`
-	if test "$vers" -ge 2000000
-	then
-		LIBXML_LIBS="`$XML_CONFIG --libs`"
-		LIBXML_CFLAGS="`$XML_CONFIG --cflags`"
-		AC_MSG_RESULT(found)
-	else
-		AC_MSG_ERROR(You need at least libxml 2.x for this version of libxml)
-	fi
-else
-	AC_MSG_ERROR(Could not find libxml anywhere.)
+	LIBXML_LIBS="${LIBXML_PREFIX}/lib/libxml2.a -lz -lm"
 fi
 
-AC_SUBST(XML_CONFIG)
+AC_SUBST(EXTRA_LIBS)
 AC_SUBST(LIBXML_LIBS)
 AC_SUBST(LIBXML_CFLAGS)
 
