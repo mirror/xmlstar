@@ -1,4 +1,4 @@
-/*  $Id: xml_trans.c,v 1.12 2002/11/23 23:45:06 mgrouch Exp $  */
+/*  $Id: xml_trans.c,v 1.13 2002/11/24 00:15:15 mgrouch Exp $  */
 
 /*
  *  TODO:
@@ -68,6 +68,8 @@ xml_trans(int argc, char **argv)
     int i = 0;
     int errorno = 0;
 
+    transOpts.html = 0;
+    
     if (argc <= 2) trans_usage(argc, argv);
 
     xmlInitMemory();

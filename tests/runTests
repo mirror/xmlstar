@@ -2,14 +2,14 @@
 
 DIR=`pwd`
 
-TESTS="count1 countnode1 delete1 findfile1 look1 sum1 table1 table2 table3 xsl-sum1"
+TESTS="count1 countnode1 delete1 findfile1 hello1 look1 sum1 table1 table2 table3 xsl-sum1"
 
 cd ../examples
 
 for i in $TESTS
 do
-    ./${i} > /tmp/xmlstarlet.$$
-    diff /tmp/xmlstarlet.$$ results/${i}.out
+    ./${i} > /tmp/xmlstarlet.$$ 2>/dev/null
+    diff -q /tmp/xmlstarlet.$$ results/${i}.out
     if [ $? != "0" ]
     then
 	    echo "test $i - FAILED"

@@ -1,0 +1,1 @@
+./xmlstarlet tr --html xsl/hello1.xsl html/hello1.html
