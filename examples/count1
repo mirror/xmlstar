@@ -1,1 +1,1 @@
-./xmlstarlet sel -T -t -v "count(/xml/table/rec/numField)" -n xml/table.xml
+./xmlstarlet sel -t -v "count(/xml/table/rec/numField)" xml/table.xml

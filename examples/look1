@@ -1,1 +1,1 @@
-./xmlstarlet sel -T -t -m "/xml/table/rec[@id='2']" -v numField -n xml/table.xml
+./xmlstarlet sel -t -m "/xml/table/rec[@id='2']" -v numField xml/table.xml
