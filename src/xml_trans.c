@@ -1,10 +1,10 @@
-/*  $Id: xml_trans.c,v 1.36 2004/11/11 03:39:34 mgrouch Exp $  */
+/*  $Id: xml_trans.c,v 1.37 2004/11/21 23:40:40 mgrouch Exp $  */
 
 /*
 
 XMLStarlet: Command Line Toolkit to query/edit/check/transform XML documents
 
-Copyright (c) 2002 Mikhail Grushinskiy.  All Rights Reserved.
+Copyright (c) 2002-2004 Mikhail Grushinskiy.  All Rights Reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -57,7 +57,9 @@ static const char trans_usage_str_2[] =
 "  -p              - parameter is XPATH expression (\"'string'\" to quote string)\n"
 "  -s              - parameter is a string literal\n"
 "<options> are:\n"
+"  --help or -h    - diplay help message\n"
 "  --omit-decl     - omit xml declaration <?xml version=\"1.0\"?>\n"
+"  --embed or -E   - allow applying embedded stylesheet\n"
 "  --show-ext      - show list of extensions\n";
 
 static const char trans_usage_str_3[] =
@@ -100,13 +102,13 @@ int
 trParseOptions(xsltOptionsPtr ops, int argc, char **argv)
 {
     int i;
-    
+
     if (argc <= 2) return argc;
     for (i=2; i<argc; i++)
     {
         if (argv[i][0] == '-')
         {
-            if (!strcmp(argv[i], "--help"))
+            if (!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h"))
             {
                 trUsage(argc, argv);
             }
@@ -121,6 +123,10 @@ trParseOptions(xsltOptionsPtr ops, int argc, char **argv)
             else if (!strcmp(argv[i], "--net"))
             {
                 ops->nonet = 0;
+            }
+            else if (!strcmp(argv[i], "-E") || !strcmp(argv[i], "--embed"))
+            {
+                ops->embed = 1;
             }
             else if (!strcmp(argv[i], "--omit-decl"))
             {
@@ -300,7 +306,7 @@ trMain(int argc, char **argv)
 
     /* set parameters */
     start += trParseParams(xsltParams, &pCount, argc-start-1, argv+start+1);
-                            
+    
     /* run transformation */
     errorno = xsltRun(&ops, argv[xslt_ind], xsltParams,
                       argc-start-1, argv+start+1);

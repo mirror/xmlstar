@@ -1,10 +1,10 @@
-/*  $Id: xml_elem.c,v 1.22 2004/11/21 21:16:19 mgrouch Exp $  */
+/*  $Id: xml_elem.c,v 1.23 2004/11/21 23:40:40 mgrouch Exp $  */
 
 /*
 
 XMLStarlet: Command Line Toolkit to query/edit/check/transform XML documents
 
-Copyright (c) 2002 Mikhail Grushinskiy.  All Rights Reserved.
+Copyright (c) 2002-2004 Mikhail Grushinskiy.  All Rights Reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

@@ -1,4 +1,4 @@
-/*  $Id: trans.h,v 1.10 2004/11/21 20:18:49 mgrouch Exp $  */
+/*  $Id: trans.h,v 1.11 2004/11/21 23:40:40 mgrouch Exp $  */
 
 #ifndef __TRANS_H
 #define __TRANS_H
@@ -60,6 +60,7 @@ typedef struct _xsltOptions {
     int show_extensions;      /* display list of extensions */
     int omit_decl;            /* omit xml declaration */
     int noblanks;             /* Remove insignificant spaces from XML tree */
+    int embed;                /* Allow applying embedded stylesheet */
 #ifdef LIBXML_XINCLUDE_ENABLED
     int xinclude;             /* do XInclude processing on input documents */
 #endif

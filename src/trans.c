@@ -1,4 +1,4 @@
-/*  $Id: trans.c,v 1.17 2003/12/17 06:26:01 mgrouch Exp $  */
+/*  $Id: trans.c,v 1.18 2004/11/21 23:40:40 mgrouch Exp $  */
 
 #include "config.h"
 #include "trans.h"
@@ -28,6 +28,7 @@ xsltInitOptions(xsltOptionsPtr ops)
     ops->omit_decl = 0;
     ops->show_extensions = 0;
     ops->noblanks = 0;
+    ops->embed = 0;
 #ifdef LIBXML_XINCLUDE_ENABLED
     ops->xinclude = 0;
 #endif
@@ -215,6 +216,7 @@ xsltProcess(xsltOptionsPtr ops, xmlDocPtr doc, const char** params,
         if (ctxt == NULL) return;
 
         res = xsltApplyStylesheetUser(cur, doc, params, NULL, NULL, ctxt);
+        
         if (ctxt->state == XSLT_STATE_ERROR)
             errorno = 9;
         if (ctxt->state == XSLT_STATE_STOPPED)
@@ -286,15 +288,37 @@ int xsltRun(xsltOptionsPtr ops, char* xsl, const char** params,
     }
     else
     {
-        cur = xsltLoadStylesheetPI(style);
-        if (cur != NULL)
-        {
-             /* it is an embedded stylesheet */
-             for (i=0; i<count; i++) xsltProcess(ops, style, params, cur, docs[i]);
-             xsltFreeStylesheet(cur);
-             goto done;
+        if (ops->embed)
+        {             
+            cur = xsltLoadStylesheetPI(style);
+            if (cur != NULL)
+            {
+                /* it is an embedded stylesheet */
+                xsltProcess(ops, style, params, cur, xsl);
+                xsltFreeStylesheet(cur);
+                cur = NULL;
+            }            
+            for (i=0; i<count; i++) 
+            {
+                style = xmlParseFile((const char *) docs[i]);
+                if (style == NULL)
+                {
+                    fprintf(stderr, "cannot parse %s\n", docs[i]);
+                    cur = NULL;
+                    goto done;
+                }
+                cur = xsltLoadStylesheetPI(style);
+                if (cur != NULL)
+                {
+                    /* it is an embedded stylesheet */
+                    xsltProcess(ops, style, params, cur, docs[i]);
+                    xsltFreeStylesheet(cur);
+                    cur = NULL;
+                }
+            } 
+            goto done;
         }
-
+        
         cur = xsltParseStylesheetDoc(style);
         if (cur != NULL)
         {
@@ -358,11 +382,12 @@ int xsltRun(xsltOptionsPtr ops, char* xsl, const char** params,
         }
     }
 
+done:
+
     /*
      *  Clean up
      */
     if (cur != NULL) xsltFreeStylesheet(cur);
 
-done:
     return(errorno);
 }
