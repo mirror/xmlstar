@@ -1,4 +1,4 @@
-/*  $Id: xml_ls.c,v 1.3 2003/05/24 03:16:13 mgrouch Exp $  */
+/*  $Id: xml_ls.c,v 1.4 2003/05/28 23:00:14 mgrouch Exp $  */
 
 /*
 
@@ -26,9 +26,9 @@ THE SOFTWARE.
 
 */
 
-#include <dirent.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <dirent.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
