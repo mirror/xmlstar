@@ -1,4 +1,4 @@
-/*  $Id: trans.c,v 1.10 2002/12/07 21:49:39 mgrouch Exp $  */
+/*  $Id: trans.c,v 1.11 2002/12/07 22:18:02 mgrouch Exp $  */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -127,9 +127,6 @@ xsltProcess(xsltOptionsPtr ops, xmlDocPtr doc, const char** params,
         ctxt = xsltNewTransformContext(cur, doc);
         if (ctxt == NULL) return;
 
-        /* TODO: 
-         *        There is a bug in libxslt it ignores xmlLoadExtDtdDefaultValue
-         */
         res = xsltApplyStylesheetUser(cur, doc, params, NULL, NULL, ctxt);
         if (ctxt->state == XSLT_STATE_ERROR)
             errorno = 9;
