@@ -55,6 +55,9 @@ where
   -I or --indent     - indent output
   -D or --xml-decl   - do not omit xml declaration line
   -B or --noblanks   - remove insignificant spaces from XML tree
+  -N <name>=<value>  - predefine namespaces (name without 'xmlns:')
+                       ex: xsql=urn:oracle-xsql
+                       Multiple -N options are allowed.
   --net              - allow fetch DTDs or entities over network
   --help             - display help
 
@@ -182,6 +185,7 @@ where <options> are
    -t or --indent-tab          - indent output with tabulation
    -s or --indent-spaces <num> - indent output with <num> spaces
    -o or --omit-decl           - omit xml declaration <?xml version="1.0"?>
+   -R or --recover             - try to recover what is parsable
    -H or --html                - input is HTML
    -h or --help                - print help
 
@@ -692,6 +696,29 @@ Result Output:
 </rec>
 </table>
 </xml>
+
+
+Command:
+# Predefine namespaces for XPath expressions
+xml sel -N xsql=urn:oracle-xsql -t -v /xsql:query xsql/jobserve.xsql
+Result Output:
+
+  SELECT substr(title,1,26) short_title, title, location, skills
+  FROM job
+  WHERE UPPER(title) LIKE '%ORACLE%'
+  ORDER BY first_posted DESC
+
+
+
+Command:
+# Recover malformed XML document
+xml fo -R xml/malformed.xml 2>/dev/null
+Result Output:
+<?xml version="1.0"?>
+<test_output>
+  <test_name>foo</test_name>
+  <subtest>...</subtest>
+</test_output>
 
 
 Command:
