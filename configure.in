@@ -84,20 +84,20 @@ AC_CHECK_HEADERS(sys/types.h sys/time.h stdlib.h unistd.h string.h)
 AC_CHECK_HEADERS(ieeefp.h nan.h math.h fp_class.h float.h ansidecl.h)
 AC_CHECK_HEADERS(sys/timeb.h time.h sys/stat.h stdarg.h)
 AC_CHECK_FUNCS(stat _stat)
-AC_CHECK_FUNC(isnan, , AC_CHECK_LIB(m, isnan,
-  [M_LIBS="-lm"; AC_DEFINE(HAVE_ISNAN)]))
+dnl AC_CHECK_FUNC(isnan, , AC_CHECK_LIB(m, isnan,
+dnl   [M_LIBS="-lm"; AC_DEFINE(HAVE_ISNAN)]))
 
-AC_CHECK_FUNC(isinf, , AC_CHECK_LIB(m, isinf,
-  [M_LIBS="-lm"; AC_DEFINE(HAVE_ISINF)]))
+dnl AC_CHECK_FUNC(isinf, , AC_CHECK_LIB(m, isinf,
+dnl   [M_LIBS="-lm"; AC_DEFINE(HAVE_ISINF)]))
 
-AC_CHECK_FUNC(pow, , AC_CHECK_LIB(m, pow,
-  [M_LIBS="-lm"; AC_DEFINE(HAVE_POW)]))
+dnl AC_CHECK_FUNC(pow, , AC_CHECK_LIB(m, pow,
+dnl   [M_LIBS="-lm"; AC_DEFINE(HAVE_POW)]))
 
-AC_CHECK_FUNC(floor, , AC_CHECK_LIB(m, floor,
-  [M_LIBS="-lm"; AC_DEFINE(HAVE_FLOOR)]))
+dnl AC_CHECK_FUNC(floor, , AC_CHECK_LIB(m, floor,
+dnl   [M_LIBS="-lm"; AC_DEFINE(HAVE_FLOOR)]))
 
-AC_CHECK_FUNC(fabs, , AC_CHECK_LIB(m, fabs,
-  [M_LIBS="-lm"; AC_DEFINE(HAVE_FABS)]))
+dnl AC_CHECK_FUNC(fabs, , AC_CHECK_LIB(m, fabs,
+dnl   [M_LIBS="-lm"; AC_DEFINE(HAVE_FABS)]))
 AC_CHECK_FUNCS(gettimeofday)
 AC_CHECK_FUNCS(mktime localtime asctime time gmtime ftime)
 
