@@ -1,4 +1,4 @@
-/*  $Id: xml_trans.c,v 1.20 2002/11/30 20:29:42 mgrouch Exp $  */
+/*  $Id: xml_trans.c,v 1.21 2002/11/30 22:00:15 mgrouch Exp $  */
 
 /*
 
@@ -40,12 +40,7 @@ THE SOFTWARE.
  *  TODO:
  *        1. proper command line arguments handling
  *        2. review and clean up all code
- *        3. tests
- *        4. --novalid option analog (no dtd validation)
- *        5. --nonet option analog (no network for external entities)
- *        6. html and docbook input documents
- *        7. -s for string parameters instead of -p
- *        8. check embedded stylesheet support
+ *        3. check embedded stylesheet support
  */
 
 static const char trans_usage_str[] =

@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.30 2002/11/30 20:29:42 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.31 2002/11/30 22:00:15 mgrouch Exp $  */
 
 /*
 
@@ -59,7 +59,8 @@ static const char select_usage_str[] =
 "  -C                 - display generated XSLT\n"
 "  -R                 - print root element <xsl-select>\n"
 "  -T                 - output is text (default is XML)\n"
-"  --no-omit-decl     - do not omit xml declaration line\n"
+"  -I                 - indent output\n"
+"  -D                 - do not omit xml declaration line\n"
 "  --help             - display help\n\n"
 
 "Syntax for templates: -t|--template <options>\n"
@@ -114,6 +115,7 @@ void selUsage(int argc, char **argv)
 static int printXSLT = 0;
 static int printRoot = 0;
 static int out_text = 0;
+static int indent = 0;
 static int no_omit_decl = 0;
 
 int selMain(int argc, char **argv)
@@ -143,7 +145,11 @@ int selMain(int argc, char **argv)
         {
             printRoot = 1;
         }
-        else if (!strcmp(argv[i], "--no-omit-decl"))
+        else if (!strcmp(argv[i], "-I"))
+        {
+            indent = 1;
+        }
+        else if (!strcmp(argv[i], "-D"))
         {
             no_omit_decl = 1;
         }
@@ -163,6 +169,8 @@ int selMain(int argc, char **argv)
 
     if (no_omit_decl) c += sprintf(xsl_buf + c, "<xsl:output omit-xml-declaration=\"no\"");
     else c += sprintf(xsl_buf + c, "<xsl:output omit-xml-declaration=\"yes\"");
+    if (indent) c += sprintf(xsl_buf + c, " indent=\"yes\"");
+    else c += sprintf(xsl_buf + c, " indent=\"no\"");
     if (out_text) c += sprintf(xsl_buf + c, " method=\"text\"");
     c += sprintf(xsl_buf + c, "/>\n");
 
