@@ -22,5 +22,7 @@ rpm: cleantar
 
 dummy:
 
+check-local: tests
+
 tests: dummy 
 	@(cd tests; ./runTests)
