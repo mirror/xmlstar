@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.52 2003/04/18 22:14:22 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.53 2003/05/03 03:47:35 mgrouch Exp $  */
 
 /*
 
@@ -55,6 +55,7 @@ typedef struct _selOptions {
     int indent;               /* Indent output */
     int noblanks;             /* Remove insignificant spaces from XML tree */
     int no_omit_decl;         /* Print XML declaration line <?xml version="1.0"?> */
+    int nonet;                /* refuse to fetch DTDs or entities over network */
 } selOptions;
 
 typedef selOptions *selOptionsPtr;
@@ -74,6 +75,7 @@ static const char select_usage_str[] =
 "  -I or --indent     - indent output\n"
 "  -D or --xml-decl   - do not omit xml declaration line\n"
 "  -B or --noblanks   - remove insignificant spaces from XML tree\n"
+"  --net              - allow fetch DTDs or entities over network\n"
 "  --help             - display help\n\n"
 
 "Syntax for templates: -t|--template <options>\n"
@@ -153,6 +155,7 @@ selInitOptions(selOptionsPtr ops)
     ops->indent = 0;
     ops->noblanks = 0;
     ops->no_omit_decl = 0;
+    ops->nonet = 1;
 }
 
 /**
@@ -189,6 +192,10 @@ selParseOptions(selOptionsPtr ops, int argc, char **argv)
         else if (!strcmp(argv[i], "-D") || !strcmp(argv[i], "--xml-decl"))
         {
             ops->no_omit_decl = 1;
+        }
+        else if (!strcmp(argv[i], "--net"))
+        {
+            ops->nonet = 0;
         }
         else if (!strcmp(argv[i], "--help"))
         {
@@ -614,6 +621,7 @@ selMain(int argc, char **argv)
     selInitOptions(&ops);
     xsltInitOptions(&xsltOps);
     start = selParseOptions(&ops, argc, argv);
+    xsltOps.nonet = ops.nonet;
     xsltOps.noblanks = ops.noblanks;    
     xsltInitLibXml(&xsltOps);
 
