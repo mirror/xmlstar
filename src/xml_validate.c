@@ -1,4 +1,4 @@
-/*  $Id: xml_validate.c,v 1.21 2003/04/19 00:27:09 mgrouch Exp $  */
+/*  $Id: xml_validate.c,v 1.22 2003/05/07 00:33:57 mgrouch Exp $  */
 
 /*
 
@@ -54,6 +54,7 @@ typedef struct _valOptions {
     int   err;                /* Allow stderr messages */
     int   wellFormed;         /* Check if well formed only */
     int   listGood;           /* >0 list good, <0 list bad */
+    int   show_val_res;       /* display file names and valid/invalid message */
 } valOptions;
 
 typedef valOptions *valOptionsPtr;
@@ -68,9 +69,9 @@ static const char validate_usage_str[] =
 #endif
 /*"   -x or --xml-out         - print result as xml\n"*/
 "   -e or --err             - print verbose error messages on stderr\n"
-"   -b or --list-bad        - list only files which do not validate (default)\n"
+"   -b or --list-bad        - list only files which do not validate\n"
 "   -g or --list-good       - list only files which validate\n"
-"   -n or --none            - do not list files (return result code only)\n"
+"   -q or --queit           - do not list files (return result code only)\n"
 "   -w or --well-formed     - check only if XML is well-formed (default)\n\n";
 
 #ifdef LIBXML_SCHEMAS_ENABLED
@@ -106,6 +107,7 @@ valInitOptions(valOptionsPtr ops)
     ops->err = 0;
     ops->dtd = 0;
     ops->schema = 0;
+    ops->show_val_res = 1;
 }
 
 /**
@@ -132,16 +134,19 @@ valParseOptions(valOptionsPtr ops, int argc, char **argv)
         if (!strcmp(argv[i], "--list-good") || !strcmp(argv[i], "-g"))
         {
             ops->listGood = 1;
+            ops->show_val_res = 0;
             i++;
         }
         if (!strcmp(argv[i], "--list-bad") || !strcmp(argv[i], "-b"))
         {
             ops->listGood = -1;
+            ops->show_val_res = 0;
             i++;
         }
-        if (!strcmp(argv[i], "--none") || !strcmp(argv[i], "-n"))
+        if (!strcmp(argv[i], "--quiet") || !strcmp(argv[i], "-q"))
         {
             ops->listGood = 0;
+            ops->show_val_res = 0;
             i++;
         }
         if (!strcmp(argv[i], "--dtd") || !strcmp(argv[i], "-d"))
@@ -151,7 +156,7 @@ valParseOptions(valOptionsPtr ops, int argc, char **argv)
             ops->dtd = argv[i];
             i++;
         }
-        if (!strcmp(argv[i], "--schema") || !strcmp(argv[i], "-s"))
+        if (!strcmp(argv[i], "--xsd") || !strcmp(argv[i], "-s"))
         {
             i++;
             if (i >= argc) valUsage(argc, argv);
@@ -218,7 +223,7 @@ valAgainstDtd(valOptionsPtr ops, char* dtdvalid, xmlDocPtr doc, char* filename)
                         
             if (!xmlValidateDtd(&cvp, doc, dtd))
             {
-                if (ops->listGood < 0)
+                if ((ops->listGood < 0) && !ops->show_val_res)
                 {
                     fprintf(stdout, "%s\n", filename);
                 }
@@ -230,7 +235,7 @@ valAgainstDtd(valOptionsPtr ops, char* dtdvalid, xmlDocPtr doc, char* filename)
             }
             else
             {
-                if (ops->listGood > 0)
+                if ((ops->listGood > 0) && !ops->show_val_res)
                 {
                     fprintf(stdout, "%s\n", filename);
                 }
@@ -295,12 +300,20 @@ valMain(int argc, char **argv)
             else
             {
                 ret = 1; /* Malformed XML or could not open file */
-                if (ops.listGood < 0)
+                if ((ops.listGood < 0) && !ops.show_val_res)
                 {
                     fprintf(stdout, "%s\n", argv[i]);
                 }
             }
             if (ret) invalidFound = 1;     
+
+            if (ops.show_val_res)
+            {
+                if (ret == 0)
+                    fprintf(stdout, "%s - valid\n", argv[i]);
+                else
+                    fprintf(stdout, "%s - invalid\n", argv[i]);
+            }
         }
     }
 #ifdef LIBXML_SCHEMAS_ENABLED
@@ -381,17 +394,21 @@ valMain(int argc, char **argv)
                 }
                 if (ret) invalidFound = 1;
 
-                if ((ops.listGood > 0) && (ret == 0))
-                    fprintf(stdout, "%s\n", argv[i]);
-                if ((ops.listGood < 0) && (ret != 0))
-                    fprintf(stdout, "%s\n", argv[i]);
-                /*
-                if (ret == 0)
-                    fprintf(stderr, "%s - validates\n", argv[i]);
+                if (!ops.show_val_res)
+                {
+                    if ((ops.listGood > 0) && (ret == 0))
+                        fprintf(stdout, "%s\n", argv[i]);
+                    if ((ops.listGood < 0) && (ret != 0))
+                        fprintf(stdout, "%s\n", argv[i]);
+                }
                 else
-                    fprintf(stderr, "%s - invalid\n", argv[i]);
-                */
-
+                {
+                    if (ret == 0)
+                        fprintf(stdout, "%s - valid\n", argv[i]);
+                    else
+                        fprintf(stdout, "%s - invalid\n", argv[i]);
+                }
+                
                 if (ctxt2 != NULL) xmlSchemaFreeValidCtxt(ctxt2);
             }
         }
@@ -400,8 +417,7 @@ valMain(int argc, char **argv)
             invalidFound = 2;
         }
         if (schema != NULL) xmlSchemaFree(schema);
-        xmlSchemaCleanupTypes();
-        
+        xmlSchemaCleanupTypes();        
     }
 #endif
     else if (ops.wellFormed)
@@ -425,7 +441,7 @@ valMain(int argc, char **argv)
             doc = xmlParseFile(argv[i]);
             if (doc != NULL)
             {
-                if (ops.listGood > 0)
+                if ((ops.listGood > 0) && !ops.show_val_res)
                 {
                     fprintf(stdout, "%s\n", argv[i]);
                 }
@@ -434,12 +450,20 @@ valMain(int argc, char **argv)
             else
             {
                 ret = 1; /* Malformed XML or could not open file */
-                if (ops.listGood < 0)
+                if ((ops.listGood < 0) && !ops.show_val_res)
                 {
                     fprintf(stdout, "%s\n", argv[i]);
                 }
             }
             if (ret) invalidFound = 1;
+
+            if (ops.show_val_res)
+            {
+                if (ret == 0)
+                    fprintf(stdout, "%s - valid\n", argv[i]);
+                else
+                    fprintf(stdout, "%s - invalid\n", argv[i]);
+            }
         }
     }
     

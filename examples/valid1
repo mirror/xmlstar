@@ -1,0 +1,32 @@
+echo "==============================================="
+echo "Well-Formedness Validation Tests"
+echo "- 1 -------------------------------------------"
+./xmlstarlet val xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
+echo "- 2 -------------------------------------------"
+./xmlstarlet val -g xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
+echo "- 3 -------------------------------------------"
+./xmlstarlet val -b xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
+echo "- 4 -------------------------------------------"
+./xmlstarlet val -q xml/table.xml xml/tab-obj.xml 2>/dev/null; echo $?
+
+echo "==============================================="
+echo "DTD Validation Tests"
+echo "- 1 -------------------------------------------"
+./xmlstarlet val -d dtd/table.dtd xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
+echo "- 2 -------------------------------------------"
+./xmlstarlet val -g -d dtd/table.dtd xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
+echo "- 3 -------------------------------------------"
+./xmlstarlet val -b -d dtd/table.dtd xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
+echo "- 4 -------------------------------------------"
+./xmlstarlet val -q -d dtd/table.dtd xml/table.xml 2>/dev/null; echo $?
+
+echo "==============================================="
+echo "Schema Validation Tests"
+echo "- 1 -------------------------------------------"
+./xmlstarlet val -s xsd/table.xsd xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
+echo "- 2 -------------------------------------------"
+./xmlstarlet val -g -s xsd/table.xsd xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
+echo "- 3 -------------------------------------------"
+./xmlstarlet val -b -s xsd/table.xsd xml/table.xml xml/tab-obj.xml xml/tab-bad.xml 2>/dev/null; echo $?
+echo "- 4 -------------------------------------------"
+./xmlstarlet val -q -s xsd/table.xsd xml/table.xml 2>/dev/null; echo $?
