@@ -1,4 +1,4 @@
-/*  $Id: trans.c,v 1.11 2002/12/07 22:18:02 mgrouch Exp $  */
+/*  $Id: trans.c,v 1.12 2002/12/08 03:53:18 mgrouch Exp $  */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -30,6 +30,7 @@ xsltInitOptions(xsltOptionsPtr ops)
     ops->nonet = 0;
     ops->omit_decl = 0;
     ops->show_extensions = 0;
+    ops->noblanks = 0;
 #ifdef LIBXML_XINCLUDE_ENABLED
     ops->xinclude = 0;
 #endif
@@ -41,6 +42,91 @@ xsltInitOptions(xsltOptionsPtr ops)
 #endif
 #ifdef LIBXML_CATALOG_ENABLED
     ops->catalogs = 0;
+#endif
+}
+
+/**
+ *  Initialize LibXML
+ */
+void
+xsltInitLibXml(xsltOptionsPtr ops)
+{
+    /*
+     * Initialize library memory
+     */
+    xmlInitMemory();
+
+    LIBXML_TEST_VERSION
+
+    /*
+     * Store line numbers in the document tree
+     */
+    xmlLineNumbersDefault(1);
+
+    /*
+     * Register the EXSLT extensions
+     */
+    exsltRegisterAll();
+
+    /*
+     * Register the test module
+    */
+    xsltRegisterTestModule();
+
+    if (ops->show_extensions) xsltDebugDumpExtensions(stderr);
+
+    /*
+     * Replace entities with their content.
+     */
+    xmlSubstituteEntitiesDefault(1);
+
+    /*
+     * Register entity loader
+     */
+    defaultEntityLoader = xmlGetExternalEntityLoader();
+    xmlSetExternalEntityLoader(xsltExternalEntityLoader);
+    if (ops->nonet) defaultEntityLoader = xmlNoNetExternalEntityLoader;
+
+    xmlKeepBlanksDefault(1);
+    if (ops->noblanks)  xmlKeepBlanksDefault(0);
+    xmlPedanticParserDefault(0);
+
+    xmlGetWarningsDefaultValue = 1;
+    /*xmlDoValidityCheckingDefaultValue = 0;*/
+    xmlLoadExtDtdDefaultValue = 1;
+
+    /*
+     * DTD validation options
+     */
+    if (ops->noval == 0)
+    {
+        xmlLoadExtDtdDefaultValue = XML_DETECT_IDS | XML_COMPLETE_ATTRS;
+    }
+    else
+    {
+        xmlLoadExtDtdDefaultValue = 0;
+    }
+
+#ifdef LIBXML_XINCLUDE_ENABLED
+    /*
+     * enable XInclude
+     */
+    if (ops->xinclude)
+        xsltSetXIncludeDefault(1);
+#endif
+
+#ifdef LIBXML_CATALOG_ENABLED
+    /*
+     * enable SGML catalogs
+     */
+    if (ops->catalogs)
+    {
+        char *catalogs = getenv("SGML_CATALOG_FILES");
+        if (catalogs == NULL)
+            fprintf(stderr, "Variable $SGML_CATALOG_FILES not set\n");
+        else
+            xmlLoadCatalogs(catalogs);
+    }
 #endif
 }
 

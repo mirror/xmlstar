@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.35 2002/12/07 21:49:39 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.36 2002/12/08 03:53:18 mgrouch Exp $  */
 
 /*
 
@@ -54,6 +54,7 @@ typedef struct _selOptions {
     int printRoot;            /* Print root element in output (if XML) */
     int outText;              /* Output is text */
     int indent;               /* Indent output */
+    int noblanks;             /* Remove insignificant spaces from XML tree */
     int no_omit_decl;         /* Print XML declaration line <?xml version="1.0"?> */
 } selOptions;
 
@@ -73,6 +74,7 @@ static const char select_usage_str[] =
 "  -T                 - output is text (default is XML)\n"
 "  -I                 - indent output\n"
 "  -D                 - do not omit xml declaration line\n"
+"  -B or --noblanks   - remove insignificant spaces from XML tree\n"
 "  --help             - display help\n\n"
 
 "Syntax for templates: -t|--template <options>\n"
@@ -138,6 +140,7 @@ selInitOptions(selOptionsPtr ops)
     ops->printRoot = 0;
     ops->outText = 0;
     ops->indent = 0;
+    ops->noblanks = 0;
     ops->no_omit_decl = 0;
 }
 
@@ -155,6 +158,10 @@ selParseOptions(selOptionsPtr ops, int argc, char **argv)
         if (!strcmp(argv[i], "-C"))
         {
             ops->printXSLT = 1;
+        }
+        else if (!strcmp(argv[i], "--noblanks") || !strcmp(argv[i], "-B"))
+        {
+            ops->noblanks = 1;
         }
         else if (!strcmp(argv[i], "-T"))
         {
@@ -232,7 +239,7 @@ selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops,
     if (t == 0)
     {
         fprintf(stderr, "error in arguments:");
-        fprintf(stderr, " none -t or --template options found\n");
+        fprintf(stderr, " no -t or --template options found\n");
         /*selUsage(argc, argv);*/
         exit(2);
     }
@@ -354,7 +361,9 @@ selMain(int argc, char **argv)
 
     selInitOptions(&ops);
     xsltInitOptions(&xsltOps);
-    start = selParseOptions(&ops, argc, argv);    
+    start = selParseOptions(&ops, argc, argv);
+    xsltOps.noblanks = ops.noblanks;    
+    xsltInitLibXml(&xsltOps);
 
     c = sizeof(xsl_buf);    
     i = selPrepareXslt(xsl_buf, &c, &ops, start, argc, argv);

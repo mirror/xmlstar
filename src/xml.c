@@ -1,4 +1,4 @@
-/*  $Id: xml.c,v 1.20 2002/12/05 23:34:13 mgrouch Exp $  */
+/*  $Id: xml.c,v 1.21 2002/12/08 03:53:18 mgrouch Exp $  */
 
 /*
 
@@ -34,6 +34,7 @@ extern int edMain(int argc, char **argv);
 extern int selMain(int argc, char **argv);
 extern int trMain(int argc, char **argv);
 extern int valMain(int argc, char **argv);
+extern int foMain(int argc, char **argv);
 
 static const char usage_str[] =
 "XMLStarlet Toolkit: Command line utilities for XML\n"

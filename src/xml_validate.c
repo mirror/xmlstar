@@ -1,4 +1,4 @@
-/*  $Id: xml_validate.c,v 1.8 2002/12/08 00:15:08 mgrouch Exp $  */
+/*  $Id: xml_validate.c,v 1.9 2002/12/08 03:53:18 mgrouch Exp $  */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -117,11 +117,6 @@ valParseOptions(valOptionsPtr ops, int argc, char **argv)
     return i-1;
 }
 
-int
-valPrintErr(FILE *stream, const char *format, ...)
-{
-}
-
 /**
  *  Validate XML document against DTD
  */
@@ -217,6 +212,10 @@ valMain(int argc, char **argv)
             else
             {
                 ret = 1; /* Malformed XML or could not open file */
+                if (ops.listGood < 0)
+                {
+                    fprintf(stdout, "%s\n", argv[i]);
+                }
             }
             if (ret) invalidFound = 1;     
         }

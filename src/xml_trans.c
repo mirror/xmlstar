@@ -1,4 +1,4 @@
-/*  $Id: xml_trans.c,v 1.27 2002/12/08 00:15:08 mgrouch Exp $  */
+/*  $Id: xml_trans.c,v 1.28 2002/12/08 03:53:18 mgrouch Exp $  */
 
 /*
 
@@ -161,90 +161,6 @@ trParseOptions(xsltOptionsPtr ops, int argc, char **argv)
 }
 
 /**
- *  Initialize LibXML
- */
-void
-trInitLibXml(xsltOptionsPtr ops)
-{
-    /*
-     * Initialize library memory
-     */
-    xmlInitMemory();
-
-    LIBXML_TEST_VERSION
-
-    /*
-     * Store line numbers in the document tree
-     */
-    xmlLineNumbersDefault(1);
-
-    /*
-     * Register the EXSLT extensions
-     */
-    exsltRegisterAll();
-
-    /*
-     * Register the test module
-    */
-    xsltRegisterTestModule();
-
-    if (ops->show_extensions) xsltDebugDumpExtensions(stderr);
-
-    /*
-     * Replace entities with their content.
-     */
-    xmlSubstituteEntitiesDefault(1);
-
-    /*
-     * Register entity loader
-     */
-    defaultEntityLoader = xmlGetExternalEntityLoader();
-    xmlSetExternalEntityLoader(xsltExternalEntityLoader);
-    if (ops->nonet) defaultEntityLoader = xmlNoNetExternalEntityLoader;
-
-    xmlKeepBlanksDefault(1);
-    xmlPedanticParserDefault(0);
-
-    xmlGetWarningsDefaultValue = 1;
-    /*xmlDoValidityCheckingDefaultValue = 0;*/
-    xmlLoadExtDtdDefaultValue = 1;
-    
-    /*
-     * DTD validation options
-     */
-    if (ops->noval == 0)
-    {
-        xmlLoadExtDtdDefaultValue = XML_DETECT_IDS | XML_COMPLETE_ATTRS;
-    }
-    else
-    {
-        xmlLoadExtDtdDefaultValue = 0;
-    }
-
-#ifdef LIBXML_XINCLUDE_ENABLED
-    /*
-     * enable XInclude
-     */
-    if (ops->xinclude)
-        xsltSetXIncludeDefault(1);
-#endif
-
-#ifdef LIBXML_CATALOG_ENABLED
-    /*
-     * enable SGML catalogs
-     */
-    if (ops->catalogs)
-    {
-        char *catalogs = getenv("SGML_CATALOG_FILES");
-        if (catalogs == NULL)
-            fprintf(stderr, "Variable $SGML_CATALOG_FILES not set\n");
-        else
-            xmlLoadCatalogs(catalogs);
-    }    
-#endif
-}
-
-/**
  *  Cleanup memory
  */
 void
@@ -386,7 +302,7 @@ trMain(int argc, char **argv)
     xsltInitOptions(&ops);
     start = trParseOptions(&ops, argc, argv);
     xslt_ind = start;
-    trInitLibXml(&ops);
+    xsltInitLibXml(&ops);
 
     /* set parameters */
     start += trParseParams(xsltParams, &pCount, argc-start-1, argv+start+1);

@@ -1,4 +1,4 @@
-/*  $Id: trans.h,v 1.6 2002/11/30 20:29:42 mgrouch Exp $  */
+/*  $Id: trans.h,v 1.7 2002/12/08 03:53:18 mgrouch Exp $  */
 
 #include <libxml/xmlmemory.h>
 #include <libxml/debugXML.h>
@@ -33,6 +33,7 @@ typedef struct _xsltOptions {
     int nonet;                /* refuse to fetch DTDs or entities over network */
     int show_extensions;      /* display list of extensions */
     int omit_decl;            /* omit xml declaration */
+    int noblanks;             /* Remove insignificant spaces from XML tree */
 #ifdef LIBXML_XINCLUDE_ENABLED
     int xinclude;             /* do XInclude processing on input documents */
 #endif
@@ -58,6 +59,8 @@ extern int nbpaths;
 extern int errorno;
 
 void xsltInitOptions(xsltOptionsPtr ops);
+
+void xsltInitLibXml(xsltOptionsPtr ops);
 
 void xsltProcess(xsltOptionsPtr ops, xmlDocPtr doc,
                  const char **params, xsltStylesheetPtr cur,
