@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.36 2002/12/08 03:53:18 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.37 2002/12/08 04:31:33 mgrouch Exp $  */
 
 /*
 
@@ -69,11 +69,11 @@ static const char select_usage_str[] =
 "  <template> - template for querying XL document with following syntax:\n\n"
 
 "<global-options> are:\n"
-"  -C                 - display generated XSLT\n"
-"  -R                 - print root element <xsl-select>\n"
-"  -T                 - output is text (default is XML)\n"
-"  -I                 - indent output\n"
-"  -D                 - do not omit xml declaration line\n"
+"  -C or --comp       - display generated XSLT\n"
+"  -R or --root       - print root element <xsl-select>\n"
+"  -T or --text       - output is text (default is XML)\n"
+"  -I or --indent     - indent output\n"
+"  -D or --omit-decl  - do not omit xml declaration line\n"
 "  -B or --noblanks   - remove insignificant spaces from XML tree\n"
 "  --help             - display help\n\n"
 
@@ -84,6 +84,7 @@ static const char select_usage_str[] =
 "  -o or --output <string>  - print string literal \n"
 "  -n or --nl               - print new line\n"
 "  -s or --sort <order>     - sort in order (used after -m)\n"
+"  -f or --inp-name         - print input file name (or URL)\n"
 "  -m or --match <xpath>    - match XPATH expression\n\n"
 "There can be multiple --match, --copy-of, value-of, etc options\n"
 "in a single template. The effect of applying command line templates\n"
@@ -159,23 +160,23 @@ selParseOptions(selOptionsPtr ops, int argc, char **argv)
         {
             ops->printXSLT = 1;
         }
-        else if (!strcmp(argv[i], "--noblanks") || !strcmp(argv[i], "-B"))
+        else if (!strcmp(argv[i], "-B") || !strcmp(argv[i], "--noblanks"))
         {
             ops->noblanks = 1;
         }
-        else if (!strcmp(argv[i], "-T"))
+        else if (!strcmp(argv[i], "-T") || !strcmp(argv[i], "--text"))
         {
             ops->outText = 1;
         }
-        else if (!strcmp(argv[i], "-R"))
+        else if (!strcmp(argv[i], "-R") || !strcmp(argv[i], "--root"))
         {
             ops->printRoot = 1;
         }
-        else if (!strcmp(argv[i], "-I"))
+        else if (!strcmp(argv[i], "-I") || !strcmp(argv[i], "--indent"))
         {
             ops->indent = 1;
         }
-        else if (!strcmp(argv[i], "-D"))
+        else if (!strcmp(argv[i], "-D") || !strcmp(argv[i], "--omit-decl"))
         {
             ops->no_omit_decl = 1;
         }
@@ -278,6 +279,12 @@ selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops,
                     for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
                     c += sprintf(xsl_buf + c, "<xsl:value-of select=\"'%s'\"/>\n", argv[i+1]);
                     i++;
+                }
+                else if(!strcmp(argv[i], "-f") || !strcmp(argv[i], "--inp-name"))
+                {
+                    templateEmpty = 0;
+                    for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
+                    c += sprintf(xsl_buf + c, "<xsl:copy-of select=\"$inputFile\"/>\n");
                 }
                 else if(!strcmp(argv[i], "-n") || !strcmp(argv[i], "--nl"))
                 {

@@ -1,1 +1,1 @@
-./xmlstarlet sel -T -t -m /xml/table/rec/object -c '$inputFile' -n xml/table.xml xml/tab-obj.xml
+./xmlstarlet sel -T -t -m /xml/table/rec/object -f -n xml/table.xml xml/tab-obj.xml
