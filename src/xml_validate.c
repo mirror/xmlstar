@@ -1,4 +1,4 @@
-/*  $Id: xml_validate.c,v 1.33 2004/11/22 00:48:02 mgrouch Exp $  */
+/*  $Id: xml_validate.c,v 1.34 2004/11/22 01:30:53 mgrouch Exp $  */
 
 /*
 
@@ -55,6 +55,7 @@ typedef struct _valOptions {
     char *schema;             /* External Schema URL or file name */
     char *relaxng;            /* External Relax-NG Schema URL or file name */
     int   err;                /* Allow stderr messages */
+    int   embed;              /* Validate using embeded DTD/XSD (if any) */
     int   wellFormed;         /* Check if well formed only */
     int   listGood;           /* >0 list good, <0 list bad */
     int   show_val_res;       /* display file names and valid/invalid message */
@@ -76,11 +77,11 @@ static const char validate_usage_str_1[] =
 static const char validate_usage_str_2[] =
 #ifdef LIBXML_SCHEMAS_ENABLED
 "  -s or --xsd <xsd-file>     - validate against XSD schema\n"
+"  -E or --embed              - validate using embedded DTD/XSD (if any)\n"
 #endif
 #ifdef LIBXML_SCHEMAS_ENABLED
 "  -r or --relaxng <rng-file> - validate against Relax-NG schema\n"
 #endif
-/*"  -x or --xml-out            - print result as xml\n"*/
 "  -e or --err                - print verbose error messages on stderr\n"
 "  -b or --list-bad           - list only files which do not validate\n"
 "  -g or --list-good          - list only files which validate\n"
@@ -89,7 +90,7 @@ static const char validate_usage_str_2[] =
 #ifdef LIBXML_SCHEMAS_ENABLED
 static const char schema_notice[] =
 "NOTE: XML Schemas are not fully supported yet due to its incomplete\n" 
-"      support in libxml (see http://xmlsoft.org)\n\n";
+"      support in libxml2 (see http://xmlsoft.org)\n\n";
 #endif
 
 /**
@@ -118,6 +119,7 @@ valInitOptions(valOptionsPtr ops)
     ops->wellFormed = 1;
     ops->listGood = -1;
     ops->err = 0;
+    ops->embed = 0;
     ops->dtd = NULL;
     ops->schema = NULL;
     ops->relaxng = NULL;
@@ -143,6 +145,11 @@ valParseOptions(valOptionsPtr ops, int argc, char **argv)
         else if (!strcmp(argv[i], "--err") || !strcmp(argv[i], "-e"))
         {
             ops->err = 1;
+            i++;
+        }
+        else if (!strcmp(argv[i], "--embed") || !strcmp(argv[i], "-E"))
+        {
+            ops->embed = 1;
             i++;
         }
         else if (!strcmp(argv[i], "--list-good") || !strcmp(argv[i], "-g"))
@@ -563,6 +570,56 @@ valMain(int argc, char **argv)
         }
         if (relaxngschemas != NULL) xmlRelaxNGFree(relaxngschemas);
         xmlRelaxNGCleanupTypes();
+    }
+#endif
+#ifdef LIBXML_SCHEMAS_ENABLED
+    else if (ops.embed)
+    {
+        int i;
+        for (i=start; i<argc; i++)
+        {
+            xmlDocPtr doc;
+            int options = 0;
+            int ret;
+
+            ret = 0;
+            doc = NULL;
+
+            if (!ops.err)
+            {
+                xmlDefaultSAXHandlerInit();
+                xmlDefaultSAXHandler.error = NULL;
+                xmlDefaultSAXHandler.warning = NULL;
+            }
+
+            options |= XML_PARSE_DTDVALID;
+            doc = xmlReadFile(argv[i], NULL, options);
+            if (doc != NULL)
+            {
+                if ((ops.listGood > 0) && !ops.show_val_res)
+                {
+                    fprintf(stdout, "%s\n", argv[i]);
+                }
+                xmlFreeDoc(doc);
+            }
+            else
+            {
+                ret = 1; /* Malformed XML or could not open file */
+                if ((ops.listGood < 0) && !ops.show_val_res)
+                {
+                    fprintf(stdout, "%s\n", argv[i]);
+                }
+            }
+            if (ret) invalidFound = 1;
+
+            if (ops.show_val_res)
+            {
+                if (ret == 0)
+                    fprintf(stdout, "%s - valid\n", argv[i]);
+                else
+                    fprintf(stdout, "%s - invalid\n", argv[i]);
+            }
+        }
     }
 #endif
     else if (ops.wellFormed)
