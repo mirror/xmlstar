@@ -70,10 +70,22 @@ AC_ARG_WITH(libxslt-src,
         LIBXSLT_CFLAGS="-I$withval/libxslt -I$withval/libexslt -I$withval"
 )
 
-AC_ARG_WITH(libiconv-dir,
-        [  --with-libiconv-dir=[DIR]		For libiconv directory],
-        LIBICONV_DIR="$withval"
-        LIBICONV_LIBS="-L$LIBICONV_DIR -liconv"
+LIBICONV_PREFIX="/usr"
+AC_ARG_WITH(libiconv-prefix,
+        [  --with-libiconv-prefix=[PFX]		Specify location of lib iconv],
+        LIBICONV_PREFIX=$withval
+        LIBICONV_CFLAGS="-I$withval/include"
+        LIBICONV_LIBS="-L$withval/lib"
+)
+         
+AC_ARG_WITH(libiconv-include-prefix,
+        [  --with-libiconv-include-prefix=[PFX]	Specify location of libiconv headers],
+        LIBICONV_CFLAGS="-I$withval"
+)
+ 
+AC_ARG_WITH(libiconv-libs-prefix,
+        [  --with-libiconv-libs-prefix=[PFX]	Specify location of libiconv libs],
+        LIBICONV_LIBS="-L$withval/lib"
 )
 
 dnl
@@ -132,11 +144,12 @@ WIN32_EXTRA_LDFLAGS=
 case "${host}" in
   *sun* )
       LIBXML_LIBS="${LIBXML_LIBS} -lsocket -lnsl"
+      LIBICONV_LIBS=
       ;;
   *cygwin* )
       if test "x$LIBICONV_LIBS" = "x"
       then
-          LIBXML_LIBS="${LIBXML_LIBS} ${LIBICONV_LIBS}"
+          LIBXML_LIBS="${LIBXML_LIBS} ${LIBICONV_LIBS} -liconv"
       else
           LIBXML_LIBS="${LIBXML_LIBS} -liconv"
       fi
@@ -144,17 +157,21 @@ case "${host}" in
   *mac* )
       if test "x$LIBICONV_LIBS" = "x"
       then
-          LIBXML_LIBS="${LIBXML_LIBS} ${LIBICONV_LIBS}"
+          LIBXML_LIBS="${LIBXML_LIBS} ${LIBICONV_LIBS} -liconv"
       else
           LIBXML_LIBS="${LIBXML_LIBS} -liconv"
       fi
       ;;
-  *-*-mingw* )
+  *mingw* )
+      LIBICONV_LIBS=
       WIN32_EXTRA_LIBADD="-lwsock32"
       WIN32_EXTRA_LDFLAGS="-no-undefined"
       AC_DEFINE([_WINSOCKAPI_],1,[Using the Win32 Socket implementation])
       AC_DEFINE([snprintf],[_snprintf],[Win32 Std C name mangling work-around])
       AC_DEFINE([vsnprintf],[_vsnprintf],[Win32 Std C name mangling work-around])
+      ;;
+  * )
+      LIBICONV_LIBS=
       ;;
 esac
 
@@ -197,6 +214,22 @@ then
 	LIBXSLT_LIBS="${LIBXSLT_PREFIX}/lib/libxslt.a ${LIBXSLT_PREFIX}/lib/libexslt.a -lz -lm -lpthread"
 fi
 
+dnl
+dnl Set LIBICONV include path
+dnl
+if test "x$LIBICONV_CFLAGS" = "x"
+then
+	LIBICONV_CFLAGS="-I${LIBICONV_PREFIX}/include"
+fi
+
+dnl
+dnl Set LIBICONV libraries location
+dnl
+if test "x$LIBICONV_LIBS" = "x"
+then
+	LIBICONV_LIBS="-L${LIBXSLT_PREFIX}/lib"
+fi
+
 AC_SUBST(VERSION)
 AC_SUBST(PACKAGE)
 AC_SUBST(EXTRA_LIBS)
@@ -204,6 +237,8 @@ AC_SUBST(LIBXML_LIBS)
 AC_SUBST(LIBXML_CFLAGS)
 AC_SUBST(LIBXSLT_LIBS)
 AC_SUBST(LIBXSLT_CFLAGS)
+AC_SUBST(LIBICONV_LIBS)
+AC_SUBST(LIBICONV_CFLAGS)
 
 dnl for the spec file
 RELDATE=`date +'%a %b %e %Y'`
