@@ -1,4 +1,4 @@
-/*  $Id: xml_trans.c,v 1.8 2002/11/23 05:20:57 mgrouch Exp $  */
+/*  $Id: xml_trans.c,v 1.9 2002/11/23 19:38:00 mgrouch Exp $  */
 
 /*
  *  TODO:
@@ -214,10 +214,11 @@ xsltProcess(xmlDocPtr doc, xsltStylesheetPtr cur, const char *filename)
     }
     else {
         int ret;
-
+        
         ctxt = xsltNewTransformContext(cur, doc);
         if (ctxt == NULL)
             return;
+/*
         if (profile) {
             ret = xsltRunStylesheetUser(cur, doc, params, output,
                                         NULL, NULL, stderr, ctxt);
@@ -225,6 +226,8 @@ xsltProcess(xmlDocPtr doc, xsltStylesheetPtr cur, const char *filename)
             ret = xsltRunStylesheetUser(cur, doc, params, output,
                                         NULL, NULL, stderr, ctxt);
         }
+*/
+        ret = xsltRunStylesheet(cur, doc, params, output, NULL, NULL);
         if (ctxt->state == XSLT_STATE_ERROR)
             errorno = 9;
         xsltFreeTransformContext(ctxt);
