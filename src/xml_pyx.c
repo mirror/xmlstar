@@ -1,9 +1,15 @@
-/* $Id: xml_pyx.c,v 1.1 2003/06/12 00:44:36 mgrouch Exp $ */
+/* $Id: xml_pyx.c,v 1.2 2003/06/12 01:36:54 mgrouch Exp $ */
 
 /**
- *  Based on xmln
- *  A non-validating, ESIS generating, XML application built on top
- *  of expat by James Clark -- http://www.jclark.com
+ *  Based on xmln from pyxie project
+ *
+ *  The PYX format is a line-oriented representation of
+ *  XML documents that is derived from the SGML ESIS format.
+ *  (see ESIS - ISO 8879 Element Structure Information Set spec,
+ *  ISO/IEC JTC1/SC18/WG8 N931 (ESIS))
+ *
+ *  A non-validating, ESIS generating tool
+ *  ESIS Generation by Sean Mc Grath http://www.digitome.com/sean.html
  */
 
 #include <stdlib.h>
@@ -11,6 +17,20 @@
 #include <string.h>
 
 #include <libxml/parser.h>
+
+static const char pyx_usage_str[] =
+"XMLStarlet Toolkit: Convert XML into PYX format (based on ESIS - ISO 8879)\n"
+"Usage: xml pyx {<xml-file>}\n"
+"where\n"
+"   <xml-file> - input XML document file name (stdin is used if missing)\n\n"
+"The PYX format is a line-oriented representation of\n"
+"XML documents that is derived from the SGML ESIS format.\n"
+"(see ESIS - ISO 8879 Element Structure Information Set spec,\n"
+"ISO/IEC JTC1/SC18/WG8 N931 (ESIS))\n"
+"\n"
+"A non-validating, ESIS generating tool originally developed for\n"
+"pyxie project (see http://pyxie.sourceforge.net/)\n"
+"ESIS Generation by Sean Mc Grath http://www.digitome.com/sean.html\n\n";
 
 /**
  *  Output newline and tab characters as escapes
@@ -141,15 +161,17 @@ pyxExternalEntityReferenceHandler(void* parser,
 }
 
 static void
-usage()
+pyxUsage()
 {
-    fprintf(stderr, "XMLESIS XML parsing utility.\n");
-    fprintf(stderr, "XML Parser by James Clark http://www.jclark.com\n");
-    fprintf(stderr, "ESIS Generation by Sean Mc Grath http://www.digitome.com/sean.html\n");
+    extern const char more_info[];
+    FILE* o = stderr;
+    fprintf(o, pyx_usage_str);
+    fprintf(o, more_info);
+    exit(1);
 }
 
 int
-process_file(const char *filename)
+pyx_process_file(const char *filename)
 {
     int ret;
 
@@ -175,25 +197,28 @@ process_file(const char *filename)
 }
 
 int
-main(int argc,const char *argv[])
+pyxMain(int argc,const char *argv[])
 {
-    if ((argc > 1) &&
+    if ((argc > 2) &&
         (
-           (strcmp(argv[1],"-h") == 0) ||
-           (strcmp(argv[1],"-H") == 0) ||
-           (strcmp(argv[1],"-?") == 0) ||
-           (strcmp(argv[1],"--help") == 0)
+           (strcmp(argv[2],"-h") == 0) ||
+           (strcmp(argv[2],"-H") == 0) ||
+           (strcmp(argv[2],"-Z") == 0) ||
+           (strcmp(argv[2],"-?") == 0) ||
+           (strcmp(argv[2],"--help") == 0)
        ))
     {
-        usage();
+        pyxUsage();
         exit(0);
     }
-    if (argc == 1) {
-        process_file("-");
+    if (argc == 2) {
+        pyx_process_file("-");
     }
     else {
+        argv++;
+        argc--;
         for (++argv; argc>1; argc--,argv++) {
-            process_file (*argv);
+            pyx_process_file(*argv);
         }
     }
     return 0;

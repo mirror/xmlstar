@@ -1,4 +1,4 @@
-/*  $Id: xml.c,v 1.30 2003/05/21 03:11:21 mgrouch Exp $  */
+/*  $Id: xml.c,v 1.31 2003/06/12 01:36:53 mgrouch Exp $  */
 
 /*
 
@@ -40,6 +40,7 @@ extern int foMain(int argc, char **argv);
 extern int elMain(int argc, char **argv);
 extern int c14nMain(int argc, char **argv);
 extern int lsMain(int argc, char **argv);
+extern int pyxMain(int argc, char **argv);
 extern int escMain(int argc, char **argv, int escape);
 
 static const char usage_str[] =
@@ -56,6 +57,7 @@ static const char usage_str[] =
 "   ls    (or list)      - List directory as XML\n"
 "   esc   (or escape)    - Escape special XML characters\n"
 "   unesc (or unescape)  - Unescape special XML characters\n"
+"   pyx   (or xmln)      - Convert XML into PYX format (based on ESIS - ISO 8879)\n"
 "<options> are:\n"
 "   --version           - show version\n"
 "   --help              - show help\n"
@@ -125,6 +127,10 @@ main(int argc, char **argv)
     else if (!strcmp(argv[1], "ls") || !strcmp(argv[1], "list"))
     {
         ret = lsMain(argc, argv);
+    }
+    else if (!strcmp(argv[1], "pyx") || !strcmp(argv[1], "xmln"))
+    {
+        ret = pyxMain(argc, argv);
     }
     else if (!strcmp(argv[1], "esc") || !strcmp(argv[1], "escape"))
     {

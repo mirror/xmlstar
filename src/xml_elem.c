@@ -1,4 +1,4 @@
-/*  $Id: xml_elem.c,v 1.12 2003/05/30 04:59:35 mgrouch Exp $  */
+/*  $Id: xml_elem.c,v 1.13 2003/06/12 01:36:53 mgrouch Exp $  */
 
 /*
 
@@ -158,7 +158,7 @@ parse_xml_file(const char *filename)
     int ret;
 
     xmlInitParser();
-   
+
     memset(&xmlSAX_handler, 0, sizeof(xmlSAX_handler));
 
     xmlSAX_handler.startElement = elStartElement;
@@ -166,7 +166,7 @@ parse_xml_file(const char *filename)
 
     ret = xmlSAXUserParseFile(&xmlSAX_handler, NULL, filename);
     xmlCleanupParser();
-       
+
     if (ret < 0)
     {
         return ret;
