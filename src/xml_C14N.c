@@ -1,5 +1,5 @@
 /*
- *  $Id: xml_C14N.c,v 1.11 2004/09/10 02:02:21 mgrouch Exp $
+ *  $Id: xml_C14N.c,v 1.12 2004/11/24 03:00:10 mgrouch Exp $
  *
  *  Canonical XML implementation test program
  *  (http://www.w3.org/TR/2001/REC-xml-c14n-20010315)
@@ -87,6 +87,7 @@ run_c14n(const char* xml_filename, int with_comments, int exclusive,
     xmlXPathObjectPtr xpath = NULL; 
     xmlChar *result = NULL;
     int ret;
+    xmlExternalEntityLoader defaultEntityLoader = NULL;
 
     /*
      * build an XML tree from a the file; we need to add default
@@ -95,6 +96,13 @@ run_c14n(const char* xml_filename, int with_comments, int exclusive,
     xmlLoadExtDtdDefaultValue = XML_DETECT_IDS | XML_COMPLETE_ATTRS;
     xmlSubstituteEntitiesDefault(1);
 
+    /*
+     * Do not fetch DTD over network
+     */
+    defaultEntityLoader = xmlNoNetExternalEntityLoader;
+    xmlSetExternalEntityLoader(xmlNoNetExternalEntityLoader);
+    xmlLoadExtDtdDefaultValue = 0;
+       
     doc = xmlParseFile(xml_filename);
     if (doc == NULL) {
         fprintf(stderr, "Error: unable to parse file \"%s\"\n", xml_filename);
@@ -160,16 +168,16 @@ int c14nMain(int argc, char **argv) {
      */     
     xmlInitParser();
     LIBXML_TEST_VERSION
-
+    
     /*
      * Parse command line and process file
      */
     if (argc < 4) {
-	if (argc >= 3)
-	{
-	    if ((!strcmp(argv[2], "--help")) || (!strcmp(argv[2], "-h")))
-	        c14nUsage(argv[1]);
-	}
+        if (argc >= 3)
+        {
+            if ((!strcmp(argv[2], "--help")) || (!strcmp(argv[2], "-h")))
+                c14nUsage(argv[1]);
+        }
         ret = run_c14n((argc > 2)? argv[2] : "-", 1, 0, NULL, NULL);
     } else if(strcmp(argv[2], "--with-comments") == 0) {
         ret = run_c14n(argv[3], 1, 0, (argc > 4) ? argv[4] : NULL, NULL);
