@@ -27,8 +27,8 @@ where <command> is one of:
    pyx   (or xmln)      - Convert XML into PYX format (based on ESIS - ISO 8879)
    p2x   (or depyx)     - Convert PYX into XML
 <options> are:
-   --version           - show version
-   --help              - show help
+   --version            - show version
+   --help               - show help
 Wherever file name mentioned in command help it is assumed
 that URL can be used instead as well.
 
@@ -194,7 +194,7 @@ Current implementation uses libxslt from GNOME codebase as XSLT processor
 ====================================================
 
 xml fo --help
-XMLStarlet Toolkit: Format XML document(s)
+XMLStarlet Toolkit: Format XML document
 Usage: xml fo [<options>] <xml-file>
 where <options> are
    -n or --noindent            - do not indent
@@ -202,6 +202,9 @@ where <options> are
    -s or --indent-spaces <num> - indent output with <num> spaces
    -o or --omit-decl           - omit xml declaration <?xml version="1.0"?>
    -R or --recover             - try to recover what is parsable
+   -D or --dropdtd             - remove the DOCTYPE of the input docs
+   -C or --nocdata             - replace cdata section with text nodes
+   -N or --nsclean             - remove redundant namespace declarations
    -e or --encode <encoding>   - output in the given encoding (utf-8, unicode...)
    -H or --html                - input is HTML
    -h or --help                - print help
@@ -289,15 +292,23 @@ XML documents (for more information see http://xmlstar.sourceforge.net/)
 ====================================================
 
 xml c14n --help
-XMLStarlet Toolkit: XML canonization
-Usage: xml c14n <mode> <xml-file> [<xpath-expr>] [<inclusive-ns-list>]
+XMLStarlet Toolkit: XML canonicalization
+Usage: xml c14n <mode> <xml-file> [<xpath-file>] [<inclusive-ns-list>]
 where
-   <xml-file> - input XML document file name (stdin is used if '-')
-   <mode> is one of following:
-   --with-comments         XML file canonization w comments
-   --without-comments      XML file canonization w/o comments
-   --exc-with-comments     Exclusive XML file canonization w comments
-   --exc-without-comments  Exclusive XML file canonization w/o comments
+  <xml-file>   - input XML document file name (stdin is used if '-')
+  <xpath-file> - XML file containing XPath expression for
+                 exclusive XML canonicalization
+    Example:
+    <?xml version="1.0"?>
+    <XPath xmlns:n0="http://a.example.com" xmlns:n1="http://b.example">
+    (//. | //@* | //namespace::*)[ancestor-or-self::n1:elem1]
+    </XPath>
+
+  <mode> is one of following:
+  --with-comments         XML file canonicalization w comments (default)
+  --without-comments      XML file canonicalization w/o comments
+  --exc-with-comments     Exclusive XML file canonicalization w comments
+  --exc-without-comments  Exclusive XML file canonicalization w/o comments
 
 XMLStarlet is a command line toolkit to query/edit/check/transform
 XML documents (for more information see http://xmlstar.sourceforge.net/)
@@ -520,6 +531,15 @@ Result Output:
 
 
 Command:
+# XML exclusive canonicalization
+xml c14n --exc-with-comments ../examples/xml/c14n.xml ../examples/xml/c14n.xpath
+Result Output:
+<n1:elem1 xmlns:n1="http://b.example">
+content
+</n1:elem1>
+
+
+Command:
 # Count elements matching XPath expression
 xml sel -t -v "count(/xml/table/rec/numField)" xml/table.xml
 Result Output:
@@ -630,6 +650,13 @@ Command:
 xml val --dtd dtd/table.dtd xml/table.xml >/dev/null 2>&1; echo $?
 Result Output:
 0
+
+
+Command:
+# Validate XML document against DTD
+xml val --dtd xml/foo.dtd xml/foo.xml 2>/dev/null
+Result Output:
+xml/foo.xml - invalid
 
 
 Command:
@@ -762,6 +789,19 @@ Command:
 xml sel -t -m "/xml/table/rec[@id='2']" -v numField xml/table.xml
 Result Output:
 346
+
+
+Command:
+# Move element node
+echo '<x id="1"><a/><b/></x>' | xml ed -m "//b" "//a"
+
+Result Output:
+<?xml version="1.0"?>
+<x id="1">
+  <a>
+    <b/>
+  </a>
+</x>
 
 
 Command:

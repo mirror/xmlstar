@@ -1,5 +1,5 @@
 /*
- *  $Id: xml_C14N.c,v 1.5 2003/11/05 01:41:45 mgrouch Exp $
+ *  $Id: xml_C14N.c,v 1.6 2003/11/05 03:46:55 mgrouch Exp $
  *
  *  Canonical XML implementation test program
  *  (http://www.w3.org/TR/2001/REC-xml-c14n-20010315)
@@ -155,7 +155,12 @@ int c14nMain(int argc, char **argv) {
     /*
      * Parse command line and process file
      */
-    if( argc < 4 ) {
+    if (argc < 4) {
+	if (argc >= 3)
+	{
+	    if ((!strcmp(argv[2], "--help")) || (!strcmp(argv[2], "-h")))
+	        c14nUsage(argv[1]);
+	}
         ret = run_c14n((argc > 2)? argv[2] : "-", 1, 0, NULL, NULL);
     } else if(strcmp(argv[2], "--with-comments") == 0) {
         ret = run_c14n(argv[3], 1, 0, (argc > 4) ? argv[4] : NULL, NULL);
