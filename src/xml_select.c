@@ -1,7 +1,16 @@
-/*  $Id: xml_select.c,v 1.4 2002/11/15 02:32:35 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.5 2002/11/15 02:52:43 mgrouch Exp $  */
 
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <libgen.h>
+
+/*
+ *  TODO:
+ *
+ *   1. How about sorting ?
+ *
+ */
 
 #define MAX_XSL_BUF  256*1014
 
@@ -27,7 +36,8 @@ void select_usage(int argc, char **argv)
     fprintf(o, "Syntax for templates: -t|--template <options>\n");
     fprintf(o, "where <options>\n");
     fprintf(o, "  -p or --print <xpath>   - print value of XPATH expression\n");
-    fprintf(o, "  -s or --string <string> - print string\n");
+    fprintf(o, "  -s or --string <string> - print string literal\n");
+    fprintf(o, "  -o or --order <order>   - sort in order (used after -m)\n");
     fprintf(o, "  -n or --nl              - print new line\n");
     fprintf(o, "  -m or --match <xpath>   - match XPATH expression\n");
     fprintf(o, "There can be multiple --match and --print options in a single template\n");
@@ -93,8 +103,11 @@ int xml_select(int argc, char **argv)
     int c, i, j, k, m, t;
   
     if (argc <= 2) select_usage(argc, argv);
+
+#if 0
     fprintf(stderr, "SELECT\n");
     fprintf(stderr, "Sample: ./xml sel -t -p \"'--------'\" -m \"/xml/*\" -p \"position()\" -t -p \"count(/xml/*)\" -p \"'------FINISH-----'\"\n");
+#endif
 
     xsl_buf[0] = 0;
     c = 0;
