@@ -1,4 +1,4 @@
-/*  $Id: xml_format.c,v 1.9 2002/12/09 02:29:45 mgrouch Exp $  */
+/*  $Id: xml_format.c,v 1.10 2003/02/18 21:13:03 mgrouch Exp $  */
 
 /*
 
@@ -244,6 +244,12 @@ foProcess(foOptionsPtr ops, int start, int argc, char **argv)
 #endif
         doc = xmlParseFile(fileName);
 
+    if (doc == NULL)
+    {
+        /*fprintf(stderr, "%s:: error: XML parse error\n", fileName);*/
+        return 2;
+    }
+    
     if (!ops->omit_decl)
     {
        xmlSaveFormatFile("-", doc, 1);
