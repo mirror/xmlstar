@@ -1,0 +1,87 @@
+AC_INIT(src/xml.c)
+
+VERSION=0.0.1
+PACKAGE=xmlstarlet
+
+AM_INIT_AUTOMAKE($PACKAGE, $VERSION, no-define)
+AM_MAINTAINER_MODE
+
+CFLAGS="-Wall -g -pedantic"
+
+dnl
+dnl The following parameters offer
+dnl the ability to specify the location of the libxml
+dnl library during linking and compilation.
+dnl
+LIBXML_PREFIX="/usr"
+AC_ARG_WITH(libxml-prefix,
+        [  --with-libxml-prefix=[PFX]		Specify location of libxml],
+	LIBXML_PREFIX=$withval
+)
+        
+AC_ARG_WITH(libxml-include-prefix,
+        [  --with-libxml-include-prefix=[PFX]	Specify location of libxml headers],
+        LIBXML_CFLAGS="-I$withval"
+)
+
+AC_ARG_WITH(libxml-libs-prefix,
+        [  --with-libxml-libs-prefix=[PFX]	Specify location of libxml libs],
+        LIBXML_LIBS="-L$withval -lxml -lz"
+)
+
+dnl
+dnl Check the environment
+dnl
+
+AC_ISC_POSIX
+AC_PROG_CC
+AC_STDC_HEADERS
+AC_ARG_PROGRAM
+AM_PROG_LIBTOOL
+
+AC_SUBST(CFLAGS)
+AC_SUBST(CPPFLAGS)
+AC_SUBST(LDFLAGS)
+
+dnl
+dnl find libxml
+dnl
+XML_CONFIG="xml-config"
+AC_MSG_CHECKING(for libxml libraries >= 2.x) 
+if test "x$LIBXML_PREFIX" != "x"
+then
+	if ${LIBXML_PREFIX}/bin/xml-config --libs print > /dev/null 2>&1
+	then
+		XML_CONFIG=${LIBXML_PREFIX}/bin/xml-config
+	else
+		XML_CONFIG=xml-config
+	fi
+fi
+
+dnl
+dnl test version and init our variables
+dnl
+if test "x$XML_CONFIG" != "x"
+then
+	vers=`$XML_CONFIG --version | sed -e 's/libxml //' | awk 'BEGIN { FS = "."; } { printf "%d", ($1 * 1000 + $2) * 1000 + $3;}'`
+	if test "$vers" -ge 2000000
+	then
+		LIBXML_LIBS="`$XML_CONFIG --libs`"
+		LIBXML_CFLAGS="`$XML_CONFIG --cflags`"
+		AC_MSG_RESULT(found)
+	else
+		AC_MSG_ERROR(You need at least libxml 2.x for this version of libxml)
+	fi
+else
+	AC_MSG_ERROR(Could not find libxml anywhere.)
+fi
+
+AC_SUBST(XML_CONFIG)
+AC_SUBST(LIBXML_LIBS)
+AC_SUBST(LIBXML_CFLAGS)
+
+AC_OUTPUT([
+Makefile
+src/Makefile
+])
+
