@@ -1,4 +1,4 @@
-/*  $Id: xml_ls.c,v 1.4 2003/05/28 23:00:14 mgrouch Exp $  */
+/*  $Id: xml_ls.c,v 1.5 2003/08/10 23:50:53 mgrouch Exp $  */
 
 /*
 
@@ -68,12 +68,16 @@ get_file_type(mode_t mode)
             return("c"); /* character device */
        case S_IFBLK:
             return("b"); /* block device */
+#ifdef S_IFLNK
        case S_IFLNK:
             return("l"); /* symbolic link */
+#endif
        case S_IFIFO:
             return("p"); /* fifo */
+#ifdef S_IFSOCK
        case S_IFSOCK:
             return("s"); /* socket */
+#endif
    }
    return(NULL);
 }
@@ -103,14 +107,20 @@ get_file_perms(mode_t mode)
        ++p;
    }
 
+#ifdef S_ISUID
    if((mode & S_ISUID))
        perms[2] = 's';
+#endif
 
+#ifdef S_ISGID
    if((mode & S_ISGID))
        perms[5] = 's';
+#endif
 
+#ifdef S_ISVTX
    if((mode & S_ISVTX))
        perms[8] = 't';
+#endif
 
    return(perms);
 }
@@ -137,7 +147,11 @@ xml_print_dir(char* dir)
       char  sp[16];
       int   k;
       
+#if defined (__MINGW32__)
+      if(stat(d->d_name, &stats) != 0)
+#else
       if(lstat(d->d_name, &stats) != 0)
+#endif
       {
         fprintf(stderr, "couldn't stat: %s\n", d->d_name);
       }
