@@ -1,4 +1,4 @@
-/*  $Id: xml_format.c,v 1.3 2002/12/07 05:31:27 mgrouch Exp $  */
+/*  $Id: xml_format.c,v 1.4 2002/12/07 05:47:26 mgrouch Exp $  */
 
 /*
 
@@ -62,9 +62,10 @@ static const char format_usage_str[] =
 "XMLStarlet Toolkit: Format XML document(s)\n"
 "Usage: xml fo [<options>] <xml-file>\n"
 "where <options> are\n"
-"   --indent-tab              - indent output with tabulation\n"
-"   --indent-spaces <num>     - indent output with <num> spaces\n"
-"   --noindent                - do not indent\n\n";
+"   -t or --indent-tab          - indent output with tabulation\n"
+"   -s or --indent-spaces <num> - indent output with <num> spaces\n"
+"   -n or --noindent            - do not indent\n"
+"   -h or --help                - print help\n\n";
 
 /**
  *  Print small help for command line options
@@ -146,17 +147,17 @@ foParseOptions(foOptionsPtr ops, int argc, char **argv)
     i = 2;
     while(i < argc)
     {
-        if (!strcmp(argv[i], "--noindent"))
+        if (!strcmp(argv[i], "--noindent") || !strcmp(argv[i], "-n"))
         {
             ops->indent = 0;
             i++;
         }
-        else if (!strcmp(argv[i], "--indent-tab"))
+        else if (!strcmp(argv[i], "--indent-tab") || !strcmp(argv[i], "-t"))
         {
             ops->indent_tab = 1;
             i++;
         }
-        else if (!strcmp(argv[i], "--indent-spaces"))
+        else if (!strcmp(argv[i], "--indent-spaces") || !strcmp(argv[i], "-s"))
         {
             int value;
             i++;
@@ -172,7 +173,7 @@ foParseOptions(foOptionsPtr ops, int argc, char **argv)
             ops->indent_tab = 0;
             i++;
         }
-        else if (!strcmp(argv[i], "--help"))
+        else if (!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h"))
         {
             foUsage(argc, argv);
         }
@@ -206,7 +207,8 @@ foProcess(foOptionsPtr ops, int start, int argc, char **argv)
     char *fileName = "-";
 
     if ((start < argc) && (argv[start][0] != '-') &&
-        strcmp(argv[start-1], "--indent-spaces"))
+        strcmp(argv[start-1], "--indent-spaces") &&
+        strcmp(argv[start-1], "--indent-sp"))
     {
         fileName = argv[start];   
     }
