@@ -1,5 +1,5 @@
 Summary: Command Line XML Toolkit
-Name: xmlstarlet
+Name: @PACKAGE@
 Version: @VERSION@
 Release: 1
 License: MIT

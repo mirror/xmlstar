@@ -1,4 +1,4 @@
-/*  $Id: xml.c,v 1.26 2003/05/07 22:19:19 mgrouch Exp $  */
+/*  $Id: xml.c,v 1.27 2003/05/10 23:00:50 mgrouch Exp $  */
 
 /*
 
@@ -25,6 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 */
+
+#include "config.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -111,7 +113,7 @@ main(int argc, char **argv)
     }
     else if (!strcmp(argv[1], "--version"))
     {
-        fprintf(stdout, "0.0.3\n");  /* TODO */
+        fprintf(stdout, "%s\n", VERSION);
         ret = 0;
     }
     else
@@ -121,3 +123,4 @@ main(int argc, char **argv)
     
     exit(ret);
 }
+
