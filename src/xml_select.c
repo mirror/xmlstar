@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.17 2002/11/22 05:30:36 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.18 2002/11/22 05:40:28 mgrouch Exp $  */
 
 #include <string.h>
 #include <stdio.h>
@@ -161,7 +161,7 @@ int xml_select(int argc, char **argv)
     c += sprintf(xsl_buf, "<?xml version=\"1.0\"?>\n");
     c += sprintf(xsl_buf + c, "<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">\n");
     if (out_text) c += sprintf(xsl_buf + c, "<xsl:output method=\"text\"/>\n");
-    c += sprintf(xsl_buf + c, "<xsl:param name=\"inputFile\">reererte</xsl:param>\n");
+    c += sprintf(xsl_buf + c, "<xsl:param name=\"inputFile\">-</xsl:param>\n");
 
     c += sprintf(xsl_buf + c, "<xsl:template match=\"/\">\n");
     if (!out_text && printRoot) c += sprintf(xsl_buf + c, "<xml-select>\n");
