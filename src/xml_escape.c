@@ -1,4 +1,4 @@
-/*  $Id: xml_escape.c,v 1.7 2004/08/24 23:22:05 mgrouch Exp $  */
+/*  $Id: xml_escape.c,v 1.8 2004/09/10 02:02:21 mgrouch Exp $  */
 
 /*
 
@@ -65,8 +65,8 @@ escUsage(int argc, char **argv, int escape)
 {
     extern const char more_info[];
     FILE* o = stderr;
-    fprintf(o, escape_usage_str, escape?"Escape":"Unescape", escape?"esc":"unesc");
-    fprintf(o, more_info);
+    fprintf(o, "%s", escape_usage_str, escape?"Escape":"Unescape", escape?"esc":"unesc");
+    fprintf(o, "%s", more_info);
     exit(1);
 }
 

@@ -1,4 +1,4 @@
-/*  $Id: xml_validate.c,v 1.30 2004/03/28 21:28:33 mgrouch Exp $  */
+/*  $Id: xml_validate.c,v 1.31 2004/09/10 02:02:21 mgrouch Exp $  */
 
 /*
 
@@ -100,12 +100,12 @@ valUsage(int argc, char **argv)
 {
     extern const char more_info[];
     FILE* o = stderr;
-    fprintf(o, validate_usage_str_1);
-    fprintf(o, validate_usage_str_2);
+    fprintf(o, "%s", validate_usage_str_1);
+    fprintf(o, "%s", validate_usage_str_2);
 #ifdef LIBXML_SCHEMAS_ENABLED
-    fprintf(o, schema_notice);
+    fprintf(o, "%s", schema_notice);
 #endif
-    fprintf(o, more_info);
+    fprintf(o, "%s", more_info);
     exit(1);
 }
 

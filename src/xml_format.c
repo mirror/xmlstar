@@ -1,4 +1,4 @@
-/*  $Id: xml_format.c,v 1.21 2004/08/24 23:22:05 mgrouch Exp $  */
+/*  $Id: xml_format.c,v 1.22 2004/09/10 02:02:21 mgrouch Exp $  */
 
 /*
 
@@ -100,9 +100,9 @@ foUsage(int argc, char **argv)
 {
     extern const char more_info[];
     FILE* o = stderr;
-    fprintf(o, format_usage_str_1);
-    fprintf(o, format_usage_str_2);
-    fprintf(o, more_info);
+    fprintf(o, "%s", format_usage_str_1);
+    fprintf(o, "%s", format_usage_str_2);
+    fprintf(o, "%s", more_info);
     exit(1);
 }
 

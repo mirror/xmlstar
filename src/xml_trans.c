@@ -1,4 +1,4 @@
-/*  $Id: xml_trans.c,v 1.34 2004/02/12 23:28:26 mgrouch Exp $  */
+/*  $Id: xml_trans.c,v 1.35 2004/09/10 02:02:21 mgrouch Exp $  */
 
 /*
 
@@ -85,11 +85,11 @@ trUsage(int argc, char **argv)
     extern const char more_info[];
     extern const char libxslt_more_info[];
     FILE* o = stderr;
-    fprintf(o, trans_usage_str_1);
-    fprintf(o, trans_usage_str_2);
-    fprintf(o, trans_usage_str_3);
-    fprintf(o, more_info);
-    fprintf(o, libxslt_more_info);
+    fprintf(o, "%s", trans_usage_str_1);
+    fprintf(o, "%s", trans_usage_str_2);
+    fprintf(o, "%s", trans_usage_str_3);
+    fprintf(o, "%s", more_info);
+    fprintf(o, "%s", libxslt_more_info);
     exit(1);
 }
 

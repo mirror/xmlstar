@@ -1,5 +1,5 @@
 /*
- *  $Id: xml_C14N.c,v 1.10 2004/05/19 03:31:35 mgrouch Exp $
+ *  $Id: xml_C14N.c,v 1.11 2004/09/10 02:02:21 mgrouch Exp $
  *
  *  Canonical XML implementation test program
  *  (http://www.w3.org/TR/2001/REC-xml-c14n-20010315)
@@ -64,10 +64,10 @@ static void c14nUsage(const char *name)
 {
     extern const char more_info[];
     FILE* o = stderr;
-    fprintf(o, c14n_usage_str_1);
-    fprintf(o, c14n_usage_str_2);
-    fprintf(o, c14n_usage_str_3);
-    fprintf(o, more_info);
+    fprintf(o, "%s", c14n_usage_str_1);
+    fprintf(o, "%s", c14n_usage_str_2);
+    fprintf(o, "%s", c14n_usage_str_3);
+    fprintf(o, "%s", more_info);
     exit(1);
 }
 

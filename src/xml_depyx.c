@@ -1,4 +1,4 @@
-/*  $Id: xml_depyx.c,v 1.3 2004/03/28 21:28:33 mgrouch Exp $  */
+/*  $Id: xml_depyx.c,v 1.4 2004/09/10 02:02:21 mgrouch Exp $  */
 
 /*
 
@@ -49,8 +49,8 @@ depyxUsage(int argc, char **argv)
 {
     extern const char more_info[];
     FILE* o = stderr;
-    fprintf(o, depyx_usage_str);
-    fprintf(o, more_info);
+    fprintf(o, "%s", depyx_usage_str);
+    fprintf(o, "%s", more_info);
     exit(1);
 }
 

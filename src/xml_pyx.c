@@ -1,4 +1,4 @@
-/* $Id: xml_pyx.c,v 1.4 2004/03/28 21:28:33 mgrouch Exp $ */
+/* $Id: xml_pyx.c,v 1.5 2004/09/10 02:02:21 mgrouch Exp $ */
 
 /**
  *  Based on xmln from pyxie project
@@ -172,10 +172,10 @@ pyxUsage()
 {
     extern const char more_info[];
     FILE* o = stderr;
-    fprintf(o, pyx_usage_str_1);
-    fprintf(o, pyx_usage_str_2);
-    fprintf(o, pyx_usage_str_3);
-    fprintf(o, more_info);
+    fprintf(o, "%s", pyx_usage_str_1);
+    fprintf(o, "%s", pyx_usage_str_2);
+    fprintf(o, "%s", pyx_usage_str_3);
+    fprintf(o, "%s", more_info);
     exit(1);
 }
 

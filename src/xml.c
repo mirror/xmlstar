@@ -1,4 +1,4 @@
-/*  $Id: xml.c,v 1.35 2004/02/12 23:28:25 mgrouch Exp $  */
+/*  $Id: xml.c,v 1.36 2004/09/10 02:02:21 mgrouch Exp $  */
 
 /*
 
@@ -95,11 +95,11 @@ usage(int argc, char **argv)
 {
     FILE* o = stderr;
 
-    fprintf(o, usage_str_1);
-    fprintf(o, usage_str_2);
-    fprintf(o, usage_str_3);
-    fprintf(o, usage_str_4);
-    fprintf(o, more_info);
+    fprintf(o, "%s", usage_str_1);
+    fprintf(o, "%s", usage_str_2);
+    fprintf(o, "%s", usage_str_3);
+    fprintf(o, "%s", usage_str_4);
+    fprintf(o, "%s", more_info);
     exit(1);
 }  
 

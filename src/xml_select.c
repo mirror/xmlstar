@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.61 2004/03/30 04:14:40 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.62 2004/09/10 02:02:21 mgrouch Exp $  */
 
 /*
 
@@ -155,17 +155,17 @@ selUsage(int argc, char **argv)
     extern const char more_info[];
     extern const char libxslt_more_info[];
     FILE* o = stderr;
-    fprintf(o, select_usage_str_1);
-    fprintf(o, select_usage_str_2);
-    fprintf(o, select_usage_str_3);
-    fprintf(o, select_usage_str_4);
-    fprintf(o, select_usage_str_5);
-    fprintf(o, select_usage_str_6);
-    fprintf(o, select_usage_str_7);
-    fprintf(o, select_usage_str_8);
-    fprintf(o, select_usage_str_9);
-    fprintf(o, more_info);
-    fprintf(o, libxslt_more_info);
+    fprintf(o, "%s", select_usage_str_1);
+    fprintf(o, "%s", select_usage_str_2);
+    fprintf(o, "%s", select_usage_str_3);
+    fprintf(o, "%s", select_usage_str_4);
+    fprintf(o, "%s", select_usage_str_5);
+    fprintf(o, "%s", select_usage_str_6);
+    fprintf(o, "%s", select_usage_str_7);
+    fprintf(o, "%s", select_usage_str_8);
+    fprintf(o, "%s", select_usage_str_9);
+    fprintf(o, "%s", more_info);
+    fprintf(o, "%s", libxslt_more_info);
     exit(1);
 }
 

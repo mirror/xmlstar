@@ -1,4 +1,4 @@
-/*  $Id: xml_ls.c,v 1.8 2004/02/05 00:05:00 mgrouch Exp $  */
+/*  $Id: xml_ls.c,v 1.9 2004/09/10 02:02:21 mgrouch Exp $  */
 
 /*
 
@@ -49,8 +49,8 @@ lsUsage(int argc, char **argv)
 {
     extern const char more_info[];
     FILE* o = stderr;
-    fprintf(o, ls_usage_str);
-    fprintf(o, more_info);
+    fprintf(o, "%s", ls_usage_str);
+    fprintf(o, "%s", more_info);
     exit(1);
 }
 
