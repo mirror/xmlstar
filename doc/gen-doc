@@ -137,6 +137,6 @@ do
 done
 
 echo ""
-} | sed -e "s#^./xmlstarlet#xml#g"
+} | sed -e "s#./xmlstarlet#xml#g"
 
 

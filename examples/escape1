@@ -1,0 +1,2 @@
+# Escape special XML characters
+cat xml/structure.xml | ./xmlstarlet esc

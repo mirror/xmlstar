@@ -459,7 +459,7 @@ Result Output:
 Command:
 # Generate HTML from given SGML docbook document
 xml tr --omit-decl --docbook /usr/share/sgml/docbook/yelp/docbook/html/docbook.xsl  sgml/docbook1.sgml | \
-    ./xmlstarlet fo --html --indent-spaces 2
+    xml fo --html --indent-spaces 2
 Result Output:
 <?xml version="1.0" encoding="ISO-8859-1" standalone="yes"?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
@@ -603,7 +603,7 @@ xml/table/rec/stringField
 
 Command:
 # Escape special XML characters
-cat xml/structure.xml | ./xmlstarlet esc
+cat xml/structure.xml | xml esc
 Result Output:
 &lt;a1&gt;
   &lt;a11&gt;
@@ -623,7 +623,7 @@ Result Output:
 
 Command:
 # Calculate EXSLT (XSLT extentions) XPath value
-echo "<x/>" | ./xmlstarlet sel -t -v "math:abs(-1000)"
+echo "<x/>" | xml sel -t -v "math:abs(-1000)"
 Result Output:
 1000
 
@@ -637,7 +637,7 @@ xml/tab-obj.xml
 
 Command:
 # Generate XML document using command line xml sel
-echo "<x/>" | ./xmlstarlet sel -t -m / -e xml -e child -a data -o value
+echo "<x/>" | xml sel -t -m / -e xml -e child -a data -o value
 Result Output:
 <xml><child data="value"/></xml>
 
@@ -669,7 +669,7 @@ Result Output:
 
 Command:
 # Format XML document disabling indent
-cat xml/tab-obj.xml | ./xmlstarlet fo --noindent 
+cat xml/tab-obj.xml | xml fo --noindent 
 Result Output:
 <?xml version="1.0"?>
 <xml>
@@ -739,7 +739,7 @@ Result Output:
 
 Command:
 # Indent XML document with tabs
-cat xml/tab-obj.xml | ./xmlstarlet fo --indent-tab 
+cat xml/tab-obj.xml | xml fo --indent-tab 
 Result Output:
 <?xml version="1.0"?>
 <xml>
