@@ -1,4 +1,4 @@
-/*  $Id: xml.c,v 1.31 2003/06/12 01:36:53 mgrouch Exp $  */
+/*  $Id: xml.c,v 1.32 2003/08/19 23:24:21 mgrouch Exp $  */
 
 /*
 
@@ -41,6 +41,7 @@ extern int elMain(int argc, char **argv);
 extern int c14nMain(int argc, char **argv);
 extern int lsMain(int argc, char **argv);
 extern int pyxMain(int argc, char **argv);
+extern int depyxMain(int argc, char **argv);
 extern int escMain(int argc, char **argv, int escape);
 
 static const char usage_str[] =
@@ -58,6 +59,7 @@ static const char usage_str[] =
 "   esc   (or escape)    - Escape special XML characters\n"
 "   unesc (or unescape)  - Unescape special XML characters\n"
 "   pyx   (or xmln)      - Convert XML into PYX format (based on ESIS - ISO 8879)\n"
+"   p2x   (or depyx)     - Convert PYX into XML\n"
 "<options> are:\n"
 "   --version           - show version\n"
 "   --help              - show help\n"
@@ -131,6 +133,10 @@ main(int argc, char **argv)
     else if (!strcmp(argv[1], "pyx") || !strcmp(argv[1], "xmln"))
     {
         ret = pyxMain(argc, argv);
+    }
+    else if (!strcmp(argv[1], "depyx") || !strcmp(argv[1], "p2x"))
+    {
+        ret = depyxMain(argc, argv);
     }
     else if (!strcmp(argv[1], "esc") || !strcmp(argv[1], "escape"))
     {
