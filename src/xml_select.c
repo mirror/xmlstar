@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.18 2002/11/22 05:40:28 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.19 2002/11/22 06:22:16 mgrouch Exp $  */
 
 #include <string.h>
 #include <stdio.h>
@@ -26,12 +26,11 @@
  *  TODO:
  *
  *   1. How about sorting ?
- *   2.  -m  ->   -f  --for-each
- *       -p  ->   -c  --copy-of
- *           ->   -v  --value-of
- *       -s  ->   -o  --output
- *       -o  ->   -s  --sort
- *   3. How to list files which match templates ?
+ *   2. Disable <?xml ...?>
+ *   3. strip spaces
+ *   4. indent options
+ *   5. How to list files which match templates ?
+ *   6. free memory
  */
 
 #define MAX_XSL_BUF  256*1014
@@ -53,18 +52,19 @@ void select_usage(int argc, char **argv)
     fprintf(o, "  <template> - template for querying XL document with following syntax:\n\n");
 
     fprintf(o, "<global-options> are:\n");
-    fprintf(o, "  -C - display generated XSLT\n");
-    fprintf(o, "  -R - print root element <xsl-select>\n");
-    fprintf(o, "  -T - output is text (default is XML)\n\n");
+    fprintf(o, "  -C     - display generated XSLT\n");
+    fprintf(o, "  -R     - print root element <xsl-select>\n");
+    fprintf(o, "  -T     - output is text (default is XML)\n");
+    fprintf(o, "  --help - display help\n\n");
     
     fprintf(o, "Syntax for templates: -t|--template <options>\n");
     fprintf(o, "where <options>\n");
     fprintf(o, "  -c or --copy-of <xpath>  - print copy of XPATH expression\n");
     fprintf(o, "  -v or --value-of <xpath> - print value of XPATH expression\n");
-    fprintf(o, "  -o or --output <order>   - print string literal \n");
-    fprintf(o, "  -n or --nl              - print new line\n");
-    fprintf(o, "  -s or --sort <order> - sort in order (used after -m)\n");
-    fprintf(o, "  -m or --match <xpath>   - match XPATH expression\n\n");
+    fprintf(o, "  -o or --output <string>  - print string literal \n");
+    fprintf(o, "  -n or --nl               - print new line\n");
+    fprintf(o, "  -s or --sort <order>     - sort in order (used after -m)\n");
+    fprintf(o, "  -m or --match <xpath>    - match XPATH expression\n\n");
     fprintf(o, "There can be multiple --match, --copy-of, value-of, etc options\n");
     fprintf(o, "in a single template. The effect of applying command line templates\n");
     fprintf(o, "can be illustrated with the following XSLT analogue\n\n");
@@ -104,19 +104,6 @@ void select_usage(int argc, char **argv)
     exit(1);
 }
 
-/*
- *
- *  Use this script for testing (for now)
- 
-#! /bin/bash
-
-./xml sel ${@+"$@"} >./sel.xsl
-./xml tr sel.xsl in.xml
-
- *
- */
-
-
 static int printXSLT = 0;
 static int printRoot = 0;
 static int out_text = 0;
@@ -126,12 +113,6 @@ int xml_select(int argc, char **argv)
     int c, i, j, k, m, n, t;
   
     if (argc <= 2) select_usage(argc, argv);
-
-#if 0
-    fprintf(stderr, "SELECT\n");
-    fprintf(stderr, "Sample: ./xml sel -t -p \"'--------'\" -m \"/xml/*\" -p \"position()\" -t -p \"count(/xml/*)\" -p \"'------FINISH-----'\"\n");
-#endif
-
 
     /*
      *   Parse global options
@@ -151,6 +132,10 @@ int xml_select(int argc, char **argv)
         else if (!strcmp(argv[i], "-R"))
         {
             printRoot = 1;
+        }
+        else if (!strcmp(argv[i], "--help"))
+        {
+            select_usage(argc, argv);
         }
         i++;  
     }

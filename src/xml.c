@@ -1,4 +1,4 @@
-/* $Id: xml.c,v 1.9 2002/11/15 16:35:12 mgrouch Exp $ */
+/* $Id: xml.c,v 1.10 2002/11/22 06:22:16 mgrouch Exp $ */
 
 #include <string.h>
 #include <stdio.h>
@@ -8,6 +8,7 @@ void usage(int argc, char **argv)
 {
     FILE* o = stderr;
 
+    fprintf(o, "XMLStarlet Toolkit: Command line utilities for XML\n");
     fprintf(o, "Usage: xml <command> [<options>]\n");
     fprintf(o, "where <command> is one of:\n");
     fprintf(o, "      ed   (or edit)      - Edit XML document\n");
@@ -53,4 +54,3 @@ int main(int argc, char **argv)
     
     exit(ret);
 }
-
