@@ -1,4 +1,4 @@
-/*  $Id: xml_ls.c,v 1.12 2004/11/21 20:18:49 mgrouch Exp $  */
+/*  $Id: xml_ls.c,v 1.13 2004/11/23 01:49:29 mgrouch Exp $  */
 
 /*
 
@@ -155,6 +155,9 @@ xml_print_dir(char* dir)
       int   sz_len;
       char  sp[16];
       int   k;
+
+      if (!strcmp(d->d_name, ".") || !strcmp(d->d_name, ".."))
+          continue;
       
 #if defined (__MINGW32__)
       if(stat(d->d_name, &stats) != 0)
@@ -193,8 +196,9 @@ lsMain(int argc, char** argv)
 {
     int res = -1;
     if (argc != 2) lsUsage(argc, argv);
-    printf("<xml>\n");
+    printf("<dir>\n");
     res = xml_print_dir(".");
-    printf("</xml>\n");
+    printf("</dir>\n");
     return res;
 }
+
