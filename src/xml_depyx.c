@@ -1,4 +1,4 @@
-/*  $Id: xml_depyx.c,v 1.4 2004/09/10 02:02:21 mgrouch Exp $  */
+/*  $Id: xml_depyx.c,v 1.5 2005/03/12 01:29:43 mgrouch Exp $  */
 
 /*
 
@@ -30,6 +30,9 @@ THE SOFTWARE.
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <libxml/xmlmemory.h>
+
+#include "escape.h"
 
 #define INSZ 4*1024
 
@@ -59,7 +62,7 @@ depyxUsage(int argc, char **argv)
  *
  */
 void
-pyxDecode(char *str)
+pyxDecode(char *str, xml_C14NNormalizationMode mode)
 {
    while (*str)
    {
@@ -79,8 +82,25 @@ pyxDecode(char *str)
          str++;
       }
       else
-         printf("%c", *str);
-
+      {
+         if ((*str == '<') && ((mode == XML_C14N_NORMALIZE_ATTR) ||
+                              (mode == XML_C14N_NORMALIZE_TEXT))) {
+            printf("&lt;");
+         } 
+         else if ((*str == '>') && (mode == XML_C14N_NORMALIZE_TEXT)) {
+            printf("&gt;");
+         } 
+         else if ((*str == '&') && ((mode == XML_C14N_NORMALIZE_ATTR) ||
+                                     (mode == XML_C14N_NORMALIZE_TEXT))) {
+            printf("&amp;");
+         } 
+         else if ((*str == '"') && (mode == XML_C14N_NORMALIZE_ATTR)) {
+            printf("&quot;");
+         } 
+         else {
+            printf("%c", *str);
+         }
+      }
       str++;
    }
 }
@@ -111,8 +131,7 @@ pyxDePyx(char *file)
        {
            if(line[strlen(line)-1] == '\n') line[strlen(line)-1] = '\0';
 
-
-           if (line[0] == '(')
+           while (line[0] == '(')
            {
                printf("<%s", line+1);
                if (!feof(in))
@@ -121,7 +140,7 @@ pyxDePyx(char *file)
                    {
                        if(line[strlen(line)-1] == '\n') line[strlen(line)-1] = '\0';
 
-                       while(line[0] == 'A')
+                       while(line[0] == 'A')  /* attribute */
                        {
                            char *value;
 
@@ -136,7 +155,7 @@ pyxDePyx(char *file)
                            {
                                value++;
                                printf("=\"");
-                               pyxDecode(value);
+                               pyxDecode(value, XML_C14N_NORMALIZE_ATTR);  /* attribute value */
                                printf("\"");
                            }
                            if (!feof(in))
@@ -144,7 +163,6 @@ pyxDePyx(char *file)
                                if (fgets(line, INSZ - 1, in))
                                {
                                    if(line[strlen(line)-1] == '\n') line[strlen(line)-1] = '\0';
-
                                }
                            }
                        }
@@ -152,9 +170,11 @@ pyxDePyx(char *file)
                    }
                }
            }
+
            if (line[0] == '-')
            {
-               pyxDecode(line+1);
+               /* text */
+               pyxDecode(line+1, XML_C14N_NORMALIZE_TEXT);
            }
            else if (line[0] == '?')
            {
