@@ -1,6 +1,6 @@
 AC_INIT(src/xml.c)
 
-VERSION=0.2.0
+VERSION=0.3.0
 PACKAGE=xmlstarlet
 
 AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
@@ -125,6 +125,9 @@ case "${host}" in
       LIBXML_LIBS="${LIBXML_LIBS} -lsocket -lnsl"
       ;;
   *cygwin* )
+      LIBXML_LIBS="${LIBXML_LIBS} -liconv"
+      ;;
+  *mac* )
       LIBXML_LIBS="${LIBXML_LIBS} -liconv"
       ;;
 esac
