@@ -2,3 +2,5 @@
 2. --net option for xml sel
 3. How about XUpdate? (see http://www.xmldb.org/)
 4. just do grep TODO src/*.c and you'll figure it out
+5. generate xsd/DTD (best guess) from given XML document
+6. XPATH option for xml el
