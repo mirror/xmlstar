@@ -1,5 +1,5 @@
 /*
- *  $Id: xml_C14N.c,v 1.7 2003/12/17 06:26:01 mgrouch Exp $
+ *  $Id: xml_C14N.c,v 1.8 2004/02/08 22:27:34 mgrouch Exp $
  *
  *  Canonical XML implementation test program
  *  (http://www.w3.org/TR/2001/REC-xml-c14n-20010315)
@@ -126,16 +126,16 @@ run_c14n(const char* xml_filename, int with_comments, int exclusive,
     if(ret >= 0) {
         if(result != NULL) {
             write(1, result, ret);
-            printf("\n");
-            xmlFree(result);          
+            fflush(NULL);
+            xmlFree(result);
         }
     } else {
         fprintf(stderr,"Error: failed to canonicalize XML file \"%s\" (ret=%d)\n", xml_filename, ret);
         if(result != NULL) xmlFree(result);
-        xmlFreeDoc(doc); 
+        xmlFreeDoc(doc);
         return(-1);
     }
-        
+ 
     /*
      * Cleanup
      */ 
