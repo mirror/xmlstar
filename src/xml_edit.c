@@ -1,4 +1,4 @@
-/*  $Id: xml_edit.c,v 1.23 2003/05/28 18:42:23 mgrouch Exp $  */
+/*  $Id: xml_edit.c,v 1.24 2003/05/28 18:43:12 mgrouch Exp $  */
 
 /*
 
@@ -50,7 +50,7 @@ THE SOFTWARE.
           1. Should this be allowed ?
              ./xml ed -m /xml /xml/table/rec/object ../examples/xml/tab-obj.xml 
 
-          2. Other options insert/append/update/rename/subnode
+          2. Other options insert/append/update/rename/subnode (see tree.c)
 
           3. Code clean-up is needed. (Too much code replication to find nodeset
              by xpath expression).
