@@ -1,4 +1,4 @@
-/*  $Id: xml.c,v 1.28 2003/05/11 18:40:38 mgrouch Exp $  */
+/*  $Id: xml.c,v 1.29 2003/05/17 20:40:18 mgrouch Exp $  */
 
 /*
 
@@ -44,13 +44,15 @@ static const char usage_str[] =
 "XMLStarlet Toolkit: Command line utilities for XML\n"
 "Usage: xml [<options>] <command> [<cmd-options>]\n"
 "where <command> is one of:\n"
-"   ed   (or edit)      - Edit/Update XML document(s)\n"
-"   sel  (or select)    - Select data or query XML document(s) (XPATH, etc)\n"
-"   tr   (or transform) - Transform XML document(s) using XSLT\n"
-"   val  (or validate)  - Validate XML document(s) (well-formed/DTD/XSD/RelaxNG)\n"
-"   fo   (or format)    - Format XML document(s)\n"
-"   el   (or elements)  - Display element structure of XML document\n"
-"   c14n (or canonic)   - XML canonization\n"
+"   ed    (or edit)      - Edit/Update XML document(s)\n"
+"   sel   (or select)    - Select data or query XML document(s) (XPATH, etc)\n"
+"   tr    (or transform) - Transform XML document(s) using XSLT\n"
+"   val   (or validate)  - Validate XML document(s) (well-formed/DTD/XSD/RelaxNG)\n"
+"   fo    (or format)    - Format XML document(s)\n"
+"   el    (or elements)  - Display element structure of XML document\n"
+"   c14n  (or canonic)   - XML canonicalization\n"
+"   esc   (or escape)    - Escape special XML characters\n"
+"   unesc (or unescape)  - Unescape special XML characters\n"
 "<options> are:\n"
 "   --version           - show version\n"
 "   --help              - show help\n"
@@ -116,6 +118,14 @@ main(int argc, char **argv)
     else if (!strcmp(argv[1], "c14n") || !strcmp(argv[1], "canonic"))
     {
         ret = c14nMain(argc, argv);
+    }
+    else if (!strcmp(argv[1], "esc") || !strcmp(argv[1], "escape"))
+    {
+        ret = escMain(argc, argv, 1);
+    }
+    else if (!strcmp(argv[1], "unesc") || !strcmp(argv[1], "unescape"))
+    {
+        ret = escMain(argc, argv, 0);
     }
     else if (!strcmp(argv[1], "--version"))
     {
