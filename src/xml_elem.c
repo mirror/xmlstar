@@ -1,4 +1,4 @@
-/*  $Id: xml_elem.c,v 1.2 2003/04/23 03:10:07 mgrouch Exp $  */
+/*  $Id: xml_elem.c,v 1.3 2003/04/23 03:17:10 mgrouch Exp $  */
 
 /*
 
@@ -94,7 +94,7 @@ parse_xml_file(const char *filename)
     int ret;
 
     xmlInitParser();
-    
+   
     memset(&xmlSAX_handler, 0, sizeof(xmlSAX_handler));
 
     xmlSAX_handler.startElement = elStartElement;
@@ -122,7 +122,7 @@ elMain(int argc, char **argv)
     if (argc <= 1) elUsage(argc, argv);
 
     /* TODO: more options to be added */
-    if (argc == 1)
+    if (argc == 2)
         errorno = parse_xml_file("-");  
     else
         errorno = parse_xml_file(argv[2]);
