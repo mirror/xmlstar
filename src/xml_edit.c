@@ -1,4 +1,4 @@
-/* $Id: xml_edit.c,v 1.6 2002/11/23 17:17:03 mgrouch Exp $ */
+/* $Id: xml_edit.c,v 1.7 2002/11/23 17:53:28 mgrouch Exp $ */
 
 #include <string.h>
 #include <stdio.h>
@@ -226,6 +226,39 @@ void xml_ed_delete(xmlDocPtr doc, char *str)
     }
 #endif
     xmlXPathDebugDumpObject(stderr, res, 0);
+    if (res == NULL) {
+        return;
+    }
+    switch(res->type) {
+        case XPATH_NODESET:
+        {
+            int i;
+            xmlNodeSetPtr cur = res->nodesetval;
+            fprintf(stderr, "Object is a Node Set :\n");
+            fprintf(stderr, "Set contains %d nodes:\n", cur->nodeNr);
+            
+            for (i = 0; i < cur->nodeNr; i++) {
+                /*
+                fprintf(output, shift);
+                fprintf(output, "%d", i + 1);
+                xmlXPathDebugDumpNode(output, cur->nodeTab[i], depth + 1);
+                */
+
+                /*
+                 *  delete node
+                 */
+                 xmlUnlinkNode(cur->nodeTab[i]);
+                 fprintf(stderr, "unlinked\n");
+                 //xmlFreeNode(cur->nodeTab[i]);
+            }
+            /*
+            xmlXPathDebugDumpNodeSet(output, cur->nodesetval, depth);
+            */
+            break;
+        }
+        default:
+            break;
+    }
     xmlXPathFreeObject(res);
     xmlXPathFreeContext(ctxt);
 }
@@ -299,13 +332,15 @@ int xml_edit(int argc, char **argv)
     {
         xmlDocPtr doc = xmlParseFile("-");
         xml_ed_process(doc, ops, ops_count);
+        xmlSaveFormatFile("-", doc, 0);
     }
     
     for (n=i; n<argc; n++)
     {
         xmlDocPtr doc = xmlParseFile(argv[n]);
         xml_ed_process(doc, ops, ops_count);
+        xmlSaveFormatFile("-", doc, 0);
     }
-   
+
     return 0;
 }
