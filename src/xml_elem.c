@@ -1,4 +1,4 @@
-/*  $Id: xml_elem.c,v 1.10 2003/05/11 17:28:18 mgrouch Exp $  */
+/*  $Id: xml_elem.c,v 1.11 2003/05/21 03:20:45 mgrouch Exp $  */
 
 /*
 
@@ -94,7 +94,6 @@ elUsage(int argc, char **argv)
 void elStartElement(void *user_data, const xmlChar *name, const xmlChar **attrs)
 {
     char *tmpXPath = NULL;
-    int tmp_len = 0;
     
     if (*curXPath != (char)0) strcat(curXPath, "/");
     strcat(curXPath, (char*) name);

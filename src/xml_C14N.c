@@ -1,5 +1,5 @@
 /*
- *  $Id: xml_C14N.c,v 1.1 2003/05/11 18:40:38 mgrouch Exp $
+ *  $Id: xml_C14N.c,v 1.2 2003/05/21 03:20:45 mgrouch Exp $
  *
  *  Canonical XML implementation test program
  *  (http://www.w3.org/TR/2001/REC-xml-c14n-20010315)
@@ -59,7 +59,9 @@ load_xpath_expr (xmlDocPtr parent_doc, const char* filename);
 
 static xmlChar **parse_list(xmlChar *str);
 
+#if 0
 static void print_xpath_nodes(xmlNodeSetPtr nodes);
+#endif
 
 static int 
 run_c14n(const char* xml_filename, int with_comments, int exclusive,
@@ -327,6 +329,7 @@ load_xpath_expr (xmlDocPtr parent_doc, const char* filename) {
     return(xpath);
 }
 
+#if 0
 static void
 print_xpath_nodes(xmlNodeSetPtr nodes) {
     xmlNodePtr cur;
@@ -357,6 +360,7 @@ print_xpath_nodes(xmlNodeSetPtr nodes) {
         }
     }
 }
+#endif
 
 #else
 #include <stdio.h>

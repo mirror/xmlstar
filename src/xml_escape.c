@@ -1,4 +1,4 @@
-/*  $Id: xml_escape.c,v 1.2 2003/05/17 22:15:47 mgrouch Exp $  */
+/*  $Id: xml_escape.c,v 1.3 2003/05/21 03:20:45 mgrouch Exp $  */
 
 /*
 
@@ -183,22 +183,24 @@ escMain(int argc, char **argv, int escape)
        while (!feof(stdin))
        {
            if (fgets(line, INSZ - 1, stdin))
-           if (escape)
            {
-               outBuf = xmlEncodeEntitiesReentrant(NULL, (xmlChar*) line);
-               if (outBuf)
+               if (escape)
                {
-                   fprintf(stdout, "%s", outBuf);
-                   xmlFree(outBuf);
+                   outBuf = xmlEncodeEntitiesReentrant(NULL, (xmlChar*) line);
+                   if (outBuf)
+                   {
+                       fprintf(stdout, "%s", outBuf);
+                       xmlFree(outBuf);
+                   }
                }
-           }
-           else
-           {
-               outBuf = (xmlChar*) xml_unescape(line);
-               if (outBuf)
+               else
                {
-                   fprintf(stdout, "%s", outBuf);
-                   free(outBuf);
+                   outBuf = (xmlChar*) xml_unescape(line);
+                   if (outBuf)
+                   {
+                       fprintf(stdout, "%s", outBuf);
+                       free(outBuf);
+                   }
                }
            }
        }
