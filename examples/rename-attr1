@@ -1,0 +1,2 @@
+# Rename attributes
+./xmlstarlet ed -r "//*/@id" -v ID xml/tab-obj.xml

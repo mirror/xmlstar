@@ -2,7 +2,7 @@
 
 DIR=`pwd`
 
-TESTS="count1 countnode1 c14n1 delete1 dtd1 dtd2 elem1 elem2 elem3 escape1 exslt1 findfile1 genxml1 hello1 localname1 look1 noindent1 ns1 recover1 schema1 sel1 sort1 structure1 sum1 tab1 table1 table2 table3 valid1 xinclude1 xsl-param1 xsl-sum1"
+TESTS="count1 countnode1 c14n1 delete1 dtd1 dtd2 elem1 elem2 elem3 escape1 exslt1 findfile1 genxml1 hello1 localname1 look1 noindent1 ns1 recover1 rename-attr1 rename-elem1 schema1 sel1 sort1 structure1 sum1 tab1 table1 table2 table3 valid1 xinclude1 xsl-param1 xsl-sum1"
 
 cd ../examples
 

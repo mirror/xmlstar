@@ -1,4 +1,4 @@
-/*  $Id: xml_edit.c,v 1.19 2003/05/25 18:16:33 mgrouch Exp $  */
+/*  $Id: xml_edit.c,v 1.20 2003/05/25 18:28:28 mgrouch Exp $  */
 
 /*
 
@@ -301,7 +301,6 @@ edRename(xmlDocPtr doc, char *loc, char *val, XmlNodeType type)
                  */
                 if (cur->nodeTab[i]->type == XML_ATTRIBUTE_NODE)
                 {
-                    fprintf(stderr, "Node is an attribute: %s\n", cur->nodeTab[i]->name);
                     xmlFree((xmlChar *) cur->nodeTab[i]->name);
                     cur->nodeTab[i]->name = xmlStrdup((const xmlChar*) val);
                 }
