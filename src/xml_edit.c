@@ -1,4 +1,4 @@
-/*  $Id: xml_edit.c,v 1.13 2002/12/01 23:28:07 mgrouch Exp $  */
+/*  $Id: xml_edit.c,v 1.14 2002/12/02 01:10:19 mgrouch Exp $  */
 
 #include <string.h>
 #include <stdio.h>
@@ -230,17 +230,13 @@ edDelete(xmlDocPtr doc, char *str)
                 res = xmlXPathCompiledEval(comp, ctxt);
                 xmlXPathFreeCompExpr(comp);
             }
-            else
-                res = NULL;
+            else res = NULL;
         }
 #if defined(LIBXML_XPTR_ENABLED)
     }
 #endif
-    /*xmlXPathDebugDumpObject(stderr, res, 0);*/
-    if (res == NULL)
-    {
-        return;
-    }
+    if (res == NULL) return;
+
     switch(res->type)
     {
         case XPATH_NODESET:
@@ -279,6 +275,155 @@ edDelete(xmlDocPtr doc, char *str)
 }
 
 /**
+ *  'move' operation
+ */
+void
+edMove(xmlDocPtr doc, char *from, char *to)
+{
+    int xptr = 0;
+    int expr = 0;
+    int tree = 0;
+
+    xmlXPathObjectPtr res, res_to;
+    xmlXPathContextPtr ctxt;
+
+    /*
+     *  Find 'from' node set
+     */
+#if defined(LIBXML_XPTR_ENABLED)
+    if (xptr)
+    {
+        ctxt = xmlXPtrNewContext(doc, NULL, NULL);
+        res = xmlXPtrEval(BAD_CAST from, ctxt);
+    }
+    else
+    {
+#endif
+        ctxt = xmlXPathNewContext(doc);
+        ctxt->node = xmlDocGetRootElement(doc);
+        if (expr)
+            res = xmlXPathEvalExpression(BAD_CAST from, ctxt);
+        else
+        {
+            xmlXPathCompExprPtr comp;
+
+            comp = xmlXPathCompile(BAD_CAST from);
+            if (comp != NULL)
+            {
+                if (tree)
+                    xmlXPathDebugDumpCompExpr(stdout, comp, 0);
+
+                res = xmlXPathCompiledEval(comp, ctxt);
+                xmlXPathFreeCompExpr(comp);
+            }
+            else res = NULL;
+        }
+#if defined(LIBXML_XPTR_ENABLED)
+    }
+#endif
+    if (res == NULL) return;
+
+    /********************************************************/
+    
+    /*
+     *  Find 'to' node set
+     */
+#if defined(LIBXML_XPTR_ENABLED)
+    if (xptr)
+    {
+        ctxt = xmlXPtrNewContext(doc, NULL, NULL);
+        res_to = xmlXPtrEval(BAD_CAST to, ctxt);
+    }
+    else
+    {
+#endif
+        ctxt = xmlXPathNewContext(doc);
+        ctxt->node = xmlDocGetRootElement(doc);
+        if (expr)
+            res_to = xmlXPathEvalExpression(BAD_CAST to, ctxt);
+        else
+        {
+            xmlXPathCompExprPtr comp;
+
+            comp = xmlXPathCompile(BAD_CAST to);
+            if (comp != NULL)
+            {
+                if (tree)
+                    xmlXPathDebugDumpCompExpr(stdout, comp, 0);
+
+                res_to = xmlXPathCompiledEval(comp, ctxt);
+                xmlXPathFreeCompExpr(comp);
+            }
+            else
+                res_to = NULL;
+        }
+#if defined(LIBXML_XPTR_ENABLED)
+    }
+#endif
+    if (res_to == NULL) return;
+
+    switch(res_to->type)
+    {
+        case XPATH_NODESET:
+        {
+            xmlNodeSetPtr cur = res_to->nodesetval;
+            if (cur->nodeNr != 1)
+            {
+                fprintf(stderr, "destination nodeset does not contain one node (node count is %d)\n", cur->nodeNr);
+                break;
+            }
+/*
+fprintf(stderr, "(node count is %d)\n", cur->nodeNr);
+*/            
+        }
+        default:
+            break;
+    }
+
+    switch(res->type)
+    {
+        case XPATH_NODESET:
+        {
+            int i;
+            xmlNodeSetPtr cur = res->nodesetval;
+/*
+fprintf(stderr, "Object is a Node Set :\n");
+fprintf(stderr, "Set contains %d nodes:\n", cur->nodeNr);
+*/
+            for (i = 0; i < cur->nodeNr; i++)
+            {
+                /*
+                fprintf(output, shift);
+                fprintf(output, "%d", i + 1);
+                xmlXPathDebugDumpNode(output, cur->nodeTab[i], depth + 1);
+                */
+
+                /*
+                 *  delete node
+                 */
+                xmlUnlinkNode(cur->nodeTab[i]);
+/*
+fprintf(stderr, "unlinked\n");
+*/
+                xmlAddChild(res_to->nodesetval->nodeTab[0], cur->nodeTab[i]);
+             
+                 /*xmlFreeNode(cur->nodeTab[i]);*/
+            }
+            /*
+            xmlXPathDebugDumpNodeSet(output, cur->nodesetval, depth);
+            */
+            break;
+        }
+        default:
+            break;
+    }
+
+    xmlXPathFreeObject(res);
+    xmlXPathFreeObject(res_to);
+    xmlXPathFreeContext(ctxt);
+}
+
+/**
  *  Loop through array of operations and perform them
  */
 int
@@ -293,6 +438,9 @@ edProcess(xmlDocPtr doc, XmlEdAction* ops, int ops_count)
         {
             case XML_ED_DELETE:
                 edDelete(doc, ops[k].arg1);
+                break;
+            case XML_ED_MOVE:
+                edMove(doc, ops[k].arg1, ops[k].arg2);
                 break;
             default:
                 break;
