@@ -1,0 +1,2 @@
+./xmlstarlet val --dtd dtd/table.dtd xml/table.xml >/dev/null 2>&1; echo $?
+
