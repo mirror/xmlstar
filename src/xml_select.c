@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.51 2003/04/18 22:08:33 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.52 2003/04/18 22:14:22 mgrouch Exp $  */
 
 /*
 
@@ -538,7 +538,7 @@ selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops,
     c += sprintf(xsl_buf + c, "\n xmlns:xt=\"http://www.jclark.com/xt\"");
     c += sprintf(xsl_buf + c, "\n xmlns:libxslt=\"http://xmlsoft.org/XSLT/namespace\"");
     c += sprintf(xsl_buf + c, "\n xmlns:test=\"http://xmlsoft.org/XSLT/\"");
-    c += sprintf(xsl_buf + c, "\n extension-element-prefixes=\"exsl math date func set str dyn saxon xalanredirect xt libxslt test\"");
+    c += sprintf(xsl_buf + c, "\n extension-element-prefixes=\"exslt math date func set str dyn saxon xalanredirect xt libxslt test\"");
     c += sprintf(xsl_buf + c, "\n exclude-result-prefixes=\"math str\"");
     c += sprintf(xsl_buf + c, ">\n");
 
