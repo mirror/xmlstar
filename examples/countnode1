@@ -1,1 +1,1 @@
-./xmlstarlet sel -t -m / -f -o " " -v "count(//node())" xml/table.xml xml/tab-obj.xml
+./xmlstarlet sel -t -f -o " " -v "count(//node())" xml/table.xml xml/tab-obj.xml

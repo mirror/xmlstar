@@ -1,3 +1,5 @@
-./xmlstarlet sel -T -t -m / -o "===================" -n \
-             -m xml/table/rec -v "concat(@id,'|',numField,'|',stringField)" -n \
-	     -t -m / -o "===================" -n xml/table.xml
+./xmlstarlet sel -T \
+    -t -o "===================" -n \
+       -m xml/table/rec -v "concat(@id,'|',numField,'|',stringField)" -n \
+    -t -o "===================" -n xml/table.xml
+
