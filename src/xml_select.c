@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.10 2002/11/16 02:37:25 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.11 2002/11/16 02:47:17 mgrouch Exp $  */
 
 #include <string.h>
 #include <stdio.h>
@@ -107,6 +107,7 @@ void select_usage(int argc, char **argv)
 
 
 static int printXSLT = 0;
+static int printRoot = 0;
 static int out_text = 0;
 
 int xml_select(int argc, char **argv)
@@ -136,6 +137,10 @@ int xml_select(int argc, char **argv)
         {
             out_text = 1;
         }
+        else if (!strcmp(argv[i], "-R"))
+        {
+            printRoot = 1;
+        }
         i++;  
     }
 
@@ -148,7 +153,7 @@ int xml_select(int argc, char **argv)
     if (out_text) c += sprintf(xsl_buf + c, "<xsl:output method=\"text\"/>\n");
 
     c += sprintf(xsl_buf + c, "<xsl:template match=\"/\">\n");
-    if (!out_text) c += sprintf(xsl_buf + c, "<xml-select>\n");
+    if (!out_text && printRoot) c += sprintf(xsl_buf + c, "<xml-select>\n");
     t = 0;
     i = 2;
     while(i < argc)
@@ -160,7 +165,7 @@ int xml_select(int argc, char **argv)
         }
         i++;  
     }
-    if (!out_text) c += sprintf(xsl_buf + c, "</xml-select>\n");
+    if (!out_text && printRoot) c += sprintf(xsl_buf + c, "</xml-select>\n");
     c += sprintf(xsl_buf + c, "</xsl:template>\n");
    
     t = 0;
