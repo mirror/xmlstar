@@ -1,6 +1,5 @@
 1. xml ed option is highly incomplete
-2. --net option for xml sel
-3. How about XUpdate? (see http://www.xmldb.org/)
-4. just do grep TODO src/*.c and you'll figure it out
-5. generate xsd/DTD (best guess) from given XML document
-6. XPATH option for xml el
+2. How about XUpdate? (see http://www.xmldb.org/)
+3. just do grep TODO src/*.c and you'll figure it out
+4. generate xsd/DTD (best guess) from given XML document
+5. XPATH option for xml el
