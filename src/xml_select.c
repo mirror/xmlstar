@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.64 2004/11/21 18:29:56 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.65 2004/11/30 01:59:34 mgrouch Exp $  */
 
 /*
 
@@ -308,7 +308,7 @@ selParseOptions(selOptionsPtr ops, int argc, char **argv)
                 fprintf(stderr, "-E option requires argument <encoding> ex: (utf-8, unicode...)\n");
                 exit(2);
             }
-        
+
         }
         else if (!strcmp(argv[i], "--net"))
         {
@@ -361,7 +361,7 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
     c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:template name=\"t%d\">\n", t);
 
     stack = stack_create(max_depth);
-    
+
     i++;
     m = 0;
     while(i < argc)
@@ -495,7 +495,7 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
                 }
                 i++;
                 Select=argv[i];
-                
+
                 for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
 
                 if (Order == 'A') c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:sort order=\"ascending\"");
@@ -508,7 +508,7 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
                 else c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, " case-order=\"upper-first\"");
 
                 c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, " select=\"%s\"", Select);
-                
+
                 c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "/>\n");
             }
         }
@@ -639,11 +639,11 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
  *  Prepare XSLT stylesheet based on command line options
  */
 int
-selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops, const char *ns_arr[], 
+selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops, const char *ns_arr[],
                int start, int argc, char **argv)
 {
     int c, i, t, ns;
-   
+
     xsl_buf[0] = 0;
     *len = 0;
     c = 0;
@@ -674,11 +674,12 @@ selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops, const char *ns_arr[],
         ns += 2;
     }
     selCleanupNSArr(ns_arr);
-    
-    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\n extension-element-prefixes=\"exslt math date func set str dyn saxon xalanredirect xt libxslt test\"");
+
+    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1,
+                  "\n extension-element-prefixes=\"exslt math date func set str dyn saxon xalanredirect xt libxslt test\"");
     c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\n exclude-result-prefixes=\"math str\"");
 
-    
+
     c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, ">\n");
 
     if (ops->no_omit_decl) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:output omit-xml-declaration=\"no\"");
@@ -717,7 +718,7 @@ selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops, const char *ns_arr[],
         fprintf(stderr, " no -t or --template options found\n");
         exit(2);
     }
-        
+
     t = 0;
     i = start;
     while(i < argc)
@@ -750,19 +751,19 @@ selMain(int argc, char **argv)
     int start, c, i, n;
     int nCount = 0;
     int nbparams;
-  
+
     if (argc <= 2) selUsage(argc, argv);
 
     selInitOptions(&ops);
     xsltInitOptions(&xsltOps);
     start = selParseOptions(&ops, argc, argv);
     xsltOps.nonet = ops.nonet;
-    xsltOps.noblanks = ops.noblanks;    
+    xsltOps.noblanks = ops.noblanks;
     xsltInitLibXml(&xsltOps);
 
     /* set parameters */
     selParseNSArr(ns_arr, &nCount, argc-start, argv+2);
-    
+
     c = sizeof(xsl_buf);
     i = selPrepareXslt(xsl_buf, &c, &ops, ns_arr, start, argc, argv);
 
@@ -771,7 +772,7 @@ selMain(int argc, char **argv)
         fprintf(stdout, "%s", xsl_buf);
         exit(0);
     }
-    
+
     for (n=i; n<argc; n++)
     {
         xmlChar *value;
@@ -795,12 +796,14 @@ selMain(int argc, char **argv)
             xmlDocPtr doc = NULL;
             if (!cur) exit(2);
             doc = xmlParseFile(argv[n]);
-            xsltProcess(&xsltOps, doc, params, cur, argv[n]);
+            if (doc != NULL) {
+                xsltProcess(&xsltOps, doc, params, cur, argv[n]);
+            }
             xsltFreeStylesheet(cur);
         }
     }
 
-    if (i == argc)    
+    if (i == argc)
     {
         /*
          *  Parse XSLT stylesheet
@@ -810,9 +813,12 @@ selMain(int argc, char **argv)
         xmlDocPtr doc = NULL;
         if (!cur) exit(2);
         doc = xmlParseFile("-");
-        xsltProcess(&xsltOps, doc, params, cur, "-");
+        if (doc != NULL) {
+            xsltProcess(&xsltOps, doc, params, cur, "-");
+        }
         /* xsltFreeStylesheet(cur); */
     }
-        
+
     return 0;
-}  
+}
+
