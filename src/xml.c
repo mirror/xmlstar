@@ -1,4 +1,4 @@
-/*  $Id: xml.c,v 1.23 2003/04/19 00:27:08 mgrouch Exp $  */
+/*  $Id: xml.c,v 1.24 2003/04/23 02:43:36 mgrouch Exp $  */
 
 /*
 
@@ -35,6 +35,7 @@ extern int selMain(int argc, char **argv);
 extern int trMain(int argc, char **argv);
 extern int valMain(int argc, char **argv);
 extern int foMain(int argc, char **argv);
+extern int elMain(int argc, char **argv);
 
 static const char usage_str[] =
 "XMLStarlet Toolkit: Command line utilities for XML\n"
@@ -45,6 +46,7 @@ static const char usage_str[] =
 "   tr   (or transform) - Transform XML document(s) using XSLT\n"
 "   val  (or validate)  - Validate XML document(s) (well-formed/DTD/XSD)\n"
 "   fo   (or format)    - Format XML document(s)\n"
+"   el   (or elements)  - Display element structure of XML document\n"
 "<options> are:\n"
 "   --version           - show version\n"
 "   --help              - show help\n"
@@ -102,6 +104,10 @@ main(int argc, char **argv)
     else if (!strcmp(argv[1], "val") || !strcmp(argv[1], "validate"))
     {
         ret = valMain(argc, argv);
+    }
+    else if (!strcmp(argv[1], "el") || !strcmp(argv[1], "elements"))
+    {
+        ret = elMain(argc, argv);
     }
     else if (!strcmp(argv[1], "--version"))
     {
