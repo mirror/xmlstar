@@ -19,7 +19,7 @@ Command Line XML Toolkit to query/edit/transform/check XML documents
 
 %build
 %configure
-make LIBTOOL=/usr/bin/libtool
+make
 
 %install
 rm -fr %{buildroot}
@@ -39,8 +39,6 @@ rm -fr %{buildroot}
 %doc AUTHORS ChangeLog NEWS README Copyright TODO
 
 %{prefix}/bin/xml
-
-%doc AUTHORS ChangeLog NEWS README Copyright TODO
 
 %changelog
 
