@@ -1,4 +1,4 @@
-/*  $Id: xml_format.c,v 1.15 2003/10/30 04:01:46 mgrouch Exp $  */
+/*  $Id: xml_format.c,v 1.16 2003/11/05 02:04:59 mgrouch Exp $  */
 
 /*
 
@@ -56,6 +56,7 @@ typedef struct _foOptions {
     int indent_spaces;        /* Num spaces for indentation */
     int omit_decl;            /* omit xml declaration */
     int recovery;             /* try to recover what is parsable */
+    int dropdtd;              /* remove the DOCTYPE of the input docs */
 #ifdef LIBXML_HTML_ENABLED
     int html;                 /* inputs are in HTML format */
 #endif
@@ -72,6 +73,7 @@ static const char format_usage_str[] =
 "   -s or --indent-spaces <num> - indent output with <num> spaces\n"
 "   -o or --omit-decl           - omit xml declaration <?xml version=\"1.0\"?>\n"
 "   -R or --recover             - try to recover what is parsable\n"
+"   -D or --dropdtd             - remove the DOCTYPE of the input docs\n"
 "   -e or --encode <encoding>   - output in the given encoding (utf-8, unicode...)\n"
 #ifdef LIBXML_HTML_ENABLED
 "   -H or --html                - input is HTML\n"
@@ -104,6 +106,7 @@ foInitOptions(foOptionsPtr ops)
     ops->indent_spaces = 2;
     ops->omit_decl = 0;
     ops->recovery = 0;
+    ops->dropdtd = 0;
 #ifdef LIBXML_HTML_ENABLED
     ops->html = 0;
 #endif
@@ -184,6 +187,11 @@ foParseOptions(foOptionsPtr ops, int argc, char **argv)
         else if (!strcmp(argv[i], "--omit-decl") || !strcmp(argv[i], "-o"))
         {
             ops->omit_decl = 1;
+            i++;
+        }
+        else if (!strcmp(argv[i], "--dropdtd") || !strcmp(argv[i], "-D"))
+        {
+            ops->dropdtd = 1;
             i++;
         }
         else if (!strcmp(argv[i], "--recover") || !strcmp(argv[i], "-R"))
@@ -273,7 +281,20 @@ foProcess(foOptionsPtr ops, int start, int argc, char **argv)
         /*fprintf(stderr, "%s:: error: XML parse error\n", fileName);*/
         return 2;
     }
-    
+
+    /*
+     * Remove DOCTYPE nodes
+     */
+    if (ops->dropdtd) {
+        xmlDtdPtr dtd;
+
+        dtd = xmlGetIntSubset(doc);
+        if (dtd != NULL) {
+            xmlUnlinkNode((xmlNodePtr)dtd);
+            xmlFreeDtd(dtd);
+        }
+    }
+ 
     if (!ops->omit_decl)
     {
         if (encoding != NULL)
