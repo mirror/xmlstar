@@ -100,10 +100,10 @@
 #undef HAVE_UNISTD_H
 
 /* Name of package */
-#undef PACKAGE
+#define PACKAGE "@PACKAGE@"
 
 /* Version number of package */
-#undef VERSION
+#define VERSION "@VERSION@"
 
 /* Using the Win32 Socket implementation */
 #undef _WINSOCKAPI_
