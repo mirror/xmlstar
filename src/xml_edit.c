@@ -1,4 +1,4 @@
-/*  $Id: xml_edit.c,v 1.43 2005/01/07 01:43:17 mgrouch Exp $  */
+/*  $Id: xml_edit.c,v 1.44 2005/01/07 02:14:09 mgrouch Exp $  */
 
 /*
 
@@ -702,6 +702,8 @@ edMove(xmlDocPtr doc, char *from, char *to)
 #if defined(LIBXML_XPTR_ENABLED)
     }
 #endif
+
+    if (ctxt) xmlXPathFreeContext(ctxt);
     if (res == NULL) return;
 
     /********************************************************/
@@ -1089,6 +1091,8 @@ edMain(int argc, char **argv)
             }
             ret = xmlOutputBufferClose(buf);
         }
+        
+        xmlFreeDoc(doc);
     }
     
     for (n=i; n<argc; n++)

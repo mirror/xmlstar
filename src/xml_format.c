@@ -1,4 +1,4 @@
-/*  $Id: xml_format.c,v 1.23 2004/11/11 03:39:34 mgrouch Exp $  */
+/*  $Id: xml_format.c,v 1.24 2005/01/07 02:17:02 mgrouch Exp $  */
 
 /*
 
@@ -350,6 +350,8 @@ foProcess(foOptionsPtr ops, int start, int argc, char **argv)
         }
         ret = xmlOutputBufferClose(buf);
     }
+    
+    xmlFreeDoc(doc);
     return ret;
 }
 
