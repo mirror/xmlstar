@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.65 2004/11/30 01:59:34 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.66 2005/01/07 00:29:35 mgrouch Exp $  */
 
 /*
 
@@ -801,6 +801,8 @@ selMain(int argc, char **argv)
             }
             xsltFreeStylesheet(cur);
         }
+        
+        xmlFree(value);
     }
 
     if (i == argc)
@@ -819,6 +821,12 @@ selMain(int argc, char **argv)
         /* xsltFreeStylesheet(cur); */
     }
 
+    /* 
+     * Shutdown libxml
+     */
+    xsltCleanupGlobals();
+    xmlCleanupParser();
+    
     return 0;
 }
 
