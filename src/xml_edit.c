@@ -1,4 +1,4 @@
-/*  $Id: xml_edit.c,v 1.32 2003/11/04 21:40:15 mgrouch Exp $  */
+/*  $Id: xml_edit.c,v 1.33 2003/11/04 21:53:19 mgrouch Exp $  */
 
 /*
 
@@ -329,15 +329,18 @@ edUpdate(xmlDocPtr doc, const char *loc, const char *val, XmlNodeType type)
         {
             int i;
             xmlNodeSetPtr cur = res->nodesetval;
-            /*
-            fprintf(stderr, "Set contains %d nodes:\n", cur->nodeNr);
-            */
-            for (i = 0; i < cur->nodeNr; i++)
+            if (cur)
             {
                 /*
-                 *  update node
-                 */
-                xmlNodeSetContent(cur->nodeTab[i], BAD_CAST val);
+                fprintf(stderr, "Set contains %d nodes:\n", cur->nodeNr);
+                */
+                for (i = 0; i < cur->nodeNr; i++)
+                {
+                    /*
+                     *  update node
+                     */
+                    xmlNodeSetContent(cur->nodeTab[i], BAD_CAST val);
+                }
             }
             break;
         }
@@ -409,34 +412,37 @@ edInsert(xmlDocPtr doc, const char *loc, const char *val, const char *name,
         {
             int i;
             xmlNodeSetPtr cur = res->nodesetval;
-            for (i = 0; i < cur->nodeNr; i++)
+            if (cur)
             {
-                /*
-                 *  update node
-                 */
-                if (type == XML_ATTR)
+                for (i = 0; i < cur->nodeNr; i++)
                 {
-                    xmlNewProp(cur->nodeTab[i], BAD_CAST name, BAD_CAST val);
-                }
-                else if (type == XML_ELEM)
-                {
-                    xmlNodePtr node = xmlNewDocNode(doc, NULL /* TODO: NS */, BAD_CAST name, BAD_CAST val);
-                    if (mode > 0)
-                        xmlAddNextSibling(cur->nodeTab[i], node);
-                    else if (mode < 0)
-                        xmlAddPrevSibling(cur->nodeTab[i], node);
-                    else
-                        xmlAddChild(cur->nodeTab[i], node);
-                }
-                else if (type == XML_TEXT)
-                {
-                    xmlNodePtr node = xmlNewDocText(doc, BAD_CAST val);
-                    if (mode > 0)
-                        xmlAddNextSibling(cur->nodeTab[i], node);
-                    else if (mode < 0)
-                        xmlAddPrevSibling(cur->nodeTab[i], node);
-                    else
-                        xmlAddChild(cur->nodeTab[i], node);                    
+                    /*
+                     *  update node
+                     */
+                    if (type == XML_ATTR)
+                    {
+                        xmlNewProp(cur->nodeTab[i], BAD_CAST name, BAD_CAST val);
+                    }
+                    else if (type == XML_ELEM)
+                    {
+                        xmlNodePtr node = xmlNewDocNode(doc, NULL /* TODO: NS */, BAD_CAST name, BAD_CAST val);
+                        if (mode > 0)
+                            xmlAddNextSibling(cur->nodeTab[i], node);
+                        else if (mode < 0)
+                            xmlAddPrevSibling(cur->nodeTab[i], node);
+                        else
+                            xmlAddChild(cur->nodeTab[i], node);
+                    }
+                    else if (type == XML_TEXT)
+                    {
+                        xmlNodePtr node = xmlNewDocText(doc, BAD_CAST val);
+                        if (mode > 0)
+                            xmlAddNextSibling(cur->nodeTab[i], node);
+                        else if (mode < 0)
+                            xmlAddPrevSibling(cur->nodeTab[i], node);
+                        else
+                            xmlAddChild(cur->nodeTab[i], node);                    
+                    }
                 }
             }
             break;
@@ -508,23 +514,26 @@ edRename(xmlDocPtr doc, char *loc, char *val, XmlNodeType type)
         {
             int i;
             xmlNodeSetPtr cur = res->nodesetval;
-            /*
-            fprintf(stderr, "Set contains %d nodes:\n", cur->nodeNr);
-            */
-            for (i = 0; i < cur->nodeNr; i++)
+            if (cur)
             {
                 /*
-                 *  rename node
-                 */
-                if (cur->nodeTab[i]->type == XML_ATTRIBUTE_NODE)
+                fprintf(stderr, "Set contains %d nodes:\n", cur->nodeNr);
+                */
+                for (i = 0; i < cur->nodeNr; i++)
                 {
-                    xmlFree((xmlChar *) cur->nodeTab[i]->name);
-                    cur->nodeTab[i]->name = xmlStrdup((const xmlChar*) val);
-                }
-                else
-                {
-                    xmlFree((xmlChar *)cur->nodeTab[i]->name);
-                    cur->nodeTab[i]->name = xmlStrdup((const xmlChar*) val);
+                    /*
+                     *  rename node
+                     */
+                    if (cur->nodeTab[i]->type == XML_ATTRIBUTE_NODE)
+                    {
+                        xmlFree((xmlChar *) cur->nodeTab[i]->name);
+                        cur->nodeTab[i]->name = xmlStrdup((const xmlChar*) val);
+                    }
+                    else
+                    {
+                        xmlFree((xmlChar *)cur->nodeTab[i]->name);
+                        cur->nodeTab[i]->name = xmlStrdup((const xmlChar*) val);
+                    }
                 }
             }
             break;
@@ -725,10 +734,13 @@ edMove(xmlDocPtr doc, char *from, char *to)
         case XPATH_NODESET:
         {
             xmlNodeSetPtr cur = res_to->nodesetval;
-            if (cur->nodeNr != 1)
+            if (cur)
             {
-                fprintf(stderr, "destination nodeset does not contain one node (node count is %d)\n", cur->nodeNr);
-                break;
+                if (cur->nodeNr != 1)
+                {
+                    fprintf(stderr, "destination nodeset does not contain one node (node count is %d)\n", cur->nodeNr);
+                    break;
+                }
             }
         }
         default:
@@ -741,13 +753,16 @@ edMove(xmlDocPtr doc, char *from, char *to)
         {
             int i;
             xmlNodeSetPtr cur = res->nodesetval;
-            for (i = 0; i < cur->nodeNr; i++)
+            if (cur)
             {
-                /*
-                 *  delete node
-                 */
-                xmlUnlinkNode(cur->nodeTab[i]);
-                xmlAddChild(res_to->nodesetval->nodeTab[0], cur->nodeTab[i]);             
+                for (i = 0; i < cur->nodeNr; i++)
+                {
+                    /*
+                     *  delete node
+                     */
+                    xmlUnlinkNode(cur->nodeTab[i]);
+                    xmlAddChild(res_to->nodesetval->nodeTab[0], cur->nodeTab[i]);             
+                }
             }
             break;
         }
