@@ -1,4 +1,4 @@
-/*  $Id: xml_format.c,v 1.14 2003/09/02 03:13:48 mgrouch Exp $  */
+/*  $Id: xml_format.c,v 1.15 2003/10/30 04:01:46 mgrouch Exp $  */
 
 /*
 
@@ -64,7 +64,7 @@ typedef struct _foOptions {
 typedef foOptions *foOptionsPtr;
 
 static const char format_usage_str[] =
-"XMLStarlet Toolkit: Format XML document(s)\n"
+"XMLStarlet Toolkit: Format XML document\n"
 "Usage: xml fo [<options>] <xml-file>\n"
 "where <options> are\n"
 "   -n or --noindent            - do not indent\n"
