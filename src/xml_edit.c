@@ -1,4 +1,4 @@
-/*  $Id: xml_edit.c,v 1.29 2003/08/26 04:16:44 mgrouch Exp $  */
+/*  $Id: xml_edit.c,v 1.30 2003/09/18 01:39:41 mgrouch Exp $  */
 
 /*
 
@@ -279,7 +279,7 @@ edUpdate(xmlDocPtr doc, const char *loc, const char *val, XmlNodeType type)
     int expr = 0;
     int tree = 0;
 
-    xmlXPathObjectPtr res;
+    xmlXPathObjectPtr res = NULL;
     xmlXPathContextPtr ctxt;
 
 #if defined(LIBXML_XPTR_ENABLED)
@@ -359,7 +359,7 @@ edInsert(xmlDocPtr doc, const char *loc, const char *val, const char *name,
     int expr = 0;
     int tree = 0;
 
-    xmlXPathObjectPtr res;
+    xmlXPathObjectPtr res = NULL;
     xmlXPathContextPtr ctxt;
 
 #if defined(LIBXML_XPTR_ENABLED)
@@ -458,7 +458,7 @@ edRename(xmlDocPtr doc, char *loc, char *val, XmlNodeType type)
     int expr = 0;
     int tree = 0;
 
-    xmlXPathObjectPtr res;
+    xmlXPathObjectPtr res = NULL;
     xmlXPathContextPtr ctxt;
 
 #if defined(LIBXML_XPTR_ENABLED)
@@ -546,7 +546,7 @@ edDelete(xmlDocPtr doc, char *str)
     int expr = 0;
     int tree = 0;
 
-    xmlXPathObjectPtr res;
+    xmlXPathObjectPtr res = NULL;
     xmlXPathContextPtr ctxt;
 
 #if defined(LIBXML_XPTR_ENABLED)
@@ -625,7 +625,7 @@ edMove(xmlDocPtr doc, char *from, char *to)
     int expr = 0;
     int tree = 0;
 
-    xmlXPathObjectPtr res, res_to;
+    xmlXPathObjectPtr res = NULL, res_to = NULL;
     xmlXPathContextPtr ctxt;
 
     /*
