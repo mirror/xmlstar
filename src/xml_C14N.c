@@ -1,5 +1,5 @@
 /*
- *  $Id: xml_C14N.c,v 1.3 2003/10/29 02:53:45 mgrouch Exp $
+ *  $Id: xml_C14N.c,v 1.4 2003/10/30 04:22:26 mgrouch Exp $
  *
  *  Canonical XML implementation test program
  *  (http://www.w3.org/TR/2001/REC-xml-c14n-20010315)
@@ -35,14 +35,22 @@
 
 static const char c14n_usage_str[] =
 "XMLStarlet Toolkit: XML canonicalization\n"
-"Usage: xml c14n <mode> <xml-file> [<xpath-expr>] [<inclusive-ns-list>]\n"
+"Usage: xml c14n <mode> <xml-file> [<xpath-file>] [<inclusive-ns-list>]\n"
 "where\n"
-"   <xml-file> - input XML document file name (stdin is used if '-')\n"
-"   <mode> is one of following:\n"
-"   --with-comments         XML file canonicalization w comments\n"
-"   --without-comments      XML file canonicalization w/o comments\n"
-"   --exc-with-comments     Exclusive XML file canonicalization w comments\n"
-"   --exc-without-comments  Exclusive XML file canonicalization w/o comments\n"
+"  <xml-file>   - input XML document file name (stdin is used if '-')\n"
+"  <xpath-file> - XML file containing XPath expression for\n"
+"                 exclusive XML canonicalization\n"
+"    Example:\n"
+"    <?xml version=\"1.0\"?>\n"
+"    <XPath xmlns:n0=\"http://a.example.com\" xmlns:n1=\"http://b.example\">\n"
+"    (//. | //@* | //namespace::*)[ancestor-or-self::n1:elem1]\n"
+"    </XPath>\n"
+"\n"
+"  <mode> is one of following:\n"
+"  --with-comments         XML file canonicalization w comments\n"
+"  --without-comments      XML file canonicalization w/o comments\n"
+"  --exc-with-comments     Exclusive XML file canonicalization w comments\n"
+"  --exc-without-comments  Exclusive XML file canonicalization w/o comments\n"
 "\n";
 
 static void c14nUsage(const char *name)
