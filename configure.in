@@ -169,6 +169,8 @@ case "${host}" in
       AC_DEFINE([_WINSOCKAPI_],1,[Using the Win32 Socket implementation])
       AC_DEFINE([snprintf],[_snprintf],[Win32 Std C name mangling work-around])
       AC_DEFINE([vsnprintf],[_vsnprintf],[Win32 Std C name mangling work-around])
+      LIBXML_LIBS=`echo "$LIBXML_LIBS" | sed -e 's/ -lz//g' -e 's/ -lpthread//g'`
+      LIBXSLT_LIBS=`echo "$LIBXSLT_LIBS" | sed -e 's/ -lz//g' -e 's/ -lpthread//g'`
       ;;
   * )
       LIBICONV_LIBS=
