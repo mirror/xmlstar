@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.47 2003/03/22 23:26:54 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.48 2003/04/18 00:09:24 mgrouch Exp $  */
 
 /*
 
@@ -40,21 +40,8 @@ THE SOFTWARE.
 /*
  *  TODO:
  *
- *   1. How about sorting  -s <ops> <xpath> ?
-                           -s A:N:L @id
-                              D:T:U
-Syntax:
-            <xsl:sort
-                    select=expression
-                    lang="lang"
-                    data-type="text"|"number"
-                    order ="ascending" | "descending"
-                    case-order="upper-first"|"lower-first"
-            />
-                           
- *   2. strip spaces
- *   3. How to list files which match templates ?
- *   4. free memory
+ *   1. free memory (check for memory leaks)
+ *   2. --nonet option (to disable fetching DTD over network)
  */
 
 #define MAX_XSL_BUF  256*1024
@@ -77,8 +64,8 @@ static const char select_usage_str[] =
 "Usage: xml sel <global-options> {<template>} [ <xml-file> ... ]\n"
 "where\n"
 "  <global-options> - global options for selecting\n"
-"  <xml-file> - input XML document file name (stdin is used if missing)\n"
-"  <template> - template for querying XL document with following syntax:\n\n"
+"  <xml-file> - input XML document file name/uri (stdin is used if missing)\n"
+"  <template> - template for querying XML document with following syntax:\n\n"
 
 "<global-options> are:\n"
 "  -C or --comp       - display generated XSLT\n"
@@ -93,7 +80,7 @@ static const char select_usage_str[] =
 "where <options>\n"
 "  -c or --copy-of <xpath>  - print copy of XPATH expression\n"
 "  -v or --value-of <xpath> - print value of XPATH expression\n"
-"  -o or --output <string>  - print string literal \n"
+"  -o or --output <string>  - output string literal\n"
 "  -n or --nl               - print new line\n"
 "  -f or --inp-name         - print input file name (or URL)\n"
 "  -m or --match <xpath>    - match XPATH expression\n"
@@ -109,7 +96,7 @@ static const char select_usage_str[] =
 "      Y is T - for data-type=\"text\"\n"
 "      Z is U - for case-order=\"upper-first\"\n"
 "      Z is L - for case-order=\"lower-first\"\n\n"
-"There can be multiple --match, --copy-of, value-of, etc options\n"
+"There can be multiple --match, --copy-of, --value-of, etc options\n"
 "in a single template. The effect of applying command line templates\n"
 "can be illustrated with the following XSLT analogue\n\n"
 
@@ -248,7 +235,6 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
     templateEmpty = 1;
     c += sprintf(xsl_buf + c, "<xsl:template name=\"t%d\">\n", t);
 
-    /* TODO: implement better control of nesting */
     stack = stack_create(max_depth);
     
     i++;
