@@ -1,4 +1,4 @@
-/*  $Id: xml_trans.c,v 1.19 2002/11/27 00:16:34 mgrouch Exp $  */
+/*  $Id: xml_trans.c,v 1.20 2002/11/30 20:29:42 mgrouch Exp $  */
 
 /*
 
@@ -58,6 +58,7 @@ static const char trans_usage_str[] =
 "   -p              - parameter is an XPATH expression (\"'string'\" to quote string)\n"
 "   -s              - parameter is a string literal\n"
 "<options> are:\n"
+"   --omit-decl     - omit xml declaration <?xml version=\"1.0\"?>\n"
 "   --show-ext      - show list of extensions\n"
 "   --noval         - do not validate against DTDs or schemas\n"
 "   --nonet         - refuse to fetch DTDs or entities over network\n"
@@ -116,6 +117,10 @@ trParseOptions(xsltOptionsPtr ops, int argc, char **argv)
             else if (!strcmp(argv[i], "--nonet"))
             {
                 ops->nonet = 1;
+            }
+            else if (!strcmp(argv[i], "--omit-decl"))
+            {
+                ops->omit_decl = 1;
             }
             else if (!strcmp(argv[i], "--maxdepth"))
             {

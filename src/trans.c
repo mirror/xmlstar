@@ -1,4 +1,4 @@
-/*  $Id: trans.c,v 1.6 2002/11/27 00:16:33 mgrouch Exp $  */
+/*  $Id: trans.c,v 1.7 2002/11/30 20:29:42 mgrouch Exp $  */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -28,6 +28,7 @@ xsltInitOptions(xsltOptionsPtr ops)
 {
     ops->noval = 0;
     ops->nonet = 0;
+    ops->omit_decl = 0;
     ops->show_extensions = 0;
 #ifdef LIBXML_XINCLUDE_ENABLED
     ops->xinclude = 0;

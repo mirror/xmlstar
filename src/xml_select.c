@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.29 2002/11/27 00:16:34 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.30 2002/11/30 20:29:42 mgrouch Exp $  */
 
 /*
 
@@ -56,10 +56,11 @@ static const char select_usage_str[] =
 "  <template> - template for querying XL document with following syntax:\n\n"
 
 "<global-options> are:\n"
-"  -C     - display generated XSLT\n"
-"  -R     - print root element <xsl-select>\n"
-"  -T     - output is text (default is XML)\n"
-"  --help - display help\n\n"
+"  -C                 - display generated XSLT\n"
+"  -R                 - print root element <xsl-select>\n"
+"  -T                 - output is text (default is XML)\n"
+"  --no-omit-decl     - do not omit xml declaration line\n"
+"  --help             - display help\n\n"
 
 "Syntax for templates: -t|--template <options>\n"
 "where <options>\n"
@@ -113,6 +114,7 @@ void selUsage(int argc, char **argv)
 static int printXSLT = 0;
 static int printRoot = 0;
 static int out_text = 0;
+static int no_omit_decl = 0;
 
 int selMain(int argc, char **argv)
 {
@@ -141,6 +143,10 @@ int selMain(int argc, char **argv)
         {
             printRoot = 1;
         }
+        else if (!strcmp(argv[i], "--no-omit-decl"))
+        {
+            no_omit_decl = 1;
+        }
         else if (!strcmp(argv[i], "--help"))
         {
             selUsage(argc, argv);
@@ -154,7 +160,12 @@ int selMain(int argc, char **argv)
     
     c += sprintf(xsl_buf, "<?xml version=\"1.0\"?>\n");
     c += sprintf(xsl_buf + c, "<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">\n");
-    if (out_text) c += sprintf(xsl_buf + c, "<xsl:output method=\"text\"/>\n");
+
+    if (no_omit_decl) c += sprintf(xsl_buf + c, "<xsl:output omit-xml-declaration=\"no\"");
+    else c += sprintf(xsl_buf + c, "<xsl:output omit-xml-declaration=\"yes\"");
+    if (out_text) c += sprintf(xsl_buf + c, " method=\"text\"");
+    c += sprintf(xsl_buf + c, "/>\n");
+
     c += sprintf(xsl_buf + c, "<xsl:param name=\"inputFile\">-</xsl:param>\n");
 
     c += sprintf(xsl_buf + c, "<xsl:template match=\"/\">\n");
