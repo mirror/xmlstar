@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.55 2003/05/24 01:27:31 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.56 2003/07/22 02:56:54 mgrouch Exp $  */
 
 /*
 
@@ -169,12 +169,13 @@ int
 selParseNSArr(const char** ns_arr, int* plen,
               int count, char **argv)
 {
-    int i;
+    int i = 0;
     *plen = 0;
     ns_arr[0] = 0;
 
     for (i=0; i<count; i++)
     {
+        if (argv[i] == 0) break;
         if (argv[i][0] == '-')
         {
             if (!strcmp(argv[i], "-N"))
@@ -267,7 +268,8 @@ selParseOptions(selOptionsPtr ops, int argc, char **argv)
         {
             ops->nonet = 0;
         }
-        else if (!strcmp(argv[i], "--help"))
+        else if (!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h") ||
+                 !strcmp(argv[i], "-?") || !strcmp(argv[i], "-Z"))
         {
             selUsage(argc, argv);
         }
@@ -713,7 +715,7 @@ selMain(int argc, char **argv)
     
     c = sizeof(xsl_buf);
     i = selPrepareXslt(xsl_buf, &c, &ops, ns_arr, start, argc, argv);
-    
+
     if (ops.printXSLT)
     {
         fprintf(stdout, "%s", xsl_buf);
