@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.62 2004/09/10 02:02:21 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.63 2004/09/13 23:18:34 mgrouch Exp $  */
 
 /*
 
@@ -60,7 +60,7 @@ typedef struct _selOptions {
 typedef selOptions *selOptionsPtr;
 
 /*
- * usage string chunk : 509 char min on ISO C90
+ * usage string chunk : 509 char max on ISO C90
  */
 static const char select_usage_str_1[] =
 "XMLStarlet Toolkit: Select from XML document(s)\n"
@@ -334,7 +334,7 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
     }
 
     templateEmpty = 1;
-    c += sprintf(xsl_buf + c, "<xsl:template name=\"t%d\">\n", t);
+    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:template name=\"t%d\">\n", t);
 
     stack = stack_create(max_depth);
     
@@ -345,8 +345,8 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
         if(!strcmp(argv[i], "-c") || !strcmp(argv[i], "--copy-of"))
         {
             templateEmpty = 0;
-            for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
-            c += sprintf(xsl_buf + c, "<xsl:copy-of select=\"%s\"/>\n", argv[i+1]);
+            for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
+            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:copy-of select=\"%s\"/>\n", argv[i+1]);
             i++;
         }
         else if(!strcmp(argv[i], "-v") || !strcmp(argv[i], "--value-of"))
@@ -358,8 +358,8 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
                 stack_free(stack);
                 exit (1);
             }
-            for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
-            c += sprintf(xsl_buf + c, "<xsl:value-of select=\"%s\"/>\n", argv[i+1]);
+            for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
+            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:value-of select=\"%s\"/>\n", argv[i+1]);
             i++;
         }
         else if(!strcmp(argv[i], "-o") || !strcmp(argv[i], "--output"))
@@ -371,21 +371,21 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
                 stack_free(stack);
                 exit (1);
             }
-            for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
-            c += sprintf(xsl_buf + c, "<xsl:value-of select=\"'%s'\"/>\n", argv[i+1]);
+            for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
+            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:value-of select=\"'%s'\"/>\n", argv[i+1]);
             i++;
         }
         else if(!strcmp(argv[i], "-f") || !strcmp(argv[i], "--inp-name"))
         {
             templateEmpty = 0;
-            for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
-            c += sprintf(xsl_buf + c, "<xsl:copy-of select=\"$inputFile\"/>\n");
+            for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
+            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:copy-of select=\"$inputFile\"/>\n");
         }
         else if(!strcmp(argv[i], "-n") || !strcmp(argv[i], "--nl"))
         {
             templateEmpty = 0;
-            for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
-            c += sprintf(xsl_buf + c, "<xsl:value-of select=\"'&#10;'\"/>\n");
+            for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
+            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:value-of select=\"'&#10;'\"/>\n");
         }
         else if(!strcmp(argv[i], "-i") || !strcmp(argv[i], "--if"))
         {
@@ -396,8 +396,8 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
                 stack_free(stack);
                 exit (1);
             }
-            for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
-            c += sprintf(xsl_buf + c, "<xsl:if test=\"%s\">\n", argv[i+1]);
+            for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
+            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:if test=\"%s\">\n", argv[i+1]);
             stack_push(stack, STK_IF);
             m++;
             i++;
@@ -411,8 +411,8 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
                 stack_free(stack);
                 exit (1);
             }
-            for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
-            c += sprintf(xsl_buf + c, "<xsl:element name=\"%s\">\n", argv[i+1]);
+            for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
+            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:element name=\"%s\">\n", argv[i+1]);
             stack_push(stack, STK_ELEM);
             m++;
             i++;
@@ -426,8 +426,8 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
                 stack_free(stack);
                 exit (1);
             }
-            for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
-            c += sprintf(xsl_buf + c, "<xsl:attribute name=\"%s\">\n", argv[i+1]);
+            for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
+            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:attribute name=\"%s\">\n", argv[i+1]);
             stack_push(stack, STK_ATTR);
             m++;
             i++;
@@ -441,8 +441,8 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
                 stack_free(stack);
                 exit (1);
             }
-            for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
-            c += sprintf(xsl_buf + c, "<xsl:for-each select=\"%s\">\n", argv[i+1]);
+            for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
+            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:for-each select=\"%s\">\n", argv[i+1]);
             stack_push(stack, STK_MATCH);
             m++;
             i++;
@@ -472,20 +472,20 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
                 i++;
                 Select=argv[i];
                 
-                for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
+                for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
 
-                if (Order == 'A') c += sprintf(xsl_buf + c, "<xsl:sort order=\"ascending\"");
-                else c += sprintf(xsl_buf + c, "<xsl:sort order=\"descending\"");
+                if (Order == 'A') c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:sort order=\"ascending\"");
+                else c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:sort order=\"descending\"");
 
-                if (Type == 'N') c += sprintf(xsl_buf + c, " data-type=\"number\"");
-                else c += sprintf(xsl_buf + c, " data-type=\"text\"");
+                if (Type == 'N') c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, " data-type=\"number\"");
+                else c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, " data-type=\"text\"");
 
-                if (Case == 'L') c += sprintf(xsl_buf + c, " case-order=\"lower-first\"");
-                else c += sprintf(xsl_buf + c, " case-order=\"upper-first\"");
+                if (Case == 'L') c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, " case-order=\"lower-first\"");
+                else c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, " case-order=\"upper-first\"");
 
-                c += sprintf(xsl_buf + c, " select=\"%s\"", Select);
+                c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, " select=\"%s\"", Select);
                 
-                c += sprintf(xsl_buf + c, "/>\n");
+                c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "/>\n");
             }
         }
         else if(!strcmp(argv[i], "-t") || !strcmp(argv[i], "--template"))
@@ -500,26 +500,26 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
             {
                 StackItem itm;
 
-                for (j=0; j<stack_depth(stack); j++) c += sprintf(xsl_buf + c, "  ");
+                for (j=0; j<stack_depth(stack); j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
                 itm = stack_pop(stack);
                 if (itm == STK_MATCH)
                 {
-                    c += sprintf(xsl_buf + c, "</xsl:for-each>\n");
+                    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:for-each>\n");
                     m--;
                 }
                 else if (itm == STK_IF)
                 {
-                    c += sprintf(xsl_buf + c, "</xsl:if>\n");
+                    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:if>\n");
                     m--;
                 }
                 else if (itm == STK_ELEM)
                 {
-                    c += sprintf(xsl_buf + c, "</xsl:element>\n");
+                    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:element>\n");
                     m--;
                 }
                 else if (itm == STK_ATTR)
                 {
-                    c += sprintf(xsl_buf + c, "</xsl:attribute>\n");
+                    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:attribute>\n");
                     m--;
                 }
                 /* printf("%c\n", itm); */
@@ -548,8 +548,8 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
 /*
     if((i < argc) && (!strcmp(argv[i], "-n") || !strcmp(argv[i], "--nl")))
     {
-        for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
-        c += sprintf(xsl_buf + c, "<xsl:value-of select=\"'&#10;'\"/>\n");
+        for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
+        c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:value-of select=\"'&#10;'\"/>\n");
     }
 */
 
@@ -557,19 +557,19 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
     {
         StackItem itm;
 
-        for (j=0; j<stack_depth(stack); j++) c += sprintf(xsl_buf + c, "  ");
+        for (j=0; j<stack_depth(stack); j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
         itm = stack_pop(stack);
-        if (itm == STK_MATCH) c += sprintf(xsl_buf + c, "</xsl:for-each>\n");
-        else if (itm == STK_IF) c += sprintf(xsl_buf + c, "</xsl:if>\n");
-        else if (itm == STK_ELEM) c += sprintf(xsl_buf + c, "</xsl:element>\n");
-        else if (itm == STK_ATTR) c += sprintf(xsl_buf + c, "</xsl:attribute>\n");
+        if (itm == STK_MATCH) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:for-each>\n");
+        else if (itm == STK_IF) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:if>\n");
+        else if (itm == STK_ELEM) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:element>\n");
+        else if (itm == STK_ATTR) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:attribute>\n");
 /*        printf("%c\n", itm);  */
     }
 /*
     for (k=0; k<m; k++)
     {
-        for (j=k; j<m; j++) c += sprintf(xsl_buf + c, "  ");
-        c += sprintf(xsl_buf + c, "</xsl:for-each>\n");
+        for (j=k; j<m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
+        c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:for-each>\n");
     }
 */
     if (templateEmpty)
@@ -581,7 +581,7 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
         exit(3);
     }
 
-    c += sprintf(xsl_buf + c, "</xsl:template>\n");
+    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:template>\n");
 
     *len = c;
 
@@ -625,49 +625,49 @@ selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops, const char *ns_arr[],
     c = 0;
 
     c += sprintf(xsl_buf, "<?xml version=\"1.0\"?>\n");
-    c += sprintf(xsl_buf + c,
+    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1,
       "<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"");
-    c += sprintf(xsl_buf + c, "\n xmlns:exslt=\"http://exslt.org/common\"");
-    c += sprintf(xsl_buf + c, "\n xmlns:math=\"http://exslt.org/math\"");
-    c += sprintf(xsl_buf + c, "\n xmlns:date=\"http://exslt.org/dates-and-times\"");
-    c += sprintf(xsl_buf + c, "\n xmlns:func=\"http://exslt.org/functions\"");
-    c += sprintf(xsl_buf + c, "\n xmlns:set=\"http://exslt.org/sets\"");
-    c += sprintf(xsl_buf + c, "\n xmlns:str=\"http://exslt.org/strings\"");
-    c += sprintf(xsl_buf + c, "\n xmlns:dyn=\"http://exslt.org/dynamic\"");
-    c += sprintf(xsl_buf + c, "\n xmlns:saxon=\"http://icl.com/saxon\"");
-    c += sprintf(xsl_buf + c, "\n xmlns:xalanredirect=\"org.apache.xalan.xslt.extensions.Redirect\"");
-    c += sprintf(xsl_buf + c, "\n xmlns:xt=\"http://www.jclark.com/xt\"");
-    c += sprintf(xsl_buf + c, "\n xmlns:libxslt=\"http://xmlsoft.org/XSLT/namespace\"");
-    c += sprintf(xsl_buf + c, "\n xmlns:test=\"http://xmlsoft.org/XSLT/\"");
+    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\n xmlns:exslt=\"http://exslt.org/common\"");
+    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\n xmlns:math=\"http://exslt.org/math\"");
+    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\n xmlns:date=\"http://exslt.org/dates-and-times\"");
+    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\n xmlns:func=\"http://exslt.org/functions\"");
+    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\n xmlns:set=\"http://exslt.org/sets\"");
+    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\n xmlns:str=\"http://exslt.org/strings\"");
+    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\n xmlns:dyn=\"http://exslt.org/dynamic\"");
+    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\n xmlns:saxon=\"http://icl.com/saxon\"");
+    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\n xmlns:xalanredirect=\"org.apache.xalan.xslt.extensions.Redirect\"");
+    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\n xmlns:xt=\"http://www.jclark.com/xt\"");
+    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\n xmlns:libxslt=\"http://xmlsoft.org/XSLT/namespace\"");
+    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\n xmlns:test=\"http://xmlsoft.org/XSLT/\"");
 
     ns = 0;
     while(ns_arr[ns])
     {
         if (strlen(ns_arr[ns]))
-           c += sprintf(xsl_buf + c, "\n xmlns:%s=\"%s\"", ns_arr[ns], ns_arr[ns+1]);
+           c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\n xmlns:%s=\"%s\"", ns_arr[ns], ns_arr[ns+1]);
         else
-           c += sprintf(xsl_buf + c, "\n xmlns=\"%s\"", ns_arr[ns+1]);
+           c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\n xmlns=\"%s\"", ns_arr[ns+1]);
         ns += 2;
     }
     selCleanupNSArr(ns_arr);
     
-    c += sprintf(xsl_buf + c, "\n extension-element-prefixes=\"exslt math date func set str dyn saxon xalanredirect xt libxslt test\"");
-    c += sprintf(xsl_buf + c, "\n exclude-result-prefixes=\"math str\"");
+    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\n extension-element-prefixes=\"exslt math date func set str dyn saxon xalanredirect xt libxslt test\"");
+    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\n exclude-result-prefixes=\"math str\"");
 
     
-    c += sprintf(xsl_buf + c, ">\n");
+    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, ">\n");
 
-    if (ops->no_omit_decl) c += sprintf(xsl_buf + c, "<xsl:output omit-xml-declaration=\"no\"");
-    else c += sprintf(xsl_buf + c, "<xsl:output omit-xml-declaration=\"yes\"");
-    if (ops->indent) c += sprintf(xsl_buf + c, " indent=\"yes\"");
-    else c += sprintf(xsl_buf + c, " indent=\"no\"");
-    if (ops->outText) c += sprintf(xsl_buf + c, " method=\"text\"");
-    c += sprintf(xsl_buf + c, "/>\n");
+    if (ops->no_omit_decl) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:output omit-xml-declaration=\"no\"");
+    else c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:output omit-xml-declaration=\"yes\"");
+    if (ops->indent) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, " indent=\"yes\"");
+    else c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, " indent=\"no\"");
+    if (ops->outText) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, " method=\"text\"");
+    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "/>\n");
 
-    c += sprintf(xsl_buf + c, "<xsl:param name=\"inputFile\">-</xsl:param>\n");
+    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:param name=\"inputFile\">-</xsl:param>\n");
 
-    c += sprintf(xsl_buf + c, "<xsl:template match=\"/\">\n");
-    if (!ops->outText && ops->printRoot) c += sprintf(xsl_buf + c, "<xml-select>\n");
+    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:template match=\"/\">\n");
+    if (!ops->outText && ops->printRoot) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xml-select>\n");
 
     t = 0;
     i = start;
@@ -676,12 +676,12 @@ selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops, const char *ns_arr[],
         if(!strcmp(argv[i], "-t") || !strcmp(argv[i], "--template"))
         {
             t++;
-            c += sprintf(xsl_buf + c, "  <xsl:call-template name=\"t%d\"/>\n", t);
+            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  <xsl:call-template name=\"t%d\"/>\n", t);
         }
         i++;
     }
-    if (!ops->outText && ops->printRoot) c += sprintf(xsl_buf + c, "</xml-select>\n");
-    c += sprintf(xsl_buf + c, "</xsl:template>\n");
+    if (!ops->outText && ops->printRoot) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xml-select>\n");
+    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:template>\n");
 
     /*
      *  At least one -t option must be found
@@ -706,7 +706,7 @@ selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops, const char *ns_arr[],
         }
     }
 
-    c += sprintf(xsl_buf + c, "</xsl:stylesheet>\n");
+    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:stylesheet>\n");
     *len = c;
 
     return i;
