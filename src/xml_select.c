@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.46 2003/03/22 23:15:12 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.47 2003/03/22 23:26:54 mgrouch Exp $  */
 
 /*
 
@@ -97,8 +97,9 @@ static const char select_usage_str[] =
 "  -n or --nl               - print new line\n"
 "  -f or --inp-name         - print input file name (or URL)\n"
 "  -m or --match <xpath>    - match XPATH expression\n"
-"  -i or --if <test-xpath>  - check condition xsl:if test=\"test-xpath\"\n"
-"  -e or --elem <name>      - print out element xsl:elem name=\"name\"\n"
+"  -i or --if <test-xpath>  - check condition <xsl:if test=\"test-xpath\">\n"
+"  -e or --elem <name>      - print out element <xsl:element name=\"name\">\n"
+"  -a or --attr <name>      - add attribute <xsl:attribute name=\"name\">\n"
 "  -b or --break            - break nesting\n"
 "  -s or --sort op xpath    - sort in order (used after -m) where\n"
 "  op is X:Y:Z, \n"
@@ -215,6 +216,7 @@ selParseOptions(selOptionsPtr ops, int argc, char **argv)
 #define STK_MATCH 'm'
 #define STK_IF    'i'
 #define STK_ELEM  'e'
+#define STK_ATTR  'a'
 
 /**
  *  Prepare XSLT template based on command line options
@@ -328,6 +330,21 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
             m++;
             i++;
         }
+        else if(!strcmp(argv[i], "-a") || !strcmp(argv[i], "--attr"))
+        {
+            templateEmpty = 0;
+            if ((i+1) >= argc)
+            {
+                fprintf(stderr, "-a option requires argument\n");
+                stack_free(stack);
+                exit (1);
+            }
+            for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
+            c += sprintf(xsl_buf + c, "<xsl:attribute name=\"%s\">\n", argv[i+1]);
+            stack_push(stack, STK_ATTR);
+            m++;
+            i++;
+        }
         else if(!strcmp(argv[i], "-m") || !strcmp(argv[i], "--match"))
         {
             templateEmpty = 0;
@@ -413,6 +430,11 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
                     c += sprintf(xsl_buf + c, "</xsl:element>\n");
                     m--;
                 }
+                else if (itm == STK_ATTR)
+                {
+                    c += sprintf(xsl_buf + c, "</xsl:attribute>\n");
+                    m--;
+                }
                 /* printf("%c\n", itm); */
             }
         }
@@ -453,6 +475,7 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
         if (itm == STK_MATCH) c += sprintf(xsl_buf + c, "</xsl:for-each>\n");
         else if (itm == STK_IF) c += sprintf(xsl_buf + c, "</xsl:if>\n");
         else if (itm == STK_ELEM) c += sprintf(xsl_buf + c, "</xsl:element>\n");
+        else if (itm == STK_ATTR) c += sprintf(xsl_buf + c, "</xsl:attribute>\n");
 /*        printf("%c\n", itm);  */
     }
 /*
