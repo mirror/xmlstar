@@ -1,4 +1,4 @@
-/*  $Id: xml_edit.c,v 1.26 2003/05/28 19:19:23 mgrouch Exp $  */
+/*  $Id: xml_edit.c,v 1.27 2003/05/28 19:22:07 mgrouch Exp $  */
 
 /*
 
@@ -104,8 +104,7 @@ static const char edit_usage_str[] =
 "   -m or --move <xpath1> <xpath2>\n"
 "   -r or --rename <xpath1> -v <new-name>\n"
 "   -u or --update <xpath> -v (--value) <value>\n"
-                  "\t\t\t  -x (--expr) <xpath>\n\n"
-"Currently only --delete, --move, and --rename are implemented.\n\n";
+                  "\t\t\t  -x (--expr) <xpath> (-x is not implemented yet)\n\n";
 
 /*
    How to increment value of every attribute @weight?
