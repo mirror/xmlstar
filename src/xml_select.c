@@ -1,4 +1,4 @@
-/*  $Id: xml_select.c,v 1.3 2002/11/15 02:02:54 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.4 2002/11/15 02:32:35 mgrouch Exp $  */
 
 #include <string.h>
 #include <stdio.h>
@@ -26,10 +26,10 @@ void select_usage(int argc, char **argv)
 
     fprintf(o, "Syntax for templates: -t|--template <options>\n");
     fprintf(o, "where <options>\n");
-    fprintf(o, "      -p or --print <xpath>   - print value of XPATH expression\n");
-    fprintf(o, "      -s or --string <string> - print string\n");
-    fprintf(o, "      -n or --nl              - print new line\n");
-    fprintf(o, "      -m or --match <xpath>   - match XPATH expression\n");
+    fprintf(o, "  -p or --print <xpath>   - print value of XPATH expression\n");
+    fprintf(o, "  -s or --string <string> - print string\n");
+    fprintf(o, "  -n or --nl              - print new line\n");
+    fprintf(o, "  -m or --match <xpath>   - match XPATH expression\n");
     fprintf(o, "There can be multiple --match and --print options in a single template\n");
     fprintf(o, "Effect of applying command line templates can be illustrated with the following XSLT analogue\n\n");
 
@@ -74,6 +74,17 @@ void select_usage(int argc, char **argv)
     exit(1);
 }
 
+/*
+ *
+ *  Use this script for testing (for now)
+ 
+#! /bin/bash
+
+./xml sel ${@+"$@"} >./sel.xsl
+./xml tr sel.xsl in.xml
+
+ *
+ */
 
 
 
@@ -104,7 +115,7 @@ int xml_select(int argc, char **argv)
         i++;  
     }
     c += sprintf(xsl_buf + c, "</xsl:template>\n");
-
+   
     t = 0;
     i = 2;
     while(i < argc)
@@ -151,12 +162,12 @@ int xml_select(int argc, char **argv)
                 i++;
             }
 
-            if(!strcmp(argv[i], "-n") || !strcmp(argv[i], "--nl"))
+            if((i < argc) && (!strcmp(argv[i], "-n") || !strcmp(argv[i], "--nl")))
             {
                 for (j=0; j <= m; j++) c += sprintf(xsl_buf + c, "  ");
                 c += sprintf(xsl_buf + c, "<xsl:value-of select=\"'&#10;'\"/>\n");
             }
-                                        
+
             for (k=0; k<m; k++)
             {
                 for (j=k; j<m; j++) c += sprintf(xsl_buf + c, "  ");
