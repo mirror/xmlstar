@@ -1,4 +1,4 @@
-/*  $Id: xml_validate.c,v 1.15 2003/02/19 04:01:26 mgrouch Exp $  */
+/*  $Id: xml_validate.c,v 1.16 2003/02/19 04:05:59 mgrouch Exp $  */
 
 /*
 
@@ -73,6 +73,9 @@ static const char validate_usage_str[] =
 "   -n or --none            - do not list files (return result code only)\n"
 "   -w or --well-formed     - check only if XML is well-formed (default)\n\n";
 
+static const char schema_notice[] =
+"NOTE: XML Schemas are not fully supported yet due to its incomplete\n" 
+"      support in libxml (see http://xmlsoft.org)\n\n";
 /**
  *  display short help message
  */
@@ -82,6 +85,7 @@ valUsage(int argc, char **argv)
     extern const char more_info[];
     FILE* o = stderr;
     fprintf(o, validate_usage_str);
+    fprintf(o, schema_notice);
     fprintf(o, more_info);
     exit(1);
 }
