@@ -1,10 +1,10 @@
-/*  $Id: xml_select.c,v 1.63 2004/09/13 23:18:34 mgrouch Exp $  */
+/*  $Id: xml_select.c,v 1.64 2004/11/21 18:29:56 mgrouch Exp $  */
 
 /*
 
 XMLStarlet: Command Line Toolkit to query/edit/check/transform XML documents
 
-Copyright (c) 2002 Mikhail Grushinskiy.  All Rights Reserved.
+Copyright (c) 2002-2004 Mikhail Grushinskiy.  All Rights Reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -55,6 +55,7 @@ typedef struct _selOptions {
     int noblanks;             /* Remove insignificant spaces from XML tree */
     int no_omit_decl;         /* Print XML declaration line <?xml version="1.0"?> */
     int nonet;                /* refuse to fetch DTDs or entities over network */
+    const char *encoding;     /* the "encoding" attribute on the stylesheet's <xsl:output/> */
 } selOptions;
 
 typedef selOptions *selOptionsPtr;
@@ -72,36 +73,37 @@ static const char select_usage_str_1[] =
 
 static const char select_usage_str_2[] =
 "<global-options> are:\n"
-"  -C or --comp       - display generated XSLT\n"
-"  -R or --root       - print root element <xsl-select>\n"
-"  -T or --text       - output is text (default is XML)\n"
-"  -I or --indent     - indent output\n"
-"  -D or --xml-decl   - do not omit xml declaration line\n"
-"  -B or --noblanks   - remove insignificant spaces from XML tree\n"
-"  -N <name>=<value>  - predefine namespaces (name without \'xmlns:\')\n";
+"  -C or --comp              - display generated XSLT\n"
+"  -R or --root              - print root element <xsl-select>\n"
+"  -T or --text              - output is text (default is XML)\n"
+"  -I or --indent            - indent output\n"
+"  -D or --xml-decl          - do not omit xml declaration line\n"
+"  -B or --noblanks          - remove insignificant spaces from XML tree\n"
+"  -E or --encode <encoding> - output in the given encoding (utf-8, unicode...)\n";
 
 static const char select_usage_str_3[] =
-"                       ex: xsql=urn:oracle-xsql\n"
-"                       Multiple -N options are allowed.\n"
-"  --net              - allow fetch DTDs or entities over network\n"
-"  --help             - display help\n\n";
+"  -N <name>=<value>         - predefine namespaces (name without \'xmlns:\')\n"
+"                              ex: xsql=urn:oracle-xsql\n"
+"                              Multiple -N options are allowed.\n"
+"  --net                     - allow fetch DTDs or entities over network\n"
+"  --help                    - display help\n\n";
 
 static const char select_usage_str_4[] =
 "Syntax for templates: -t|--template <options>\n"
 "where <options>\n"
-"  -c or --copy-of <xpath>  - print copy of XPATH expression\n"
-"  -v or --value-of <xpath> - print value of XPATH expression\n"
-"  -o or --output <string>  - output string literal\n"
-"  -n or --nl               - print new line\n"
-"  -f or --inp-name         - print input file name (or URL)\n";
+"  -c or --copy-of <xpath>   - print copy of XPATH expression\n"
+"  -v or --value-of <xpath>  - print value of XPATH expression\n"
+"  -o or --output <string>   - output string literal\n"
+"  -n or --nl                - print new line\n"
+"  -f or --inp-name          - print input file name (or URL)\n";
 
 static const char select_usage_str_5[] =
-"  -m or --match <xpath>    - match XPATH expression\n"
-"  -i or --if <test-xpath>  - check condition <xsl:if test=\"test-xpath\">\n"
-"  -e or --elem <name>      - print out element <xsl:element name=\"name\">\n"
-"  -a or --attr <name>      - add attribute <xsl:attribute name=\"name\">\n"
-"  -b or --break            - break nesting\n"
-"  -s or --sort op xpath    - sort in order (used after -m) where\n";
+"  -m or --match <xpath>     - match XPATH expression\n"
+"  -i or --if <test-xpath>   - check condition <xsl:if test=\"test-xpath\">\n"
+"  -e or --elem <name>       - print out element <xsl:element name=\"name\">\n"
+"  -a or --attr <name>       - add attribute <xsl:attribute name=\"name\">\n"
+"  -b or --break             - break nesting\n"
+"  -s or --sort op xpath     - sort in order (used after -m) where\n";
 
 static const char select_usage_str_6[] =
 "  op is X:Y:Z, \n"
@@ -182,6 +184,7 @@ selInitOptions(selOptionsPtr ops)
     ops->noblanks = 0;
     ops->no_omit_decl = 0;
     ops->nonet = 1;
+    ops->encoding = NULL;
 }
 
 /**
@@ -285,6 +288,27 @@ selParseOptions(selOptionsPtr ops, int argc, char **argv)
         else if (!strcmp(argv[i], "-D") || !strcmp(argv[i], "--xml-decl"))
         {
             ops->no_omit_decl = 1;
+        }
+        else if (!strcmp(argv[i], "-E") || !strcmp(argv[i], "--encode"))
+        {
+            if ((i+1) < argc)
+            {
+                if (argv[i + 1][0] == '-')
+                {
+                    fprintf(stderr, "-E option requires argument <encoding> ex: (utf-8, unicode...)\n");
+                    exit(2);
+                }
+                else
+                {
+                    ops->encoding = argv[i + 1];
+                }
+            }
+            else
+            {
+                fprintf(stderr, "-E option requires argument <encoding> ex: (utf-8, unicode...)\n");
+                exit(2);
+            }
+        
         }
         else if (!strcmp(argv[i], "--net"))
         {
@@ -661,6 +685,7 @@ selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops, const char *ns_arr[],
     else c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:output omit-xml-declaration=\"yes\"");
     if (ops->indent) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, " indent=\"yes\"");
     else c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, " indent=\"no\"");
+    if (ops->encoding != NULL) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, " encoding=\"%s\"", ops->encoding);
     if (ops->outText) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, " method=\"text\"");
     c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "/>\n");
 
