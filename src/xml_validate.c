@@ -1,4 +1,4 @@
-/*  $Id: xml_validate.c,v 1.22 2003/05/07 00:33:57 mgrouch Exp $  */
+/*  $Id: xml_validate.c,v 1.23 2003/05/07 03:34:14 mgrouch Exp $  */
 
 /*
 
@@ -41,6 +41,10 @@ THE SOFTWARE.
 #include <libxml/xmlschemastypes.h>
 #endif
 
+#ifdef LIBXML_SCHEMAS_ENABLED
+#include <libxml/relaxng.h>
+#endif
+
 /*
  *   TODO: Use cases
  *   1. find malfomed XML documents in a given set of XML files 
@@ -51,6 +55,7 @@ THE SOFTWARE.
 typedef struct _valOptions {
     char *dtd;                /* External DTD URL or file name */
     char *schema;             /* External Schema URL or file name */
+    char *relaxng;            /* External Relax-NG Schema URL or file name */
     int   err;                /* Allow stderr messages */
     int   wellFormed;         /* Check if well formed only */
     int   listGood;           /* >0 list good, <0 list bad */
@@ -63,16 +68,19 @@ static const char validate_usage_str[] =
 "XMLStarlet Toolkit: Validate XML document(s)\n"
 "Usage: xml val <options> [ <xml-file-or-uri> ... ]\n"
 "where <options>\n"
-"   -d or --dtd <dtd-file>  - validate against DTD\n"
+"   -d or --dtd <dtd-file>     - validate against DTD\n"
 #ifdef LIBXML_SCHEMAS_ENABLED
-"   -s or --xsd <xsd-file>  - validate against schema\n"
+"   -s or --xsd <xsd-file>     - validate against schema\n"
 #endif
-/*"   -x or --xml-out         - print result as xml\n"*/
-"   -e or --err             - print verbose error messages on stderr\n"
-"   -b or --list-bad        - list only files which do not validate\n"
-"   -g or --list-good       - list only files which validate\n"
-"   -q or --queit           - do not list files (return result code only)\n"
-"   -w or --well-formed     - check only if XML is well-formed (default)\n\n";
+#ifdef LIBXML_SCHEMAS_ENABLED
+"   -r or --relaxng <rng-file> - validate against Relax-NG schema\n"
+#endif
+/*"   -x or --xml-out            - print result as xml\n"*/
+"   -e or --err                - print verbose error messages on stderr\n"
+"   -b or --list-bad           - list only files which do not validate\n"
+"   -g or --list-good          - list only files which validate\n"
+"   -q or --queit              - do not list files (return result code only)\n"
+"   -w or --well-formed        - check only if XML is well-formed (default)\n\n";
 
 #ifdef LIBXML_SCHEMAS_ENABLED
 static const char schema_notice[] =
@@ -105,8 +113,9 @@ valInitOptions(valOptionsPtr ops)
     ops->wellFormed = 1;
     ops->listGood = -1;
     ops->err = 0;
-    ops->dtd = 0;
-    ops->schema = 0;
+    ops->dtd = NULL;
+    ops->schema = NULL;
+    ops->relaxng = NULL;
     ops->show_val_res = 1;
 }
 
@@ -161,6 +170,13 @@ valParseOptions(valOptionsPtr ops, int argc, char **argv)
             i++;
             if (i >= argc) valUsage(argc, argv);
             ops->schema = argv[i];
+            i++;
+        }
+        if (!strcmp(argv[i], "--relaxng") || !strcmp(argv[i], "-r"))
+        {
+            i++;
+            if (i >= argc) valUsage(argc, argv);
+            ops->relaxng = argv[i];
             i++;
         }
         else if (!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h"))
@@ -418,6 +434,119 @@ valMain(int argc, char **argv)
         }
         if (schema != NULL) xmlSchemaFree(schema);
         xmlSchemaCleanupTypes();        
+    }
+#endif
+#ifdef LIBXML_SCHEMAS_ENABLED
+    else if (ops.relaxng)
+    {
+        xmlRelaxNGPtr relaxngschemas = NULL;
+        xmlRelaxNGParserCtxtPtr ctxt = NULL;
+        xmlRelaxNGValidCtxtPtr ctxt2 = NULL;
+        int i;
+        
+        /* forces loading the DTDs */
+        xmlLoadExtDtdDefaultValue |= 1;
+
+        /* TODO: Do not print debug stuff */
+        ctxt = xmlRelaxNGNewParserCtxt(ops.relaxng);
+        if (!ops.err)
+        {
+            xmlRelaxNGSetParserErrors(ctxt,
+                (xmlRelaxNGValidityErrorFunc) NULL,
+                (xmlRelaxNGValidityWarningFunc) NULL,
+                NULL);
+            xmlGenericError = foo;
+            xmlGenericErrorContext = NULL;
+            xmlInitParser();
+        }
+        else
+        {
+            xmlRelaxNGSetParserErrors(ctxt,
+                (xmlRelaxNGValidityErrorFunc) fprintf,
+                (xmlRelaxNGValidityWarningFunc) fprintf,
+                stderr);
+        }
+
+        relaxngschemas = xmlRelaxNGParse(ctxt);
+        if (relaxngschemas == NULL) {
+            xmlGenericError(xmlGenericErrorContext,
+            "Relax-NG schema %s failed to compile\n", ops.relaxng);
+            ops.relaxng = NULL;
+        }
+        xmlRelaxNGFreeParserCtxt(ctxt);     
+
+        if (relaxngschemas != NULL)
+        {
+            for (i=start; i<argc; i++)
+            {
+                xmlDocPtr doc;
+                int ret;
+
+                ret = 0;
+                doc = NULL;
+
+                ctxt2 = xmlRelaxNGNewValidCtxt(relaxngschemas);
+                if (!ops.err)
+                {
+                    xmlRelaxNGSetValidErrors(ctxt2,
+                        (xmlRelaxNGValidityErrorFunc) NULL,
+                        (xmlRelaxNGValidityWarningFunc) NULL,
+                        NULL);
+                    xmlGenericError = foo;
+                    xmlGenericErrorContext = NULL;
+                    xmlInitParser();
+                }
+                else
+                {
+                    xmlRelaxNGSetValidErrors(ctxt2,
+                        (xmlRelaxNGValidityErrorFunc) fprintf,
+                        (xmlRelaxNGValidityWarningFunc) fprintf,
+                        stderr);
+                }
+
+                if (!ops.err)
+                {
+                    xmlDefaultSAXHandlerInit();
+                    xmlDefaultSAXHandler.error = NULL;
+                    xmlDefaultSAXHandler.warning = NULL;
+                }
+
+                doc = xmlParseFile(argv[i]);
+                if (doc)
+                {
+                    ret = xmlRelaxNGValidateDoc(ctxt2, doc);
+                    xmlFreeDoc(doc);
+                }
+                else
+                {
+                    ret = 1; /* Malformed XML or could not open file */
+                }
+                if (ret) invalidFound = 1;
+
+                if (!ops.show_val_res)
+                {
+                    if ((ops.listGood > 0) && (ret == 0))
+                        fprintf(stdout, "%s\n", argv[i]);
+                    if ((ops.listGood < 0) && (ret != 0))
+                        fprintf(stdout, "%s\n", argv[i]);
+                }
+                else
+                {
+                    if (ret == 0)
+                        fprintf(stdout, "%s - valid\n", argv[i]);
+                    else
+                        fprintf(stdout, "%s - invalid\n", argv[i]);
+                }
+
+                if (ctxt2 != NULL) xmlRelaxNGFreeValidCtxt(ctxt2);
+            }
+        }
+        else
+        {
+            invalidFound = 2;
+        }
+        if (relaxngschemas != NULL) xmlRelaxNGFree(relaxngschemas);
+        xmlRelaxNGCleanupTypes();
     }
 #endif
     else if (ops.wellFormed)

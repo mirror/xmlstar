@@ -27,7 +27,7 @@ AC_ARG_WITH(libxml-include-prefix,
 
 AC_ARG_WITH(libxml-libs-prefix,
         [  --with-libxml-libs-prefix=[PFX]	Specify location of libxml libs],
-        LIBXML_LIBS="$withval/libxml2.a -lz -lm -lsocket  -lnsl"
+        LIBXML_LIBS="$withval/libxml2.a -lz -lm -lsocket  -lnsl -lpthread"
 )
 
 dnl
@@ -48,7 +48,7 @@ AC_ARG_WITH(libxslt-include-prefix,
 
 AC_ARG_WITH(libxslt-libs-prefix,
         [  --with-libxslt-libs-prefix=[PFX]	Specify location of libxslt libs],
-        LIBXSLT_LIBS="$withval/libxslt.a $withval/libexslt.a -lz -lm"
+        LIBXSLT_LIBS="$withval/libxslt.a $withval/libexslt.a -lz -lm -lpthread"
 )
 
 dnl
@@ -78,7 +78,7 @@ dnl Set LIBXML libraries location
 dnl
 if test "x$LIBXML_LIBS" = "x"
 then
-	LIBXML_LIBS="${LIBXML_PREFIX}/lib/libxml2.a -lz -lm"
+	LIBXML_LIBS="${LIBXML_PREFIX}/lib/libxml2.a -lz -lm -lpthread"
 fi
 
 dnl
@@ -94,7 +94,7 @@ dnl Set LIBXSLT libraries location
 dnl
 if test "x$LIBXSLT_LIBS" = "x"
 then
-	LIBXSLT_LIBS="${LIBXSLT_PREFIX}/lib/libxslt.a ${LIBXSLT_PREFIX}/lib/libexslt.a -lz -lm"
+	LIBXSLT_LIBS="${LIBXSLT_PREFIX}/lib/libxslt.a ${LIBXSLT_PREFIX}/lib/libexslt.a -lz -lm -lpthread"
 fi
 
 AC_SUBST(EXTRA_LIBS)
