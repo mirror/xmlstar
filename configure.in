@@ -41,7 +41,7 @@ AC_ARG_WITH(libxml-include-prefix,
 
 AC_ARG_WITH(libxml-libs-prefix,
         [  --with-libxml-libs-prefix=[PFX]	Specify location of libxml libs],
-        LIBXML_LIBS="$withval/libxml2.a -lz -lm -lpthread"
+        LIBXML_LIBS="$withval/libxml2.a -lz -lm -lpthread -ldl"
 )
 
 AC_ARG_WITH(libxml-src,
@@ -236,7 +236,7 @@ dnl Set LIBXML libraries location
 dnl
 if test "x$LIBXML_LIBS" = "x"
 then
-	LIBXML_LIBS="${LIBXML_PREFIX}/lib/libxml2.a -lz -lm -lpthread"
+	LIBXML_LIBS="${LIBXML_PREFIX}/lib/libxml2.a -lz -lm -lpthread -ldl"
 fi
 
 dnl
