@@ -211,8 +211,17 @@ XML documents (for more information see http://xmlstar.sourceforge.net/)
 7. Displaying structure of XML documents
 ====================================================
 
-xml val --help
-warning: failed to load external entity "--help"
+xml el --help
+XMLStarlet Toolkit: Display element structure of XML document
+Usage: xml el [<options>] <xml-file>
+where
+   <xml-file> - input XML document file name (stdin is used if missing)
+   <options>:
+   -a  - show attributes as well
+   -v  - show attributes and their values
+
+XMLStarlet is a command line toolkit to query/edit/check/transform
+XML documents (for more information see http://xmlstar.sourceforge.net/)
 
 
 

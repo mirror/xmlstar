@@ -1,4 +1,4 @@
-/*  $Id: xml_elem.c,v 1.6 2003/04/23 17:15:11 mgrouch Exp $  */
+/*  $Id: xml_elem.c,v 1.7 2003/04/23 17:51:36 mgrouch Exp $  */
 
 /*
 
@@ -181,7 +181,11 @@ elMain(int argc, char **argv)
         errorno = parse_xml_file("-");  
     else
     {
-        if (!strcmp(argv[2], "-a"))
+        if (!strcmp(argv[2], "--help"))
+        {
+            elUsage(argc, argv);
+        }
+        else if (!strcmp(argv[2], "-a"))
         {
             elOps.show_attr = 1;
             if (argc >= 4) inp_file = argv[3];

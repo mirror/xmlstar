@@ -67,7 +67,7 @@ echo ""
 echo "7. Displaying structure of XML documents"
 echo "===================================================="
 echo ""
-echo "xml val --help"
+echo "xml el --help"
 ../src/xml el --help 2>&1
 
 echo ""
