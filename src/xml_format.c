@@ -1,4 +1,4 @@
-/*  $Id: xml_format.c,v 1.5 2002/12/07 05:50:16 mgrouch Exp $  */
+/*  $Id: xml_format.c,v 1.6 2002/12/07 18:25:48 mgrouch Exp $  */
 
 /*
 
@@ -46,8 +46,9 @@ THE SOFTWARE.
 #include <libxml/uri.h>
 
 /*
-    TODO:
-         1. Attribute formatting options (as every attribute on a new line)
+ *   TODO:
+ *        1. Attribute formatting options (as every attribute on a new line)
+ *        2. exit values on errors
  */
 
 typedef struct _foOptions {
@@ -117,10 +118,10 @@ foInitLibXml(foOptionsPtr ops)
     xmlDoValidityCheckingDefaultValue = 0;
     xmlLoadExtDtdDefaultValue = 0;
 
+    xmlTreeIndentString = NULL;
     if (ops->indent)
     {
         xmlIndentTreeOutput = 1;
-        xmlTreeIndentString = NULL;
         if (ops->indent_spaces > 0)
         {
             int i;
@@ -226,7 +227,7 @@ void
 foCleanup()
 {
     xmlCleanupParser();
-    free((char*) xmlTreeIndentString);
+    if (xmlTreeIndentString) free((char *)xmlTreeIndentString);
 #if 0
     xmlMemoryDump();
 #endif

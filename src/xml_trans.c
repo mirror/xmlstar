@@ -1,4 +1,4 @@
-/*  $Id: xml_trans.c,v 1.22 2002/12/05 22:19:33 mgrouch Exp $  */
+/*  $Id: xml_trans.c,v 1.23 2002/12/07 18:25:48 mgrouch Exp $  */
 
 /*
 
@@ -39,8 +39,9 @@ THE SOFTWARE.
 /*
  *  TODO:
  *        1. proper command line arguments handling
- *        2. review and clean up all code
+ *        2. review and clean up all code (free memory)
  *        3. check embedded stylesheet support
+ *        4. exit values on errors
  */
 
 static const char trans_usage_str[] =
