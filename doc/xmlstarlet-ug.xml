@@ -1732,12 +1732,6 @@ xml sel -T -t -m /xml/table/rec -s D:N:- "@id" \
         url="http://www.pinkjuice.com/howto/vimxml/moresetup.xml#xmlstarlet">Using
         vi as XML editor</ulink></para>
       </listitem>
-
-      <listitem>
-        <para><ulink
-        url="http://kasparov.skife.org/blog-live/tech/xmlstarlet.writeback">XMLStarlet
-        Rocks!</ulink></para>
-      </listitem>
     </itemizedlist>
   </chapter>
 </book>
