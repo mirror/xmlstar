@@ -8,7 +8,6 @@ AM_MAINTAINER_MODE
 AC_CANONICAL_HOST
 AC_PROG_CC
 
-CFLAGS="-Wall -g -pedantic"
 EXTRA_LIBS=
 
 case "${host}" in
@@ -26,7 +25,6 @@ dnl The following parameters offer
 dnl the ability to specify the location of the libxml
 dnl library during linking and compilation.
 dnl
-LIBXML_PREFIX="/usr"
 AC_ARG_WITH(libxml-prefix,
         [  --with-libxml-prefix=[PFX]		Specify location of libxml],
         LIBXML_PREFIX=$withval
@@ -69,7 +67,6 @@ dnl The following parameters offer
 dnl the ability to specify the location of the libxslt
 dnl library during linking and compilation.
 dnl
-LIBXSLT_PREFIX="/usr"
 AC_ARG_WITH(libxslt-prefix,
         [  --with-libxslt-prefix=[PFX]		Specify location of libxslt],
 	LIBXSLT_PREFIX=$withval
