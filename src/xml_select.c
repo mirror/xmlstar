@@ -762,7 +762,7 @@ selMain(int argc, char **argv)
     xsltInitLibXml(&xsltOps);
 
     /* set parameters */
-    selParseNSArr(ns_arr, &nCount, argc-start, argv+2);
+    selParseNSArr(ns_arr, &nCount, start, argv+2);
 
     c = sizeof(xsl_buf);
     i = selPrepareXslt(xsl_buf, &c, &ops, ns_arr, start, argc, argv);
