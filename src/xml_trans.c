@@ -75,8 +75,9 @@ static const char trans_usage_str_3[] =
 #ifdef LIBXML_CATALOG_ENABLED
 "  --catalogs      - use SGML catalogs from $SGML_CATALOG_FILES\n"
 "                    otherwise XML catalogs starting from\n"
-"                    file:///etc/xml/catalog are activated by default\n\n";
+"                    file:///etc/xml/catalog are activated by default\n\n"
 #endif
+;
 
 /**
  *  Display usage syntax
