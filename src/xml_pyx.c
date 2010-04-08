@@ -70,7 +70,7 @@ SanitizeData(const char *s, int len)
 int
 CompareAttributes(const void *a1,const void *a2)
 {
-    return xmlStrcmp(a1,a2);
+    return xmlStrcmp(*(unsigned char* const *)a1, *(unsigned char* const *)a2);
 }
 
 void
