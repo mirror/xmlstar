@@ -226,6 +226,11 @@ valAgainstDtd(valOptionsPtr ops, char* dtdvalid, xmlDocPtr doc, char* filename)
     {
         xmlDtdPtr dtd;
 
+#if !defined(LIBXML_VALID_ENABLED)
+	xmlGenericError(xmlGenericErrorContext,
+	"libxml2 has no validation support");
+	return 2;
+#endif
         dtd = xmlParseDTD(NULL, (const xmlChar *)dtdvalid);
         if (dtd == NULL)
         {
