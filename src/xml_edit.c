@@ -330,9 +330,10 @@ edUpdate(xmlDocPtr doc, const char *loc, const char *val, XmlNodeType type)
             comp = xmlXPathCompile(BAD_CAST loc);
             if (comp != NULL)
             {
+#if defined(LIBXML_DEBUG_ENABLED)
                 if (tree)
                     xmlXPathDebugDumpCompExpr(stdout, comp, 0);
-
+#endif
                 res = xmlXPathCompiledEval(comp, ctxt);
                 xmlXPathFreeCompExpr(comp);
             }
@@ -413,9 +414,10 @@ edInsert(xmlDocPtr doc, const char *loc, const char *val, const char *name,
             comp = xmlXPathCompile(BAD_CAST loc);
             if (comp != NULL)
             {
+#if defined(LIBXML_DEBUG_ENABLED)
                 if (tree)
                     xmlXPathDebugDumpCompExpr(stdout, comp, 0);
-
+#endif
                 res = xmlXPathCompiledEval(comp, ctxt);
                 xmlXPathFreeCompExpr(comp);
             }
@@ -515,9 +517,10 @@ edRename(xmlDocPtr doc, char *loc, char *val, XmlNodeType type)
             comp = xmlXPathCompile(BAD_CAST loc);
             if (comp != NULL)
             {
+#if defined(LIBXML_DEBUG_ENABLED)
                 if (tree)
                     xmlXPathDebugDumpCompExpr(stdout, comp, 0);
-
+#endif
                 res = xmlXPathCompiledEval(comp, ctxt);
                 xmlXPathFreeCompExpr(comp);
             }
@@ -606,9 +609,10 @@ edDelete(xmlDocPtr doc, char *str)
             comp = xmlXPathCompile(BAD_CAST str);
             if (comp != NULL)
             {
+#if defined(LIBXML_DEBUG_ENABLED)
                 if (tree)
                     xmlXPathDebugDumpCompExpr(stdout, comp, 0);
-
+#endif
                 res = xmlXPathCompiledEval(comp, ctxt);
                 xmlXPathFreeCompExpr(comp);
             }
@@ -698,9 +702,10 @@ edMove(xmlDocPtr doc, char *from, char *to)
             comp = xmlXPathCompile(BAD_CAST from);
             if (comp != NULL)
             {
+#if defined(LIBXML_DEBUG_ENABLED)
                 if (tree)
                     xmlXPathDebugDumpCompExpr(stdout, comp, 0);
-
+#endif
                 res = xmlXPathCompiledEval(comp, ctxt);
                 xmlXPathFreeCompExpr(comp);
             }
@@ -745,9 +750,10 @@ edMove(xmlDocPtr doc, char *from, char *to)
             comp = xmlXPathCompile(BAD_CAST to);
             if (comp != NULL)
             {
+#if defined(LIBXML_DEBUG_ENABLED)
                 if (tree)
                     xmlXPathDebugDumpCompExpr(stdout, comp, 0);
-
+#endif
                 res_to = xmlXPathCompiledEval(comp, ctxt);
                 xmlXPathFreeCompExpr(comp);
             }
