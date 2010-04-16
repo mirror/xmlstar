@@ -12,7 +12,7 @@ m4datadir=$(datadir)/aclocal
 
 dist-hook: xmlstarlet.spec
 	-cp xmlstarlet.spec $(distdir)
-	(cd $(srcdir) ; tar -cf - --exclude CVS doc examples solaris tests) | (cd $(distdir); tar xf -)
+	(cd $(srcdir) ; $(AMTAR) -cf - --exclude CVS doc examples solaris tests) | (cd $(distdir); $(AMTAR) xf -)
 
 cleantar:
 	@(rm -f xmlstarlet*.tar.gz)
