@@ -43,8 +43,10 @@ test -f src/xml.c || {
 }
 
 if test -z "$*"; then
-	echo "I am going to run ./configure with no arguments - if you wish "
-        echo "to pass any to it, please specify them on the $0 command line."
+	if test x$NOCONFIGURE = x; then
+		echo "I am going to run ./configure with no arguments - if you wish "
+		echo "to pass any to it, please specify them on the $0 command line."
+	fi
 fi
 
 #libtoolize --copy --force
@@ -59,8 +61,8 @@ if test x$OBJ_DIR != x; then
     cd "$OBJ_DIR"
 fi
 
-$srcdir/configure "$@"
-
-echo 
-echo "Now type 'make' to compile xmlstarlet."
-
+if test x$NOCONFIGURE = x; then
+	"${srcdir}"/configure "$@" || exit 1
+	echo
+	echo "Now type 'make' to compile xmlstarlet."
+fi
