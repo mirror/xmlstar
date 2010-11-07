@@ -333,7 +333,6 @@ valMain(int argc, char **argv)
                 xmlDefaultSAXHandler.warning = NULL;
             }                       
 
-            options |= XML_PARSE_DTDVALID;
             doc = xmlReadFile(argv[i], NULL, options);
             if (doc)
             {
