@@ -1,0 +1,17 @@
+#!/bin/sh
+# check error messages on lines past 2^16
+
+SEDLINUM_PROG='s/^\([^:]\+:[0-9]\{4\}\)[0-9]:.*$/\1x/p'
+
+xmldoc()
+{
+    BAD="$1"
+    DOCTYPE="$2"
+
+    echo -n '<?xml version="1.0"?>'
+    [ -n "$DOCTYPE" ] && echo -n "$DOCTYPE"
+    echo '<root>'
+    yes '<a />' | head -69999
+    echo -n "$BAD"
+    echo '</root>'
+}
