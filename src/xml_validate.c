@@ -43,6 +43,8 @@ THE SOFTWARE.
 #include <libxml/relaxng.h>
 #endif
 
+#include <libxml/xmlreader.h>
+
 /*
  *   TODO: Use cases
  *   1. find malfomed XML documents in a given set of XML files 
@@ -62,6 +64,14 @@ typedef struct _valOptions {
 } valOptions;
 
 typedef valOptions *valOptionsPtr;
+
+typedef struct _errorInfo {
+    const char *filename; /* file error occured in, if any, else NULL */
+    xmlTextReaderPtr xmlReader;
+    int verbose;
+} ErrorInfo;
+
+typedef ErrorInfo *ErrorInfoPtr;
 
 /*
  * usage string chunk : 509 char max on ISO C90
@@ -290,11 +300,24 @@ valAgainstDtd(valOptionsPtr ops, char* dtdvalid, xmlDocPtr doc, char* filename)
 }
 
 /**
- *  Do nothing function
+ * Error reporting function
  */
-void
-foo(void *ctx, const char *msg, ...)
-{ 
+void reportError(void *filename, xmlErrorPtr error)
+{
+    ErrorInfoPtr errorInfo = (ErrorInfoPtr) filename;
+
+    if (errorInfo->verbose)
+    {
+        int line = (!errorInfo->filename)? 0 :
+            (errorInfo->xmlReader)?
+            xmlTextReaderGetParserLineNumber(errorInfo->xmlReader) :
+            error->line;
+        if (line)
+        {
+            fprintf(stderr, "%s:%d: ", errorInfo->filename, line);
+        }
+        fprintf(stderr, "%s", error->message);
+    }
 }
 
 /**
@@ -305,16 +328,21 @@ valMain(int argc, char **argv)
 {
     int start;
     static valOptions ops;
+    static ErrorInfo errorInfo;
     int invalidFound = 0;
-    
+
     if (argc <= 2) valUsage(argc, argv);
     valInitOptions(&ops);
     start = valParseOptions(&ops, argc, argv);
 
+    errorInfo.verbose = ops.err;
+    xmlSetStructuredErrorFunc(&errorInfo, reportError);
     xmlLineNumbersDefault(1);
 
     if (ops.dtd)
     {
+        /* xmlReader doesn't work with external dtd, have to use SAX
+         * interface */
         int i;
 
         for (i=start; i<argc; i++)
@@ -333,6 +361,7 @@ valMain(int argc, char **argv)
                 xmlDefaultSAXHandler.warning = NULL;
             }                       
 
+            errorInfo.filename = argv[i];
             doc = xmlReadFile(argv[i], NULL, options);
             if (doc)
             {
@@ -359,320 +388,142 @@ valMain(int argc, char **argv)
             }
         }
     }
-#ifdef LIBXML_SCHEMAS_ENABLED
-    else if (ops.schema)
+    else if (ops.schema || ops.relaxng || ops.embed || ops.wellFormed)
     {
+        int i;
+        xmlTextReaderPtr reader = NULL;
+
+#ifdef LIBXML_SCHEMAS_ENABLED
         xmlSchemaPtr schema = NULL;
-        xmlSchemaParserCtxtPtr ctxt = NULL;
-        xmlSchemaValidCtxtPtr ctxt2 = NULL;
-        int i;
+        xmlSchemaParserCtxtPtr schemaParserCtxt = NULL;
+        xmlSchemaValidCtxtPtr schemaCtxt = NULL;
+
+        xmlRelaxNGPtr relaxng = NULL;
+        xmlRelaxNGParserCtxtPtr relaxngParserCtxt = NULL;
+        /* there is no xmlTextReaderRelaxNGValidateCtxt() !?  */
 
         /* TODO: Do not print debug stuff */
-        ctxt = xmlSchemaNewParserCtxt(ops.schema);
-        if (!ops.err)
+        if (ops.schema)
         {
-            xmlSchemaSetParserErrors(ctxt,
-                (xmlSchemaValidityErrorFunc) NULL,
-                (xmlSchemaValidityWarningFunc) NULL,
-                NULL);
-            xmlGenericError = foo;
-            xmlGenericErrorContext = NULL;
-            xmlInitParser();
-        }
-        else
-        {
-            xmlSchemaSetParserErrors(ctxt,
-                (xmlSchemaValidityErrorFunc) fprintf,
-                (xmlSchemaValidityWarningFunc) fprintf,
-                stderr);
-        }
-               
-        schema = xmlSchemaParse(ctxt);
-        xmlSchemaFreeParserCtxt(ctxt);
-        if (schema != NULL)
-        {                  
-            for (i=start; i<argc; i++)
+            schemaParserCtxt = xmlSchemaNewParserCtxt(ops.schema);
+            if (!schemaParserCtxt)
             {
-                xmlDocPtr doc;
-                int ret;
-
-                ret = 0;
-                doc = NULL;
-
-                ctxt2 = xmlSchemaNewValidCtxt(schema);
-                if (!ops.err)
-                {
-                    xmlSchemaSetValidErrors(ctxt2,
-                        (xmlSchemaValidityErrorFunc) NULL,
-                        (xmlSchemaValidityWarningFunc) NULL,
-                        NULL);
-                    xmlGenericError = foo;
-                    xmlGenericErrorContext = NULL;
-                    xmlInitParser();
-                }
-                else
-                {
-                    xmlSchemaSetValidErrors(ctxt2,
-                        (xmlSchemaValidityErrorFunc) fprintf,
-                        (xmlSchemaValidityWarningFunc) fprintf,
-                        stderr);
-                }
-
-                if (!ops.err)
-                {
-                    xmlDefaultSAXHandlerInit();
-                    xmlDefaultSAXHandler.error = NULL;
-                    xmlDefaultSAXHandler.warning = NULL;
-                }
-
-                /* doc = xmlParseFile(argv[i]); */
-                doc = xmlReadFile(argv[i], NULL, 0);
-                if (doc)
-                {
-                    ret = xmlSchemaValidateDoc(ctxt2, doc);
-                    xmlFreeDoc(doc);
-                }
-                else
-                {
-                    ret = 1; /* Malformed XML or could not open file */
-                }
-                if (ret) invalidFound = 1;
-
-                if (!ops.show_val_res)
-                {
-                    if ((ops.listGood > 0) && (ret == 0))
-                        fprintf(stdout, "%s\n", argv[i]);
-                    if ((ops.listGood < 0) && (ret != 0))
-                        fprintf(stdout, "%s\n", argv[i]);
-                }
-                else
-                {
-                    if (ret == 0)
-                        fprintf(stdout, "%s - valid\n", argv[i]);
-                    else
-                        fprintf(stdout, "%s - invalid\n", argv[i]);
-                }
-                
-                if (ctxt2 != NULL) xmlSchemaFreeValidCtxt(ctxt2);
+                invalidFound = 2;
+                goto schemaCleanup;
             }
+            errorInfo.filename = ops.schema;
+            schema = xmlSchemaParse(schemaParserCtxt);
+            if (!schema)
+            {
+                invalidFound = 2;
+                goto schemaCleanup;
+            }
+
+            xmlSchemaFreeParserCtxt(schemaParserCtxt);
+            schemaCtxt = xmlSchemaNewValidCtxt(schema);
+            if (!schemaCtxt)
+            {
+                invalidFound = 2;
+                goto schemaCleanup;
+            }
+
         }
-        else
+        else if (ops.relaxng)
         {
-            invalidFound = 2;
+            relaxngParserCtxt = xmlRelaxNGNewParserCtxt(ops.relaxng);
+            if (!relaxngParserCtxt)
+            {
+                invalidFound = 2;
+                goto schemaCleanup;
+            }
+
+            errorInfo.filename = ops.relaxng;
+            relaxng = xmlRelaxNGParse(relaxngParserCtxt);
+            if (!relaxng)
+            {
+                invalidFound = 2;
+                goto schemaCleanup;
+            }
+
         }
-        if (schema != NULL) xmlSchemaFree(schema);
-        xmlSchemaCleanupTypes();        
-    }
-#endif
+#endif  /* LIBXML_SCHEMAS_ENABLED */
+
+        for (i=start; i<argc; i++)
+        {
+            int ret = 0;
+            int options = ops.embed? XML_PARSE_DTDVALID : 0;
+
+            if (!reader)
+            {
+                reader = xmlReaderForFile(argv[i], NULL, options);
+            }
+            else
+            {
+                ret = xmlReaderNewFile(reader, argv[i], NULL, options);
+            }
+
+            errorInfo.xmlReader = reader;
+            errorInfo.filename = argv[i];
+
+            if (reader && ret == 0)
+            {
 #ifdef LIBXML_SCHEMAS_ENABLED
-    else if (ops.relaxng)
-    {
-        xmlRelaxNGPtr relaxngschemas = NULL;
-        xmlRelaxNGParserCtxtPtr ctxt = NULL;
-        xmlRelaxNGValidCtxtPtr ctxt2 = NULL;
-        int i;
-        
-        /* forces loading the DTDs */
-        xmlLoadExtDtdDefaultValue |= 1;
+                if (schemaCtxt)
+                {
+                    ret = xmlTextReaderSchemaValidateCtxt(reader,
+                        schemaCtxt, 0);
+                }
+                else if (relaxng)
+                {
+                    ret = xmlTextReaderRelaxNGSetSchema(reader,
+                        relaxng);
+                }
+#endif  /* LIBXML_SCHEMAS_ENABLED */
 
-        /* TODO: Do not print debug stuff */
-        ctxt = xmlRelaxNGNewParserCtxt(ops.relaxng);
-        if (!ops.err)
-        {
-            xmlRelaxNGSetParserErrors(ctxt,
-                (xmlRelaxNGValidityErrorFunc) NULL,
-                (xmlRelaxNGValidityWarningFunc) NULL,
-                NULL);
-            xmlGenericError = foo;
-            xmlGenericErrorContext = NULL;
-            xmlInitParser();
-        }
-        else
-        {
-            xmlRelaxNGSetParserErrors(ctxt,
-                (xmlRelaxNGValidityErrorFunc) fprintf,
-                (xmlRelaxNGValidityWarningFunc) fprintf,
-                stderr);
-        }
-
-        relaxngschemas = xmlRelaxNGParse(ctxt);
-        if (relaxngschemas == NULL) {
-            xmlGenericError(xmlGenericErrorContext,
-            "Relax-NG schema %s failed to compile\n", ops.relaxng);
-            ops.relaxng = NULL;
-        }
-        xmlRelaxNGFreeParserCtxt(ctxt);     
-
-        if (relaxngschemas != NULL)
-        {
-            for (i=start; i<argc; i++)
+                if (ret == 0)
+                {
+                    do
+                    {
+                        ret = xmlTextReaderRead(reader);
+                    } while (ret == 1);
+                    if (ret != -1 && (schema || relaxng || ops.embed))
+                        ret = !xmlTextReaderIsValid(reader);
+                }
+            }
+            else
             {
-                xmlDocPtr doc;
-                int ret;
+                ret = 1; /* could not open file */
+            }
+            if (ret) invalidFound = 1;
 
-                ret = 0;
-                doc = NULL;
-
-                ctxt2 = xmlRelaxNGNewValidCtxt(relaxngschemas);
-                if (!ops.err)
-                {
-                    xmlRelaxNGSetValidErrors(ctxt2,
-                        (xmlRelaxNGValidityErrorFunc) NULL,
-                        (xmlRelaxNGValidityWarningFunc) NULL,
-                        NULL);
-                    xmlGenericError = foo;
-                    xmlGenericErrorContext = NULL;
-                    xmlInitParser();
-                }
+            if (!ops.show_val_res)
+            {
+                if ((ops.listGood > 0) && (ret == 0))
+                    fprintf(stdout, "%s\n", argv[i]);
+                if ((ops.listGood < 0) && (ret != 0))
+                    fprintf(stdout, "%s\n", argv[i]);
+            }
+            else
+            {
+                if (ret == 0)
+                    fprintf(stdout, "%s - valid\n", argv[i]);
                 else
-                {
-                    xmlRelaxNGSetValidErrors(ctxt2,
-                        (xmlRelaxNGValidityErrorFunc) fprintf,
-                        (xmlRelaxNGValidityWarningFunc) fprintf,
-                        stderr);
-                }
-
-                if (!ops.err)
-                {
-                    xmlDefaultSAXHandlerInit();
-                    xmlDefaultSAXHandler.error = NULL;
-                    xmlDefaultSAXHandler.warning = NULL;
-                }
-
-                doc = xmlParseFile(argv[i]);
-                if (doc)
-                {
-                    ret = xmlRelaxNGValidateDoc(ctxt2, doc);
-                    xmlFreeDoc(doc);
-                }
-                else
-                {
-                    ret = 1; /* Malformed XML or could not open file */
-                }
-                if (ret) invalidFound = 1;
-
-                if (!ops.show_val_res)
-                {
-                    if ((ops.listGood > 0) && (ret == 0))
-                        fprintf(stdout, "%s\n", argv[i]);
-                    if ((ops.listGood < 0) && (ret != 0))
-                        fprintf(stdout, "%s\n", argv[i]);
-                }
-                else
-                {
-                    if (ret == 0)
-                        fprintf(stdout, "%s - valid\n", argv[i]);
-                    else
-                        fprintf(stdout, "%s - invalid\n", argv[i]);
-                }
-
-                if (ctxt2 != NULL) xmlRelaxNGFreeValidCtxt(ctxt2);
+                    fprintf(stdout, "%s - invalid\n", argv[i]);
             }
         }
-        else
-        {
-            invalidFound = 2;
-        }
-        if (relaxngschemas != NULL) xmlRelaxNGFree(relaxngschemas);
+        errorInfo.xmlReader = NULL;
+        xmlFreeTextReader(reader);
+
+#ifdef LIBXML_SCHEMAS_ENABLED
+    schemaCleanup:
+        xmlSchemaFreeValidCtxt(schemaCtxt);
+        xmlRelaxNGFree(relaxng);
+        xmlSchemaFree(schema);
         xmlRelaxNGCleanupTypes();
+        xmlSchemaCleanupTypes();
+#endif  /* LIBXML_SCHEMAS_ENABLED */
     }
-#endif
-    else if (ops.embed)
-    {
-        int i;
-        for (i=start; i<argc; i++)
-        {
-            xmlDocPtr doc;
-            int options = 0;
-            int ret;
 
-            ret = 0;
-            doc = NULL;
-
-            if (!ops.err)
-            {
-                xmlDefaultSAXHandlerInit();
-                xmlDefaultSAXHandler.error = NULL;
-                xmlDefaultSAXHandler.warning = NULL;
-            }
-
-            options |= XML_PARSE_DTDVALID;
-            doc = xmlReadFile(argv[i], NULL, options);
-            if (doc != NULL)
-            {
-                if ((ops.listGood > 0) && !ops.show_val_res)
-                {
-                    fprintf(stdout, "%s\n", argv[i]);
-                }
-                xmlFreeDoc(doc);
-            }
-            else
-            {
-                ret = 1; /* Malformed XML or could not open file */
-                if ((ops.listGood < 0) && !ops.show_val_res)
-                {
-                    fprintf(stdout, "%s\n", argv[i]);
-                }
-            }
-            if (ret) invalidFound = 1;
-
-            if (ops.show_val_res)
-            {
-                if (ret == 0)
-                    fprintf(stdout, "%s - valid\n", argv[i]);
-                else
-                    fprintf(stdout, "%s - invalid\n", argv[i]);
-            }
-        }
-    }
-    else if (ops.wellFormed)
-    {
-        int i;
-        for (i=start; i<argc; i++)
-        {
-            xmlDocPtr doc;
-            int ret;
-
-            ret = 0;
-            doc = NULL;
-
-            if (!ops.err)
-            {
-                xmlDefaultSAXHandlerInit();
-                xmlDefaultSAXHandler.error = NULL;
-                xmlDefaultSAXHandler.warning = NULL;
-            }
-
-            doc = xmlParseFile(argv[i]);
-            if (doc != NULL)
-            {
-                if ((ops.listGood > 0) && !ops.show_val_res)
-                {
-                    fprintf(stdout, "%s\n", argv[i]);
-                }
-                xmlFreeDoc(doc);
-            }
-            else
-            {
-                ret = 1; /* Malformed XML or could not open file */
-                if ((ops.listGood < 0) && !ops.show_val_res)
-                {
-                    fprintf(stdout, "%s\n", argv[i]);
-                }
-            }
-            if (ret) invalidFound = 1;
-
-            if (ops.show_val_res)
-            {
-                if (ret == 0)
-                    fprintf(stdout, "%s - valid\n", argv[i]);
-                else
-                    fprintf(stdout, "%s - invalid\n", argv[i]);
-            }
-        }
-    }
-    
     xmlCleanupParser();
     return invalidFound;
 }
-
