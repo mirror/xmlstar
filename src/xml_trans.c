@@ -228,7 +228,7 @@ trParseParams(const char** params, int* plen,
                 if (argv[i][j] != '=') trUsage(0, NULL);
 
                 name = xmlStrndup((const xmlChar *)argv[i], j);
-                string = xmlStrdup((const xmlChar *)argv[i]+j+1);
+                string = (const xmlChar *)(argv[i]+j+1);
 
                 len = xmlStrlen(string);
                 if (xmlStrchr(string, '"'))
@@ -249,7 +249,6 @@ trParseParams(const char** params, int* plen,
                     value = xmlStrcat(value, string);
                     value = xmlStrcat(value, (const xmlChar *)"\"");
                 }
-                xmlFree(string);
 
                 if (*plen >= MAX_PARAMETERS)
                 {
