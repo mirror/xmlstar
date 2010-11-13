@@ -396,7 +396,8 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
                 exit (1);
             }
             for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
-            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:value-of select=\"'%s'\"/>\n", argv[i+1]);
+            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1,
+                "<xsl:text><![CDATA[%s]]></xsl:text>\n", argv[i+1]);
             i++;
         }
         else if(!strcmp(argv[i], "-f") || !strcmp(argv[i], "--inp-name"))
