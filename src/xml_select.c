@@ -325,6 +325,55 @@ selParseOptions(selOptionsPtr ops, int argc, char **argv)
     return i;
 }
 
+/**
+ * escXsltLiteral:
+ *
+ *  Put the XSLT expression that will produce @literal into @output.
+ *  Assumes the existence of $apos.
+ *
+ *  The expression may still need further escaping for XML.
+ *
+ *  eg:
+ *    abc --> 'abc'
+ *    a"c --> 'a"c'
+ *    a'c --> concat('a',$apos,'c')
+ *
+ *  Returns length of literal expression (not including trailing '\0',
+ *  or -1 on error.
+ */
+static int
+escXsltLiteral(char *output, int len, const char *literal)
+{
+    const char *apos = strchr(literal, '\'');
+    char *out = output;
+    int c;
+
+    if (apos) {
+        int noapos_len = apos - literal;
+        c = snprintf(out, len, "concat('%.*s',$apos",
+            noapos_len, literal);
+        if (c > len) return -1; /* truncated output */
+        literal += noapos_len+1; out += c; len -= c;
+
+        for (;;) {
+            apos = strchr(literal, '\'');
+            if (!apos) break;
+            noapos_len = apos - literal;
+            c = snprintf(out, len, ",'%.*s',$apos",
+                noapos_len, literal);
+            if (c > len) return -1; /* truncated output */
+            literal += noapos_len+1; out += c; len -= c;
+        }
+        c = snprintf(out, len, ",'%s')", literal);
+        out += c;
+    } else {
+        c = snprintf(out, len, "'%s'", literal);
+        out += c;
+    }
+    if (c > len) return -1; /* truncated output */
+    return out - output;
+}
+
 #define STK_MATCH 'm'
 #define STK_IF    'i'
 #define STK_ELEM  'e'
@@ -338,7 +387,7 @@ int
 selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
                int* lastTempl, int start, int argc, char **argv)
 {
-    int c, i, j, /*k,*/ m, t;
+    int c, i, j, /*k,*/ m, t, ret;
     int templateEmpty = 1;
     int nextTempl = 0;
 
@@ -388,6 +437,8 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
         }
         else if(!strcmp(argv[i], "-o") || !strcmp(argv[i], "--output"))
         {
+            xmlChar *escXML;
+
             templateEmpty = 0;
             if ((i+1) >= argc)
             {
@@ -396,7 +447,17 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
                 exit (1);
             }
             for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
-            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:value-of select=\"'%s'\"/>\n", argv[i+1]);
+            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1,
+                "<xsl:value-of select=\"");
+            ret = escXsltLiteral(xsl_buf + c, MAX_XSL_BUF - c - 1, argv[i+1]);
+            if (ret < 0) {
+                fprintf(stderr, "out of buffer! increase MAX_XSL_BUF\n");
+                exit(2);
+            }
+            escXML = xmlEncodeSpecialChars(NULL, (xmlChar*)(xsl_buf + c));
+            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "%s", escXML);
+            xmlFree(escXML);
+            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\"/>\n");
             i++;
         }
         else if(!strcmp(argv[i], "-f") || !strcmp(argv[i], "--inp-name"))
@@ -681,6 +742,10 @@ selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops, const char *ns_arr[],
 
 
     c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, ">\n");
+
+    /* see escXsltLiteral */
+    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1,
+        "<xsl:variable name=\"apos\" select='\"&apos;\"' />\n");
 
     if (ops->no_omit_decl) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:output omit-xml-declaration=\"no\"");
     else c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:output omit-xml-declaration=\"yes\"");

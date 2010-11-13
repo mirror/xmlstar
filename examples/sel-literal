@@ -1,0 +1,4 @@
+#!/bin/sh
+
+xargs -d '\n' -I LIT ./xmlstarlet sel --text -t -m /doc -o LIT --nl \
+    xml/foo.xml < results/sel-literal.out
