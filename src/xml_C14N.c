@@ -103,7 +103,7 @@ run_c14n(const char* xml_filename, int with_comments, int exclusive,
     xmlSetExternalEntityLoader(xmlNoNetExternalEntityLoader);
     xmlLoadExtDtdDefaultValue = 0;
        
-    doc = xmlParseFile(xml_filename);
+    doc = xmlReadFile(xml_filename, NULL, XML_PARSE_DTDATTR);
     if (doc == NULL) {
         fprintf(stderr, "Error: unable to parse file \"%s\"\n", xml_filename);
         return(-1);
