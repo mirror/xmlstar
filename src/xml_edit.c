@@ -361,7 +361,12 @@ edUpdate(xmlDocPtr doc, const char *loc, const char *val, XmlNodeType type)
                     /*
                      *  update node
                      */
-                    xmlNodeSetContent(cur->nodeTab[i], BAD_CAST val);
+
+                    /* TODO: do we need xmlEncodeEntitiesReentrant() too/instead? */
+                    xmlChar *content = xmlEncodeSpecialChars(NULL, val);
+
+                    xmlNodeSetContent(cur->nodeTab[i], content);
+                    xmlFree(content);
                 }
             }
             break;
