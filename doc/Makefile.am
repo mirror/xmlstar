@@ -2,7 +2,7 @@
 
 man_MANS = xmlstarlet.1
 
-EXTRA_DIST=xmlstarlet.txt *.1
+EXTRA_DIST=xmlstarlet.txt
 
 all: $(man_MANS)
 

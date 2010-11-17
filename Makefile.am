@@ -1,14 +1,11 @@
 #
-SUBDIRS = \
- 	src doc
-
+SUBDIRS = src doc
 DIST_SUBDIRS = src doc
 
 EXTRA_DIST = \
 	README TODO Copyright COPYING
 
-confexecdir=$(libdir)
-m4datadir=$(datadir)/aclocal
+ACLOCAL_AMFLAGS = -I m4
 
 dist-hook: xmlstarlet.spec
 	-cp xmlstarlet.spec $(distdir)
@@ -25,4 +22,4 @@ dummy:
 check-local: tests
 
 tests: dummy 
-	@(cd tests; ./runTests)
+	@(cd $(top_srcdir)/tests; ./runTests)
