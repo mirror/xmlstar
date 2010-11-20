@@ -44,6 +44,7 @@ THE SOFTWARE.
 
 #define MAX_XSL_BUF    256*1024
 #define MAX_NS_ARGS    256
+#define MAX_IMPORTS    256
 
 char xsl_buf[MAX_XSL_BUF];
 
@@ -240,12 +241,57 @@ selParseNSArr(const char** ns_arr, int* plen,
 }
 
 /**
+ *  Parse command line for additional imports
+ */
+int
+selParseImportArr(const char** import_arr, int* plen,
+                  int count, char **argv)
+{
+    int i = 0;
+    *plen = 0;
+    import_arr[0] = 0;
+
+    for (i=0; i<count; i++)
+    {
+        if (argv[i] == 0) break;
+        if (argv[i][0] != '-')
+        {
+            continue;
+        }
+
+        if (!strcmp(argv[i], "--import"))
+        {
+            xmlChar *href;
+
+            i++;
+            if (i >= count) selUsage(0, NULL);
+
+            href = xmlStrdup((const xmlChar *) argv[i]);
+
+            if (*plen >= MAX_IMPORTS)
+            {
+                fprintf(stderr, "too many imports increase MAX_IMPORTS\n");
+                exit(2);
+            }
+
+            import_arr[*plen] = (char *)href;
+            (*plen)++;
+            import_arr[*plen] = 0;
+        }
+    }
+
+    return i;
+}
+
+
+
+/**
  *  Cleanup memory allocated by namespaces arguments
  */
 void
-selCleanupNSArr(const char **ns_arr)
+selCleanupXmlArr(const char **xml_arr)
 {
-    const char **p = ns_arr;
+    const char **p = xml_arr;
 
     while (*p)
     {
@@ -263,7 +309,11 @@ selParseOptions(selOptionsPtr ops, int argc, char **argv)
     int i;
 
     i = 2;
-    while((i < argc) && (strcmp(argv[i], "-t")) && strcmp(argv[i], "--template"))
+    while(
+           (i < argc)
+        && (strcmp(argv[i], "-fn") && strcmp(argv[i], "--function"))
+        && (strcmp(argv[i], "-t")  && strcmp(argv[i], "--template"))
+    )
     {
         if (!strcmp(argv[i], "-C"))
         {
@@ -329,6 +379,14 @@ selParseOptions(selOptionsPtr ops, int argc, char **argv)
 #define STK_IF    'i'
 #define STK_ELEM  'e'
 #define STK_ATTR  'a'
+#define STK_CHOOSE    'c'
+#define STK_WHEN      'w'
+#define STK_OTHERWISE 'o'
+#define STK_VARIABLE  'v'
+#define STK_TEMPLATE      't'
+#define STK_CALL_TEMPLATE 'T'
+#define STK_PARAM         'p'
+#define STK_WITH_PARAM    'P'
 
 /**
  *  Prepare XSLT template based on command line options
@@ -339,6 +397,7 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
                int* lastTempl, int start, int argc, char **argv)
 {
     int c, i, j, /*k,*/ m, t;
+    int isFunction = 0;
     int templateEmpty = 1;
     int nextTempl = 0;
 
@@ -351,19 +410,44 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
 
     *lastTempl = 0;
 
-    if (strcmp(argv[i], "-t") && strcmp(argv[i], "--template"))
+    isFunction = (!strcmp(argv[i], "-fn") || !strcmp(argv[i], "--function"));
+
+    if (
+          !isFunction
+       && (strcmp(argv[i], "-t")  && strcmp(argv[i], "--template"))
+    )
     {
         fprintf(stderr, "not at the beginning of template\n");
         abort();
     }
 
     templateEmpty = 1;
-    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:template name=\"t%d\">\n", t);
+    if (!isFunction)
+    {
+        c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:template name=\"t%d\">\n", t);
+    }
 
     stack = stack_create(max_depth);
 
-    i++;
     m = 0;
+
+    if (isFunction)
+    {
+        templateEmpty = 0;
+        if ((i+1) >= argc)
+        {
+            fprintf(stderr, "-fn option requires argument\n");
+            stack_free(stack);
+            exit (1);
+        }
+        for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
+        c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:template name=\"%s\">\n", argv[i+1]);
+        stack_push(stack, STK_TEMPLATE);
+        m++;
+        i++;
+    }
+
+    i++;
     while(i < argc)
     {
         if(!strcmp(argv[i], "-c") || !strcmp(argv[i], "--copy-of"))
@@ -400,6 +484,37 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
                 "<xsl:text><![CDATA[%s]]></xsl:text>\n", argv[i+1]);
             i++;
         }
+        else if(!strcmp(argv[i], "--var"))
+        {
+            xmlChar *name, *value;
+
+            templateEmpty = 0;
+            if ((i+1) >= argc)
+            {
+                fprintf(stderr, "--var option requires argument\n");
+                stack_free(stack);
+                exit (1);
+            }
+
+            i++;
+
+            for(j=0; argv[i][j] && (argv[i][j] != '='); j++);
+            if (argv[i][j] == '=')
+            {
+                name = xmlStrndup((const xmlChar *) argv[i], j);
+                value = xmlStrdup((const xmlChar *) argv[i]+j+1);
+
+                for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
+                c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:variable name=\"%s\" select=\"%s\"/>\n", name, value);
+            }
+            else
+            {
+                for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
+                c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:variable name=\"%s\">\n", argv[i]);
+                stack_push(stack, STK_VARIABLE);
+                m++;
+            }
+        }
         else if(!strcmp(argv[i], "-f") || !strcmp(argv[i], "--inp-name"))
         {
             templateEmpty = 0;
@@ -426,6 +541,128 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
             stack_push(stack, STK_IF);
             m++;
             i++;
+        }
+        else if(!strcmp(argv[i], "-ch") || !strcmp(argv[i], "--choose"))
+        {
+            templateEmpty = 0;
+            for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
+            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:choose>\n");
+            stack_push(stack, STK_CHOOSE);
+            m++;
+        }
+        else if(!strcmp(argv[i], "-w") || !strcmp(argv[i], "--when"))
+        {
+            templateEmpty = 0;
+            if ((i+1) >= argc)
+            {
+                fprintf(stderr, "-w option requires argument\n");
+                stack_free(stack);
+                exit (1);
+            }
+            for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
+            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:when test=\"%s\">\n", argv[i+1]);
+            stack_push(stack, STK_WHEN);
+            m++;
+            i++;
+        }
+        else if(!strcmp(argv[i], "-ot") || !strcmp(argv[i], "--otherwise"))
+        {
+            templateEmpty = 0;
+            for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
+            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:otherwise>\n");
+            stack_push(stack, STK_OTHERWISE);
+            m++;
+        }
+        else if(!strcmp(argv[i], "-at") || !strcmp(argv[i], "--apply-templates"))
+        {
+            templateEmpty = 0;
+            for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
+            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:apply-templates select=\"@*|node()\"/>\n");
+            i++;
+        }
+        else if(!strcmp(argv[i], "-ct") || !strcmp(argv[i], "--call-template"))
+        {
+            templateEmpty = 0;
+            if ((i+1) >= argc)
+            {
+                fprintf(stderr, "-ct option requires argument\n");
+                stack_free(stack);
+                exit (1);
+            }
+            for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
+            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:call-template name=\"%s\">\n", argv[i+1]);
+            stack_push(stack, STK_CALL_TEMPLATE);
+            m++;
+            i++;
+        }
+        else if(!strcmp(argv[i], "-p") || !strcmp(argv[i], "--param"))
+        {
+            xmlChar *name, *value;
+
+            templateEmpty = 0;
+            if ((i+1) >= argc)
+            {
+                fprintf(stderr, "--param option requires argument\n");
+                stack_free(stack);
+                exit (1);
+            }
+
+            i++;
+
+            for(j=0; argv[i][j] && (argv[i][j] != '='); j++);
+            if (argv[i][j] == '=')
+            {
+                name = xmlStrndup((const xmlChar *) argv[i], j);
+                value = xmlStrdup((const xmlChar *) argv[i]+j+1);
+
+                for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
+                if (xmlStrlen(value) == 0)
+                {
+                    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:param name=\"%s\"/>\n", name);
+                }
+                else
+                {
+                    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:param name=\"%s\" select=\"%s\"/>\n", name, value);
+                }
+            }
+            else
+            {
+                for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
+                c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:param name=\"%s\">\n", argv[i]);
+                stack_push(stack, STK_PARAM);
+                m++;
+            }
+        }
+        else if(!strcmp(argv[i], "-wp") || !strcmp(argv[i], "--with-param"))
+        {
+            xmlChar *name, *value;
+
+            templateEmpty = 0;
+            if ((i+1) >= argc)
+            {
+                fprintf(stderr, "--with-param option requires argument\n");
+                stack_free(stack);
+                exit (1);
+            }
+
+            i++;
+
+            for(j=0; argv[i][j] && (argv[i][j] != '='); j++);
+            if (argv[i][j] == '=')
+            {
+                name = xmlStrndup((const xmlChar *) argv[i], j);
+                value = xmlStrdup((const xmlChar *) argv[i]+j+1);
+
+                for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
+                c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:with-param name=\"%s\" select=\"%s\"/>\n", name, value);
+            }
+            else
+            {
+                for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
+                c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:with-param name=\"%s\">\n", argv[i]);
+                stack_push(stack, STK_WITH_PARAM);
+                m++;
+            }
         }
         else if(!strcmp(argv[i], "-e") || !strcmp(argv[i], "--elem"))
         {
@@ -467,11 +704,13 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
                 exit (1);
             }
             for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
+
             c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:for-each select=\"%s\">\n", argv[i+1]);
             stack_push(stack, STK_MATCH);
+
             m++;
             i++;
-            if ((i+1 < argc) && (!strcmp(argv[i+1], "-s") || !strcmp(argv[i+1], "--sort")))
+            while ((i+1 < argc) && (!strcmp(argv[i+1], "-s") || !strcmp(argv[i+1], "--sort")))
             {
                 char Order, Type, Case, *Select;
                 i++;
@@ -513,7 +752,10 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
                 c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "/>\n");
             }
         }
-        else if(!strcmp(argv[i], "-t") || !strcmp(argv[i], "--template"))
+        else if(
+               !strcmp(argv[i], "-fn") || !strcmp(argv[i], "--function")
+            || !strcmp(argv[i], "-t")  || !strcmp(argv[i], "--template")
+        )
         {
             nextTempl = 1;
             i--;
@@ -537,6 +779,41 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
                     c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:if>\n");
                     m--;
                 }
+                else if (itm == STK_CHOOSE)
+                {
+                    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:choose>\n");
+                    m--;
+                }
+                else if (itm == STK_WHEN)
+                {
+                    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:when>\n");
+                    m--;
+                }
+                else if (itm == STK_OTHERWISE)
+                {
+                    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:otherwise>\n");
+                    m--;
+                }
+                else if (itm == STK_TEMPLATE)
+                {
+                    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:template>\n");
+                    m--;
+                }
+                else if (itm == STK_CALL_TEMPLATE)
+                {
+                    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:call-template>\n");
+                    m--;
+                }
+                else if (itm == STK_PARAM)
+                {
+                    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:param>\n");
+                    m--;
+                }
+                else if (itm == STK_WITH_PARAM)
+                {
+                    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:with-param>\n");
+                    m--;
+                }
                 else if (itm == STK_ELEM)
                 {
                     c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:element>\n");
@@ -545,6 +822,11 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
                 else if (itm == STK_ATTR)
                 {
                     c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:attribute>\n");
+                    m--;
+                }
+                else if (itm == STK_VARIABLE)
+                {
+                    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:variable>\n");
                     m--;
                 }
                 /* printf("%c\n", itm); */
@@ -586,8 +868,15 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
         itm = stack_pop(stack);
         if (itm == STK_MATCH) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:for-each>\n");
         else if (itm == STK_IF) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:if>\n");
+        else if (itm == STK_CHOOSE) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:choose>\n");
+        else if (itm == STK_WHEN) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:when>\n");
+        else if (itm == STK_OTHERWISE) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:otherwise>\n");
+        else if (itm == STK_TEMPLATE) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:template>\n");
+        else if (itm == STK_CALL_TEMPLATE) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:call-template>\n");
+        else if (itm == STK_WITH_PARAM) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:with-param>\n");
         else if (itm == STK_ELEM) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:element>\n");
         else if (itm == STK_ATTR) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:attribute>\n");
+        else if (itm == STK_VARIABLE) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:variable>\n");
 /*        printf("%c\n", itm);  */
     }
 /*
@@ -606,7 +895,10 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
         exit(3);
     }
 
-    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:template>\n");
+    if (!isFunction)
+    {
+        c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:template>\n");
+    }
 
     *len = c;
 
@@ -640,10 +932,11 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
  *  Prepare XSLT stylesheet based on command line options
  */
 int
-selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops, const char *ns_arr[],
+selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops,
+               const char *ns_arr[], const char *import_arr[],
                int start, int argc, char **argv)
 {
-    int c, i, t, ns;
+    int c, i, t, ns, idx;
 
     xsl_buf[0] = 0;
     *len = 0;
@@ -674,14 +967,21 @@ selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops, const char *ns_arr[],
            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\n xmlns=\"%s\"", ns_arr[ns+1]);
         ns += 2;
     }
-    selCleanupNSArr(ns_arr);
+    selCleanupXmlArr(ns_arr);
 
     c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1,
                   "\n extension-element-prefixes=\"exslt math date func set str dyn saxon xalanredirect xt libxslt test\"");
     c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\n exclude-result-prefixes=\"math str\"");
 
-
     c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, ">\n");
+
+    idx = 0;
+    while(import_arr[idx])
+    {
+        c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:import href=\"%s\"/>\n", import_arr[idx]);
+        idx++;
+    }
+    selCleanupXmlArr(import_arr);
 
     if (ops->no_omit_decl) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:output omit-xml-declaration=\"no\"");
     else c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:output omit-xml-declaration=\"yes\"");
@@ -690,6 +990,55 @@ selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops, const char *ns_arr[],
     if (ops->encoding != NULL) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, " encoding=\"%s\"", ops->encoding);
     if (ops->outText) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, " method=\"text\"");
     c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "/>\n");
+
+    i = 0;
+    while(i < start)
+    {
+        if(!strcmp(argv[i], "--var"))
+        {
+            int j;
+            xmlChar *name, *value;
+    
+            if ((i+1) >= start)
+            {
+                fprintf(stderr, "--var name=value option requires argument\n");
+                exit (1);
+            }
+
+            i++;
+
+            for(j=0; argv[i][j] && (argv[i][j] != '='); j++);
+            if (argv[i][j] != '=')
+            {
+                fprintf(stderr, "--var name=value : missing =\n");
+                exit (1);
+            }
+
+            name = xmlStrndup((const xmlChar *) argv[i], j);
+            value = xmlStrdup((const xmlChar *) argv[i]+j+1);
+            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:variable name=\"%s\" select=\"%s\"/>\n", name, value);
+        } else if (!strcmp(argv[i], "--key"))
+        {
+            xmlChar *name, *path, *use;
+
+            if ((i+3) >= start)
+            {
+                fprintf(stderr, "--key 'name' 'match' 'use' requires arguments\n");
+                exit (1);
+            }
+
+            name = xmlStrdup((const xmlChar *) argv[++i]);
+            path = xmlStrdup((const xmlChar *) argv[++i]);
+            use  = xmlStrdup((const xmlChar *) argv[++i]);
+
+            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1,
+                "<xsl:key name=\"%s\" match=\"%s\" use=\"%s\"/>\n",
+                name, path, use
+            );
+        }
+
+        i++;
+    }
 
     c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:param name=\"inputFile\">-</xsl:param>\n");
 
@@ -707,6 +1056,7 @@ selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops, const char *ns_arr[],
         }
         i++;
     }
+
     if (!ops->outText && ops->printRoot) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xml-select>\n");
     c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:template>\n");
 
@@ -724,10 +1074,16 @@ selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops, const char *ns_arr[],
     i = start;
     while(i < argc)
     {
-        if(!strcmp(argv[i], "-t") || !strcmp(argv[i], "--template"))
+        if(
+               !strcmp(argv[i], "-fn") || !strcmp(argv[i], "--function")
+            || !strcmp(argv[i], "-t")  || !strcmp(argv[i], "--template")
+        )
         {
             int lastTempl = 0;
-            t++;
+            if (!strcmp(argv[i], "-t") || !strcmp(argv[i], "--template"))
+            {
+                t++;
+            }
             i = selGenTemplate(xsl_buf, &c, ops, t, &lastTempl, i, argc, argv);
             if (lastTempl) break;
         }
@@ -749,6 +1105,7 @@ selMain(int argc, char **argv)
     static selOptions ops;
     static const char *params[2 * MAX_PARAMETERS + 1];
     static const char *ns_arr[2 * MAX_NS_ARGS + 1];
+    static const char *import_arr[MAX_IMPORTS + 1];
     int start, c, i, n;
     int nCount = 0;
     int nbparams;
@@ -763,10 +1120,12 @@ selMain(int argc, char **argv)
     xsltInitLibXml(&xsltOps);
 
     /* set parameters */
-    selParseNSArr(ns_arr, &nCount, start, argv+2);
+    selParseNSArr(ns_arr, &nCount, start-2, argv+2);
+    /* set parameters */
+    selParseImportArr(import_arr, &nCount, start-2, argv+2);
 
     c = sizeof(xsl_buf);
-    i = selPrepareXslt(xsl_buf, &c, &ops, ns_arr, start, argc, argv);
+    i = selPrepareXslt(xsl_buf, &c, &ops, ns_arr, import_arr, start, argc, argv);
 
     if (ops.printXSLT)
     {
