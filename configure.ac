@@ -5,7 +5,7 @@ AC_INIT([XMLStarlet], [m4_esyscmd_s([git describe --tags])],
         [http://xmlstar.sourceforge.net/])
 AC_REVISION(AC_PACKAGE_VERSION)
 
-AM_INIT_AUTOMAKE([1.11 foreign -Wall])
+AM_INIT_AUTOMAKE([1.11 foreign -Wall subdir-objects])
 AM_SILENT_RULES
 AM_MAINTAINER_MODE
 
@@ -23,6 +23,7 @@ dnl
 
 AC_CANONICAL_HOST
 AC_PROG_CC
+AM_PROG_CC_C_O
 AC_PROG_MAKE_SET
 AC_ARG_PROGRAM          dnl Transforming Program Names When Installing
 
@@ -97,8 +98,6 @@ AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
 xmlstarlet.spec
 Makefile
-src/Makefile
-doc/Makefile
 solaris/package/sol8-sparc/pkginfo
 solaris/package/sol9-sparc/pkginfo
 ])
