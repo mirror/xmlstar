@@ -12,13 +12,11 @@ configure
 depcomp
 install-sh
 missing
+compile
 stamp-h1
 xmlstarlet.spec
-doc/Makefile
-doc/Makefile.in
 solaris/package/sol[89]-sparc/pkginfo
 src/.deps/
-src/Makefile
-src/Makefile.in
+src/.dirstamp
 src/*.o
-src/xml
+xml

@@ -5,7 +5,7 @@ AC_INIT([XMLStarlet], [m4_esyscmd_s([git describe --tags])],
         [http://xmlstar.sourceforge.net/])
 AC_REVISION(AC_PACKAGE_VERSION)
 
-AM_INIT_AUTOMAKE([1.11 foreign -Wall])
+AM_INIT_AUTOMAKE([1.11 foreign -Wall subdir-objects])
 AM_SILENT_RULES
 AM_MAINTAINER_MODE
 
@@ -23,6 +23,7 @@ dnl
 
 AC_CANONICAL_HOST
 AC_PROG_CC
+AM_PROG_CC_C_O
 AC_PROG_MAKE_SET
 AC_ARG_PROGRAM          dnl Transforming Program Names When Installing
 
@@ -82,7 +83,7 @@ AC_SEARCH_LIBS([connect], [inet], [], [], "$USER_LIBS")
 AC_CHECK_FUNCS_ONCE([gettimeofday mktime localtime asctime time gmtime ftime strdup])
 
 AC_SUBST([AM_CPPFLAGS], ["$LIBXSLT_CPPFLAGS $LIBXML_CPPFLAGS"])
-AC_SUBST([AM_LDFLAGS], ["$WIN32_EXATRA_LDFLAGS"])
+AC_SUBST([AM_LDFLAGS], ["$WIN32_EXTRA_LDFLAGS"])
 AC_SUBST([LDADD], ["$LIBXSLT_LIBS $LIBXML_LIBS $WIN32_EXTRA_LIBS $LIBS"])
 AC_SUBST([LIBS], ["$USER_LIBS"])
 
@@ -97,8 +98,6 @@ AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
 xmlstarlet.spec
 Makefile
-src/Makefile
-doc/Makefile
 solaris/package/sol8-sparc/pkginfo
 solaris/package/sol9-sparc/pkginfo
 ])
