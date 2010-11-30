@@ -1,6 +1,7 @@
 EXTRA_DIST = README TODO Copyright COPYING
 
 ACLOCAL_AMFLAGS = -I m4
+AM_CFLAGS = -Wall
 
 dist-hook: xmlstarlet.spec
 	-cp xmlstarlet.spec $(distdir)

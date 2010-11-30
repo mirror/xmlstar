@@ -363,7 +363,7 @@ edUpdate(xmlDocPtr doc, const char *loc, const char *val, XmlNodeType type)
                      */
 
                     /* TODO: do we need xmlEncodeEntitiesReentrant() too/instead? */
-                    xmlChar *content = xmlEncodeSpecialChars(NULL, val);
+                    xmlChar *content = xmlEncodeSpecialChars(NULL, (const xmlChar*) val);
 
                     xmlNodeSetContent(cur->nodeTab[i], content);
                     xmlFree(content);
