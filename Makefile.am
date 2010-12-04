@@ -31,7 +31,8 @@ $(egdir)/sel1 $(egdir)/sort1 $(egdir)/structure1 $(egdir)/sum1          \
 $(egdir)/tab1 $(egdir)/table1 $(egdir)/table2 $(egdir)/table3           \
 $(egdir)/update-attr1 $(egdir)/unicode1 $(egdir)/update-elem1           \
 $(egdir)/valid1 $(egdir)/xinclude1 $(egdir)/xsl-param1                  \
-$(egdir)/xsl-sum1
+$(egdir)/xsl-sum1 $(egdir)/sel-xpath-c $(egdir)/sel-xpath-v             \
+$(egdir)/sel-xpath-m $(egdir)/sel-xpath-i
 
 XFAIL_TESTS = $(egdir)/bigxml-dtd
 

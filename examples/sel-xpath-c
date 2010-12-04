@@ -1,0 +1,4 @@
+#!/bin/sh
+
+xargs -d '\n' -I XPATH ./xmlstarlet sel --text -t -m /doc -c XPATH --nl \
+    xml/foo.xml < sel-xpath.input
