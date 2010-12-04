@@ -1,2 +1,2 @@
 # Select from XML document containing unicode characters
-./xmlstarlet sel -T -t -m "//test[@lang='fran&#231;ais']/@lang" -v . -n xml/unicode.xml
+./xmlstarlet sel -T -t -m "//test[@lang='français']/@lang" -v . -n xml/unicode.xml

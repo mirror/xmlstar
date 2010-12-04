@@ -368,13 +368,18 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
     {
         if(!strcmp(argv[i], "-c") || !strcmp(argv[i], "--copy-of"))
         {
+            xmlChar *xmlText;
             templateEmpty = 0;
             for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
-            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:copy-of select=\"%s\"/>\n", argv[i+1]);
+            xmlText = xmlEncodeSpecialChars(NULL, BAD_CAST argv[i+1]);
+            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1,
+                "<xsl:copy-of select=\"%s\"/>\n", xmlText);
+            xmlFree(xmlText);
             i++;
         }
         else if(!strcmp(argv[i], "-v") || !strcmp(argv[i], "--value-of"))
         {
+            xmlChar *xmlText;
             templateEmpty = 0;
             if ((i+1) >= argc)
             {
@@ -383,11 +388,15 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
                 exit (1);
             }
             for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
-            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:value-of select=\"%s\"/>\n", argv[i+1]);
+            xmlText = xmlEncodeSpecialChars(NULL, BAD_CAST argv[i+1]);
+            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1,
+                "<xsl:value-of select=\"%s\"/>\n", xmlText);
+            xmlFree(xmlText);
             i++;
         }
         else if(!strcmp(argv[i], "-o") || !strcmp(argv[i], "--output"))
         {
+            xmlChar *xmlText;
             templateEmpty = 0;
             if ((i+1) >= argc)
             {
@@ -396,8 +405,10 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
                 exit (1);
             }
             for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
+            xmlText = xmlEncodeSpecialChars(NULL, BAD_CAST argv[i+1]);
             c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1,
-                "<xsl:text><![CDATA[%s]]></xsl:text>\n", argv[i+1]);
+                "<xsl:text>%s</xsl:text>\n", xmlText);
+            xmlFree(xmlText);
             i++;
         }
         else if(!strcmp(argv[i], "-f") || !strcmp(argv[i], "--inp-name"))
@@ -414,6 +425,7 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
         }
         else if(!strcmp(argv[i], "-i") || !strcmp(argv[i], "--if"))
         {
+            xmlChar *xmlText;
             templateEmpty = 0;
             if ((i+1) >= argc)
             {
@@ -422,7 +434,10 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
                 exit (1);
             }
             for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
-            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:if test=\"%s\">\n", argv[i+1]);
+            xmlText = xmlEncodeSpecialChars(NULL, BAD_CAST argv[i+1]);
+            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1,
+                "<xsl:if test=\"%s\">\n", xmlText);
+            xmlFree(xmlText);
             stack_push(stack, STK_IF);
             m++;
             i++;
@@ -459,6 +474,7 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
         }
         else if(!strcmp(argv[i], "-m") || !strcmp(argv[i], "--match"))
         {
+            xmlChar *xmlText;
             templateEmpty = 0;
             if ((i+1) >= argc)
             {
@@ -467,7 +483,10 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
                 exit (1);
             }
             for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
-            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:for-each select=\"%s\">\n", argv[i+1]);
+            xmlText = xmlEncodeSpecialChars(NULL, BAD_CAST argv[i+1]);
+            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1,
+                "<xsl:for-each select=\"%s\">\n", xmlText);
+            xmlFree(xmlText);
             stack_push(stack, STK_MATCH);
             m++;
             i++;
