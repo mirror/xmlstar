@@ -642,6 +642,10 @@ edDelete(xmlDocPtr doc, char *str)
                 /*for (i = 0; i < cur->nodeNr; i++)*/
                 for (i = cur->nodeNr - 1; i >= 0; i--)
                 {
+                    if (cur->nodeTab[i]->type == XML_NAMESPACE_DECL) {
+                        fprintf(stderr, "FIXME: can't delete namespace nodes\n");
+                        exit(2);
+                    }
                     /*
                      *  delete node
                      */
