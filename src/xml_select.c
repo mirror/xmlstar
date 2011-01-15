@@ -768,7 +768,7 @@ selMain(int argc, char **argv)
     static selOptions ops;
     static const char *params[2 * MAX_PARAMETERS + 1];
     static const char *ns_arr[2 * MAX_NS_ARGS + 1];
-    int start, c, i, n;
+    int start, c, i, n, status = 0;
     int nCount = 0;
     int nbparams;
 
@@ -818,6 +818,8 @@ selMain(int argc, char **argv)
             doc = xmlParseFile(argv[n]);
             if (doc != NULL) {
                 xsltProcess(&xsltOps, doc, params, cur, argv[n]);
+            } else {
+                status = 2;
             }
             xsltFreeStylesheet(cur);
         }
@@ -837,6 +839,8 @@ selMain(int argc, char **argv)
         doc = xmlParseFile("-");
         if (doc != NULL) {
             xsltProcess(&xsltOps, doc, params, cur, "-");
+        } else {
+            status = 2;
         }
         xsltFreeStylesheet(cur);
     }
@@ -847,6 +851,6 @@ selMain(int argc, char **argv)
     xsltCleanupGlobals();
     xmlCleanupParser();
     
-    return 0;
+    return status;
 }
 

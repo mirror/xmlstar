@@ -242,6 +242,8 @@ pyx_process_file(const char *filename)
 int
 pyxMain(int argc,const char *argv[])
 {
+    int status = 0;
+
     if ((argc > 2) &&
         (
            (strcmp(argv[2],"-h") == 0) ||
@@ -255,14 +257,15 @@ pyxMain(int argc,const char *argv[])
         exit(0);
     }
     if (argc == 2) {
-        pyx_process_file("-");
+        status = pyx_process_file("-");
     }
     else {
         argv++;
         argc--;
         for (++argv; argc>1; argc--,argv++) {
-            pyx_process_file(*argv);
+            int ret = pyx_process_file(*argv);
+            if (ret != 0) status = ret;
         }
     }
-    return 0;
+    return status;
 }
