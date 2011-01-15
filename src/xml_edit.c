@@ -870,6 +870,7 @@ void
 edOutput(const char* filename, edOptions g_ops)
 {
     xmlDocPtr doc = xmlParseFile(filename);
+    int format = (g_ops.noblanks && !g_ops.preserveFormat);
 
     if (!doc)
     {
@@ -884,11 +885,10 @@ edOutput(const char* filename, edOptions g_ops)
     /* Print out result */
     if (!g_ops.omit_decl)
     {
-        xmlSaveFormatFile(g_ops.inplace ? filename : "-", doc, 1);
+        xmlSaveFormatFile(g_ops.inplace ? filename : "-", doc, format);
     }
     else
     {
-        int format = 1;
         int ret = 0;
         char *encoding = NULL;
         xmlOutputBufferPtr buf = NULL;
