@@ -1,3 +1,15 @@
+1.0.4: Jan 16 2011:
+
+   - Bug fixes:
+      - encode special XML characters in arguments (can now include quotes in xpath)
+      - non-zero exit code when input file is not found (Bug 3158488)
+      - ed with --pf/--ps options doesn't reformat output (Bug 3158490)
+      - exit() instead of segfault when trying to delete namespace nodes
+         (Bug 1120417)
+   - added --disable-static-libs ./configure option to use shared libxml2 and libxslt
+   - non-recursive make
+   - use TESTS and XFAIL_TESTS for testing, nicer output
+
 1.0.3: Nov 18 2010:
 
    - Bug fixes:
