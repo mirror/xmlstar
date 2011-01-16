@@ -1,4 +1,5 @@
 EXTRA_DIST = README TODO Copyright COPYING
+WIN32_DIST = $(EXTRA_DIST) AUTHORS ChangeLog INSTALL NEWS xml.exe doc
 
 ACLOCAL_AMFLAGS = -I m4
 AM_CFLAGS = -Wall
@@ -12,6 +13,19 @@ cleantar:
 
 rpm: cleantar
 	@(unset CDPATH ; $(MAKE) dist && rpmbuild -ta $(distdir).tar.gz)
+
+$(distdir)-win32.zip: xml.exe
+	mkdir -p /tmp/$(distdir)
+	cp -r $(WIN32_DIST) /tmp/$(distdir)
+	rm /tmp/$(distdir)/doc/gen-doc
+	strip /tmp/$(distdir)/xml.exe
+	cd /tmp && zip -9 --symlinks --recurse-paths --to-crlf --move \
+	  $(distdir)-win32.zip $(distdir)
+	mv /tmp/$(distdir)-win32.zip .
+
+dist-win32: $(distdir)-win32.zip
+
+.PHONY: cleantar rpm dist-win32
 
 # testing
 egdir = $(srcdir)/examples
