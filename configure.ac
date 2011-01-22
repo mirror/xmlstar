@@ -28,6 +28,7 @@ dnl
 
 AC_CANONICAL_HOST
 AC_PROG_CC
+AM_CONDITIONAL([GCC], [test x$GCC = xyes])
 AM_PROG_CC_C_O
 AC_ARG_PROGRAM          dnl Transforming Program Names When Installing
 
