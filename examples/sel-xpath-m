@@ -1,4 +1,5 @@
 #!/bin/sh
 
-xargs -d '\n' -I XPATH ./xmlstarlet sel --text -t -m '/*[boolean(XPATH)]' -v XPATH --nl \
-    xml/foo.xml < sel-xpath.input
+while read -r XPATH ; do
+    ./xmlstarlet sel --text -t -m "/*[boolean($XPATH)]" -v "$XPATH" --nl xml/foo.xml
+done < sel-xpath.input
