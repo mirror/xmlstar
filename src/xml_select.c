@@ -28,13 +28,16 @@ THE SOFTWARE.
 
 #include <config.h>
 
+#include <assert.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
+
+#include <libxml/tree.h>
 
 #include "xmlstar.h"
 #include "trans.h"
-#include "stack.h"
 
 /*
  *  TODO:
@@ -60,6 +63,25 @@ typedef struct _selOptions {
 } selOptions;
 
 typedef selOptions *selOptionsPtr;
+
+typedef enum { TARG_NONE = 0, TARG_SORT_OP, TARG_XPATH, TARG_STRING,
+               TARG_NEWLINE, TARG_NO_CMDLINE = TARG_NEWLINE, TARG_INP_NAME
+} template_argument_type;
+typedef struct {
+    const xmlChar *attrname;
+    template_argument_type type;
+} template_option_argument;
+
+#define TEMPLATE_OPT_MAX_ARGS 2
+
+typedef struct {
+    char shortopt;
+    const char *longopt;
+    const xmlChar *xslname;
+    template_option_argument arguments[TEMPLATE_OPT_MAX_ARGS];
+    int nest;
+} template_option;
+
 
 /*
  * usage string chunk : 509 char max on ISO C90
@@ -114,6 +136,36 @@ static const char select_usage_str_6[] =
 "      Y is T - for data-type=\"text\"\n"
 "      Z is U - for case-order=\"upper-first\"\n"
 "      Z is L - for case-order=\"lower-first\"\n\n";
+
+static const template_option
+    OPT_TEMPLATE = { 't', "template" },
+    OPT_COPY_OF  = { 'c', "copy-of", BAD_CAST "copy-of", {{BAD_CAST "select", TARG_XPATH}}, 0 },
+    OPT_VALUE_OF = { 'v', "value-of", BAD_CAST "value-of", {{BAD_CAST "select", TARG_XPATH}}, 0 },
+    OPT_OUTPUT   = { 'o', "output", BAD_CAST "text", {{NULL, TARG_STRING}}, 0 },
+    OPT_NL       = { 'n', "nl", BAD_CAST "value-of", {{NULL, TARG_NEWLINE}}, 0 },
+    OPT_INP_NAME = { 'f', "inp-name", BAD_CAST "copy-of", {{NULL, TARG_INP_NAME}}, 0 },
+    OPT_MATCH    = { 'm', "match", BAD_CAST "for-each", {{BAD_CAST "select", TARG_XPATH}}, 1 },
+    OPT_IF       = { 'i', "if", BAD_CAST"if", {{BAD_CAST "test", TARG_XPATH}}, 1 },
+    OPT_ELEM     = { 'e', "elem", BAD_CAST "element", {{BAD_CAST "name", TARG_XPATH}}, 1 },
+    OPT_ATTR     = { 'a', "attr", BAD_CAST "attribute", {{BAD_CAST "name", TARG_XPATH}}, 1 },
+    OPT_BREAK    = { 'b', "break", NULL, {}, -1 },
+    OPT_SORT     = { 's', "sort", BAD_CAST "sort", {{NULL, TARG_SORT_OP}, {BAD_CAST "select", TARG_XPATH}}, 0 },
+
+    *TEMPLATE_OPTIONS[] = {
+        &OPT_TEMPLATE,
+        &OPT_COPY_OF,
+        &OPT_VALUE_OF,
+        &OPT_OUTPUT,
+        &OPT_NL,
+        &OPT_INP_NAME,
+        &OPT_MATCH,
+        &OPT_IF,
+        &OPT_ELEM,
+        &OPT_ATTR,
+        &OPT_BREAK,
+        &OPT_SORT
+    };
+
 
 static const char select_usage_str_7[] =
 "There can be multiple --match, --copy-of, --value-of, etc options\n"
@@ -326,11 +378,6 @@ selParseOptions(selOptionsPtr ops, int argc, char **argv)
     return i;
 }
 
-#define STK_MATCH 'm'
-#define STK_IF    'i'
-#define STK_ELEM  'e'
-#define STK_ATTR  'a'
-
 /**
  *  Prepare XSLT template based on command line options
  *  Assumes start points to -t option
@@ -339,16 +386,18 @@ int
 selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
                int* lastTempl, int start, int argc, char **argv)
 {
-    int c, i, j, /*k,*/ m, t;
+    int i = start;
     int templateEmpty = 1;
     int nextTempl = 0;
+    const template_option *targ = NULL, *prev_targ = NULL;
 
-    Stack stack = NULL;
-    int max_depth = 256;  /* TODO: make it optional */
+    xmlNodePtr template_node = xmlNewNode(NULL, BAD_CAST "template");
+    xmlNodePtr node = template_node;
+    xmlNsPtr xslns = xmlNewNs(node, NULL, BAD_CAST "xsl");
+    xmlSetNs(node, xslns);
 
-    c = *len;
-    i = start;
-    t = num;
+    sprintf(xsl_buf + *len, "t%d", num);
+    xmlNewProp(template_node, BAD_CAST "name", BAD_CAST (xsl_buf + *len));
 
     *lastTempl = 0;
 
@@ -359,278 +408,126 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
     }
 
     templateEmpty = 1;
-    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:template name=\"t%d\">\n", t);
-
-    stack = stack_create(max_depth);
 
     i++;
-    m = 0;
     while(i < argc)
     {
-        if(!strcmp(argv[i], "-c") || !strcmp(argv[i], "--copy-of"))
+        xmlNodePtr newnode = NULL;
+        int j;
+
+        prev_targ = targ;
+
+        if (argv[i][0] == '-')
         {
-            xmlChar *xmlText;
-            templateEmpty = 0;
-            for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
-            xmlText = xmlEncodeSpecialChars(NULL, BAD_CAST argv[i+1]);
-            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1,
-                "<xsl:copy-of select=\"%s\"/>\n", xmlText);
-            xmlFree(xmlText);
-            i++;
-        }
-        else if(!strcmp(argv[i], "-v") || !strcmp(argv[i], "--value-of"))
-        {
-            xmlChar *xmlText;
-            templateEmpty = 0;
-            if ((i+1) >= argc)
+            for (j = 0; j < sizeof(TEMPLATE_OPTIONS)/sizeof(*TEMPLATE_OPTIONS); j++)
             {
-                fprintf(stderr, "-v option requires argument\n");
-                stack_free(stack);
-                exit (1);
+                targ = TEMPLATE_OPTIONS[j];
+                if (argv[i][1] == '-' && strcmp(targ->longopt, &argv[i][2]) == 0)
+                    goto found_option; /* long option */
+                else if(targ->shortopt == argv[i][1])
+                    goto found_option; /* short option */
             }
-            for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
-            xmlText = xmlEncodeSpecialChars(NULL, BAD_CAST argv[i+1]);
-            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1,
-                "<xsl:value-of select=\"%s\"/>\n", xmlText);
-            xmlFree(xmlText);
-            i++;
+            fprintf(stderr, "unrecognized option: %s\n", argv[i]);
+            abort();
         }
-        else if(!strcmp(argv[i], "-o") || !strcmp(argv[i], "--output"))
+        else
         {
-            xmlChar *xmlText;
-            templateEmpty = 0;
-            if ((i+1) >= argc)
-            {
-                fprintf(stderr, "-o option requires argument\n");
-                stack_free(stack);
-                exit (1);
-            }
-            for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
-            xmlText = xmlEncodeSpecialChars(NULL, BAD_CAST argv[i+1]);
-            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1,
-                "<xsl:text>%s</xsl:text>\n", xmlText);
-            xmlFree(xmlText);
-            i++;
+            break;
         }
-        else if(!strcmp(argv[i], "-f") || !strcmp(argv[i], "--inp-name"))
+
+    found_option:
+        if (targ == &OPT_SORT && (prev_targ != &OPT_MATCH && prev_targ != &OPT_SORT))
         {
-            templateEmpty = 0;
-            for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
-            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:copy-of select=\"$inputFile\"/>\n");
+            fprintf(stderr, "sort(s) must follow match\n");
+            exit(2);
         }
-        else if(!strcmp(argv[i], "-n") || !strcmp(argv[i], "--nl"))
-        {
-            templateEmpty = 0;
-            for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
-            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:value-of select=\"'&#10;'\"/>\n");
-        }
-        else if(!strcmp(argv[i], "-i") || !strcmp(argv[i], "--if"))
-        {
-            xmlChar *xmlText;
-            templateEmpty = 0;
-            if ((i+1) >= argc)
-            {
-                fprintf(stderr, "-i option requires argument\n");
-                stack_free(stack);
-                exit (1);
-            }
-            for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
-            xmlText = xmlEncodeSpecialChars(NULL, BAD_CAST argv[i+1]);
-            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1,
-                "<xsl:if test=\"%s\">\n", xmlText);
-            xmlFree(xmlText);
-            stack_push(stack, STK_IF);
-            m++;
-            i++;
-        }
-        else if(!strcmp(argv[i], "-e") || !strcmp(argv[i], "--elem"))
-        {
-            templateEmpty = 0;
-            if ((i+1) >= argc)
-            {
-                fprintf(stderr, "-e option requires argument\n");
-                stack_free(stack);
-                exit (1);
-            }
-            for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
-            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:element name=\"%s\">\n", argv[i+1]);
-            stack_push(stack, STK_ELEM);
-            m++;
-            i++;
-        }
-        else if(!strcmp(argv[i], "-a") || !strcmp(argv[i], "--attr"))
-        {
-            templateEmpty = 0;
-            if ((i+1) >= argc)
-            {
-                fprintf(stderr, "-a option requires argument\n");
-                stack_free(stack);
-                exit (1);
-            }
-            for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
-            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:attribute name=\"%s\">\n", argv[i+1]);
-            stack_push(stack, STK_ATTR);
-            m++;
-            i++;
-        }
-        else if(!strcmp(argv[i], "-m") || !strcmp(argv[i], "--match"))
-        {
-            xmlChar *xmlText;
-            templateEmpty = 0;
-            if ((i+1) >= argc)
-            {
-                fprintf(stderr, "-m option requires argument\n");
-                stack_free(stack);
-                exit (1);
-            }
-            for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
-            xmlText = xmlEncodeSpecialChars(NULL, BAD_CAST argv[i+1]);
-            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1,
-                "<xsl:for-each select=\"%s\">\n", xmlText);
-            xmlFree(xmlText);
-            stack_push(stack, STK_MATCH);
-            m++;
-            i++;
-            if ((i+1 < argc) && (!strcmp(argv[i+1], "-s") || !strcmp(argv[i+1], "--sort")))
-            {
-                char Order, Type, Case, *Select;
-                i++;
-                if ((i+1) >= argc)
-                {
-                    fprintf(stderr, "-s missing argument\n");
-                    stack_free(stack);
-                    exit (1);
-                }
-                i++;
-
-                /* TODO: more validation here */
-                Order = argv[i][0];
-                Type = argv[i][2];
-                Case = argv[i][4];
-
-                if ((i+1) >= argc)
-                {
-                    fprintf(stderr, "-s missing argument\n");
-                    stack_free(stack);
-                    exit (1);
-                }
-                i++;
-                Select=argv[i];
-
-                for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
-
-                if (Order == 'A') c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:sort order=\"ascending\"");
-                else c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:sort order=\"descending\"");
-
-                if (Type == 'N') c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, " data-type=\"number\"");
-                else c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, " data-type=\"text\"");
-
-                if (Case == 'L') c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, " case-order=\"lower-first\"");
-                else c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, " case-order=\"upper-first\"");
-
-                c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, " select=\"%s\"", Select);
-
-                c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "/>\n");
-            }
-        }
-        else if(!strcmp(argv[i], "-t") || !strcmp(argv[i], "--template"))
+        else if (targ == &OPT_TEMPLATE)
         {
             nextTempl = 1;
             i--;
             break;
         }
-        else if(!strcmp(argv[i], "-b") || !strcmp(argv[i], "--break"))
-        {
-            if(!stack_isEmpty(stack))
-            {
-                StackItem itm;
-
-                for (j=0; j<stack_depth(stack); j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
-                itm = stack_pop(stack);
-                if (itm == STK_MATCH)
-                {
-                    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:for-each>\n");
-                    m--;
-                }
-                else if (itm == STK_IF)
-                {
-                    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:if>\n");
-                    m--;
-                }
-                else if (itm == STK_ELEM)
-                {
-                    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:element>\n");
-                    m--;
-                }
-                else if (itm == STK_ATTR)
-                {
-                    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:attribute>\n");
-                    m--;
-                }
-                /* printf("%c\n", itm); */
-            }
-        }
-        else
-        {
-            if (argv[i][0] != '-')
-            {
-                break;
-            }
-            else if (!strcmp(argv[i], "-"))
-            {
-                break;
-            }
-            else
-            {
-                fprintf(stderr, "unknown option: %s\n", argv[i]);
-                stack_free(stack);
-                exit(1);
-            }
-        }
 
         i++;
-    }
-/*
-    if((i < argc) && (!strcmp(argv[i], "-n") || !strcmp(argv[i], "--nl")))
-    {
-        for (j=0; j <= m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
-        c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:value-of select=\"'&#10;'\"/>\n");
-    }
-*/
+        templateEmpty = 0;
 
-    while(!stack_isEmpty(stack))
-    {
-        StackItem itm;
+        if (targ->xslname)
+            newnode = xmlNewChild(node, xslns, targ->xslname, NULL);
 
-        for (j=0; j<stack_depth(stack); j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
-        itm = stack_pop(stack);
-        if (itm == STK_MATCH) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:for-each>\n");
-        else if (itm == STK_IF) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:if>\n");
-        else if (itm == STK_ELEM) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:element>\n");
-        else if (itm == STK_ATTR) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:attribute>\n");
-/*        printf("%c\n", itm);  */
+        for (j = 0; j < TEMPLATE_OPT_MAX_ARGS && targ->arguments[j].type; j++)
+        {
+            if (i >= argc && targ->arguments[j].type < TARG_NO_CMDLINE) selUsage(argc, argv);
+            switch (targ->arguments[j].type)
+            {
+            case TARG_XPATH:
+                xmlNewProp(newnode, targ->arguments[j].attrname, BAD_CAST argv[i]);
+                break;
+
+            case TARG_STRING:
+                xmlNodeAddContent(newnode, BAD_CAST argv[i]);
+                break;
+
+            case TARG_NEWLINE:
+                xmlNewProp(newnode, BAD_CAST "select", BAD_CAST "'\n'");
+                break;
+
+            case TARG_INP_NAME:
+                xmlNewProp(newnode, BAD_CAST "select", BAD_CAST "$inputFile");
+                break;
+
+            case TARG_SORT_OP: {
+                char order, data_type, case_order;
+                int nread;
+                nread = sscanf(argv[i], "%c:%c:%c", &order, &data_type, &case_order);
+                if (nread != 3) selUsage(argc, argv); /* TODO: allow missing letters */
+
+                if (order == 'A' || order == 'D')
+                    xmlNewProp(newnode, BAD_CAST "order",
+                        BAD_CAST (order == 'A'? "ascending" : "descending"));
+                if (data_type == 'N' || data_type == 'T')
+                    xmlNewProp(newnode, BAD_CAST "data_type",
+                        BAD_CAST (data_type == 'N'? "numeric" : "text"));
+                if (case_order == 'U' || case_order == 'L')
+                    xmlNewProp(newnode, BAD_CAST "case_order",
+                        BAD_CAST (case_order == 'U'? "upper-first" : "lower-first"));
+            } break;
+
+            default:
+                assert(0);
+            }
+            if (targ->arguments[j].type < TARG_NO_CMDLINE) i++;
+        }
+
+        switch (targ->nest) {
+        case -1:
+            node = node->parent;
+            break;
+        case 0:
+            break;
+        case 1:
+            node = newnode;
+            break;
+        default:
+            assert(0);
+        }
     }
-/*
-    for (k=0; k<m; k++)
-    {
-        for (j=k; j<m; j++) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  ");
-        c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:for-each>\n");
-    }
-*/
+
     if (templateEmpty)
     {
         fprintf(stderr, "error in arguments:");
         fprintf(stderr, " -t or --template option must be followed by");
         fprintf(stderr, " --match or other options\n");
-        stack_free(stack);
         exit(3);
     }
 
-    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:template>\n");
-
-    *len = c;
-
-    stack_free(stack);
+    {
+        xmlBufferPtr buf = xmlBufferCreate();
+        int tlen = xmlNodeDump(buf, NULL, template_node, 0, 1);
+        memcpy(xsl_buf + *len, xmlBufferContent(buf), tlen);
+        *len += tlen;
+        xmlBufferEmpty(buf);
+        xmlBufferFree(buf);
+    }
 
     if (!nextTempl)
     {
