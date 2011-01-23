@@ -52,14 +52,14 @@ THE SOFTWARE.
 char xsl_buf[MAX_XSL_BUF];
 
 typedef struct _selOptions {
-    int printXSLT;            /* Display prepared XSLT */
-    int printRoot;            /* Print root element in output (if XML) */
-    int outText;              /* Output is text */
-    int indent;               /* Indent output */
-    int noblanks;             /* Remove insignificant spaces from XML tree */
-    int no_omit_decl;         /* Print XML declaration line <?xml version="1.0"?> */
-    int nonet;                /* refuse to fetch DTDs or entities over network */
-    const char *encoding;     /* the "encoding" attribute on the stylesheet's <xsl:output/> */
+    int printXSLT;        /* Display prepared XSLT */
+    int printRoot;        /* Print root element in output (if XML) */
+    int outText;          /* Output is text */
+    int indent;           /* Indent output */
+    int noblanks;         /* Remove insignificant spaces from XML tree */
+    int no_omit_decl;     /* Print XML declaration line <?xml version="1.0"?> */
+    int nonet;            /* refuse to fetch DTDs or entities over network */
+    const xmlChar *encoding; /* the "encoding" attribute on the stylesheet's <xsl:output/> */
 } selOptions;
 
 typedef selOptions *selOptionsPtr;
@@ -244,7 +244,7 @@ selInitOptions(selOptionsPtr ops)
  *  Parse command line for additional namespaces
  */
 int
-selParseNSArr(const char** ns_arr, int* plen,
+selParseNSArr(xmlChar** ns_arr, int* plen,
               int count, char **argv)
 {
     int i = 0;
@@ -276,9 +276,9 @@ selParseNSArr(const char** ns_arr, int* plen,
                     exit(2);
                 }
 
-                ns_arr[*plen] = (char *)name;
+                ns_arr[*plen] = name;
                 (*plen)++;
-                ns_arr[*plen] = (char *)value;
+                ns_arr[*plen] = value;
                 (*plen)++;
                 ns_arr[*plen] = 0;
 
@@ -296,13 +296,13 @@ selParseNSArr(const char** ns_arr, int* plen,
  *  Cleanup memory allocated by namespaces arguments
  */
 void
-selCleanupNSArr(const char **ns_arr)
+selCleanupNSArr(xmlChar **ns_arr)
 {
-    const char **p = ns_arr;
+    xmlChar **p = ns_arr;
 
     while (*p)
     {
-        xmlFree((char *)*p);
+        xmlFree(*p);
         p++;
     }
 }
@@ -353,7 +353,7 @@ selParseOptions(selOptionsPtr ops, int argc, char **argv)
                 }
                 else
                 {
-                    ops->encoding = argv[i + 1];
+                    ops->encoding = BAD_CAST argv[i + 1];
                 }
             }
             else
@@ -383,33 +383,31 @@ selParseOptions(selOptionsPtr ops, int argc, char **argv)
  *  Assumes start points to -t option
  */
 int
-selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
-               int* lastTempl, int start, int argc, char **argv)
+selGenTemplate(xmlNodePtr root, xmlNsPtr xslns, selOptionsPtr ops,
+    const xmlChar *name, int* lastTempl, int start, int argc, char **argv)
 {
-    int i = start;
-    int templateEmpty = 1;
-    int nextTempl = 0;
+    int i;
+    int templateEmpty;
+    int nextTempl;
     const template_option *targ = NULL, *prev_targ = NULL;
 
-    xmlNodePtr template_node = xmlNewNode(NULL, BAD_CAST "template");
+    xmlNodePtr template_node = xmlNewChild(root, xslns, BAD_CAST "template", NULL);
     xmlNodePtr node = template_node;
-    xmlNsPtr xslns = xmlNewNs(node, NULL, BAD_CAST "xsl");
-    xmlSetNs(node, xslns);
 
-    sprintf(xsl_buf + *len, "t%d", num);
-    xmlNewProp(template_node, BAD_CAST "name", BAD_CAST (xsl_buf + *len));
+    xmlNewProp(template_node, BAD_CAST "name", name);
 
-    *lastTempl = 0;
-
-    if (strcmp(argv[i], "-t") && strcmp(argv[i], "--template"))
+    if (strcmp(argv[start], "-t") != 0 &&
+        strcmp(argv[start], "--template") != 0)
     {
         fprintf(stderr, "not at the beginning of template\n");
         abort();
     }
 
+    *lastTempl = 0;
     templateEmpty = 1;
+    nextTempl = 0;
+    i = start + 1;
 
-    i++;
     while(i < argc)
     {
         xmlNodePtr newnode = NULL;
@@ -520,98 +518,88 @@ selGenTemplate(char* xsl_buf, int *len, selOptionsPtr ops, int num,
         exit(3);
     }
 
-    {
-        xmlBufferPtr buf = xmlBufferCreate();
-        int tlen = xmlNodeDump(buf, NULL, template_node, 0, 1);
-        memcpy(xsl_buf + *len, xmlBufferContent(buf), tlen);
-        *len += tlen;
-        xmlBufferEmpty(buf);
-        xmlBufferFree(buf);
-    }
-
     if (!nextTempl)
     {
-        if (i >= argc)
+        if (i >= argc || argv[i][0] != '-' || strcmp(argv[i], "-") == 0)
         {
             *lastTempl = 1;
-            return i;
-        }
-        if (argv[i][0] != '-')
-        {
-            *lastTempl = 1;
-            return i;
-        }
-        if (!strcmp(argv[i], "-"))
-        {
-            *lastTempl = 1;
-            return i;
+            return i;           /* return index of next input filename */
         }
     }
 
-    /* return index of the beginning of the next template or input file name */
-    i++;
-    return i;
+    /* return index to beginning of the next template */
+    return ++i;
 }
 
 /**
  *  Prepare XSLT stylesheet based on command line options
  */
 int
-selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops, const char *ns_arr[],
+selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops, xmlChar *ns_arr[],
                int start, int argc, char **argv)
 {
-    int c, i, t, ns;
+    int i, t, ns;
+    xmlDocPtr style;
+    xmlNodePtr root, root_template;
+    xmlNsPtr xslns;
+    xmlChar num_buf[8];
 
-    xsl_buf[0] = 0;
-    *len = 0;
-    c = 0;
-
-    c += sprintf(xsl_buf, "<?xml version=\"1.0\"?>\n");
-    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1,
-      "<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"");
-    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\n xmlns:exslt=\"http://exslt.org/common\"");
-    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\n xmlns:math=\"http://exslt.org/math\"");
-    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\n xmlns:date=\"http://exslt.org/dates-and-times\"");
-    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\n xmlns:func=\"http://exslt.org/functions\"");
-    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\n xmlns:set=\"http://exslt.org/sets\"");
-    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\n xmlns:str=\"http://exslt.org/strings\"");
-    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\n xmlns:dyn=\"http://exslt.org/dynamic\"");
-    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\n xmlns:saxon=\"http://icl.com/saxon\"");
-    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\n xmlns:xalanredirect=\"org.apache.xalan.xslt.extensions.Redirect\"");
-    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\n xmlns:xt=\"http://www.jclark.com/xt\"");
-    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\n xmlns:libxslt=\"http://xmlsoft.org/XSLT/namespace\"");
-    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\n xmlns:test=\"http://xmlsoft.org/XSLT/\"");
+    style = xmlNewDoc(NULL);
+    xslns = xmlNewNs(NULL, BAD_CAST "http://www.w3.org/1999/XSL/Transform",
+        BAD_CAST "xsl");
+    root = xmlNewDocRawNode(style, xslns, BAD_CAST "stylesheet", NULL);
+    xmlDocSetRootElement(style, root);
+    xmlNewProp(root, BAD_CAST "version", BAD_CAST "1.0");
+    xmlNewNs(root, BAD_CAST "http://www.w3.org/1999/XSL/Transform", BAD_CAST "xsl");
+    xmlNewNs(root, BAD_CAST "http://exslt.org/common", BAD_CAST "exslt");
+    xmlNewNs(root, BAD_CAST "http://exslt.org/math", BAD_CAST "math");
+    xmlNewNs(root, BAD_CAST "http://exslt.org/dates-and-times", BAD_CAST "date");
+    xmlNewNs(root, BAD_CAST "http://exslt.org/functions", BAD_CAST "func");
+    xmlNewNs(root, BAD_CAST "http://exslt.org/sets", BAD_CAST "set");
+    xmlNewNs(root, BAD_CAST "http://exslt.org/strings", BAD_CAST "str");
+    xmlNewNs(root, BAD_CAST "http://exslt.org/dynamic", BAD_CAST "dyn");
+    xmlNewNs(root, BAD_CAST "http://icl.com/saxon", BAD_CAST "saxon");
+    xmlNewNs(root, BAD_CAST "org.apache.xalan.xslt.extensions.Redirect", BAD_CAST "xalanredirect");
+    xmlNewNs(root, BAD_CAST "http://www.jclark.com/xt", BAD_CAST "xt");
+    xmlNewNs(root, BAD_CAST "http://xmlsoft.org/XSLT/namespace", BAD_CAST "libxslt");
+    xmlNewNs(root, BAD_CAST "http://xmlsoft.org/XSLT/", BAD_CAST "test");
 
     ns = 0;
     while(ns_arr[ns])
     {
-        if (strlen(ns_arr[ns]))
-           c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\n xmlns:%s=\"%s\"", ns_arr[ns], ns_arr[ns+1]);
-        else
-           c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\n xmlns=\"%s\"", ns_arr[ns+1]);
+        xmlNewNs(root, ns_arr[ns+1], xmlStrlen(ns_arr[ns])?ns_arr[ns] : NULL);
         ns += 2;
     }
     selCleanupNSArr(ns_arr);
 
-    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1,
-                  "\n extension-element-prefixes=\"exslt math date func set str dyn saxon xalanredirect xt libxslt test\"");
-    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "\n exclude-result-prefixes=\"math str\"");
+    xmlNewProp(root, BAD_CAST "extension-element-prefixes",
+        BAD_CAST "exslt math date func set str dyn saxon xalanredirect xt libxslt test");
+    xmlNewProp(root, BAD_CAST "exclude-result-prefixes", BAD_CAST "math str");
 
+    {
+        xmlNodePtr output;
+        output = xmlNewChild(root, xslns, BAD_CAST "output", NULL);
+        xmlNewProp(output, BAD_CAST "omit-xml-declaration",
+            BAD_CAST ((ops->no_omit_decl)?"no":"yes"));
+        xmlNewProp(output, BAD_CAST "indent",
+            BAD_CAST ((ops->indent)?"yes":"no"));
+        if (ops->encoding) xmlNewProp(output, BAD_CAST "encoding", ops->encoding);
+        if (ops->outText) xmlNewProp(output, BAD_CAST "method", BAD_CAST "text");
+    }
 
-    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, ">\n");
+    {
+        xmlNodePtr param;
+        param = xmlNewChild(root, xslns, BAD_CAST "param", BAD_CAST "-");
+        xmlNewProp(param, BAD_CAST "name", BAD_CAST "inputFile");
+    }
 
-    if (ops->no_omit_decl) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:output omit-xml-declaration=\"no\"");
-    else c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:output omit-xml-declaration=\"yes\"");
-    if (ops->indent) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, " indent=\"yes\"");
-    else c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, " indent=\"no\"");
-    if (ops->encoding != NULL) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, " encoding=\"%s\"", ops->encoding);
-    if (ops->outText) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, " method=\"text\"");
-    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "/>\n");
+    {
+        root_template = xmlNewChild(root, xslns, BAD_CAST "template", NULL);
+        xmlNewProp(root_template, BAD_CAST "match", BAD_CAST "/");
+    }
 
-    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:param name=\"inputFile\">-</xsl:param>\n");
-
-    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xsl:template match=\"/\">\n");
-    if (!ops->outText && ops->printRoot) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "<xml-select>\n");
+    if (!ops->outText && ops->printRoot)
+        root = xmlNewChild(root, xslns, BAD_CAST "xsl-select", NULL);
 
     t = 0;
     i = start;
@@ -619,13 +607,14 @@ selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops, const char *ns_arr[],
     {
         if(!strcmp(argv[i], "-t") || !strcmp(argv[i], "--template"))
         {
+            xmlNodePtr call_template;
             t++;
-            c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "  <xsl:call-template name=\"t%d\"/>\n", t);
+            xmlStrPrintf(num_buf, sizeof num_buf, BAD_CAST "t%d", t);
+            call_template = xmlNewChild(root_template, xslns, BAD_CAST "call-template", NULL);
+            xmlNewProp(call_template, BAD_CAST "name", num_buf);
         }
         i++;
     }
-    if (!ops->outText && ops->printRoot) c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xml-select>\n");
-    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:template>\n");
 
     /*
      *  At least one -t option must be found
@@ -645,13 +634,18 @@ selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops, const char *ns_arr[],
         {
             int lastTempl = 0;
             t++;
-            i = selGenTemplate(xsl_buf, &c, ops, t, &lastTempl, i, argc, argv);
+            xmlStrPrintf(num_buf, sizeof num_buf, BAD_CAST "t%d", t);
+            i = selGenTemplate(root, xslns, ops, num_buf, &lastTempl, i, argc, argv);
             if (lastTempl) break;
         }
     }
 
-    c += snprintf(xsl_buf + c, MAX_XSL_BUF - c - 1, "</xsl:stylesheet>\n");
-    *len = c;
+    {
+        xmlChar *buf;
+        xmlDocDumpFormatMemory(style, &buf, len, 1);
+        memcpy(xsl_buf, buf, *len);
+        xmlFree(buf);
+    }
 
     return i;
 }
@@ -665,7 +659,7 @@ selMain(int argc, char **argv)
     static xsltOptions xsltOps;
     static selOptions ops;
     static const char *params[2 * MAX_PARAMETERS + 1];
-    static const char *ns_arr[2 * MAX_NS_ARGS + 1];
+    static xmlChar *ns_arr[2 * MAX_NS_ARGS + 1];
     int start, c, i, n, status = 0;
     int nCount = 0;
     int nbparams;
