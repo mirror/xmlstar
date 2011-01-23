@@ -46,10 +46,7 @@ THE SOFTWARE.
  *   2. --nonet option (to disable fetching DTD over network)
  */
 
-#define MAX_XSL_BUF    256*1024
 #define MAX_NS_ARGS    256
-
-char xsl_buf[MAX_XSL_BUF];
 
 typedef struct _selOptions {
     int printXSLT;        /* Display prepared XSLT */
@@ -535,16 +532,14 @@ selGenTemplate(xmlNodePtr root, xmlNsPtr xslns, selOptionsPtr ops,
  *  Prepare XSLT stylesheet based on command line options
  */
 int
-selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops, xmlChar *ns_arr[],
+selPrepareXslt(xmlDocPtr style, selOptionsPtr ops, xmlChar *ns_arr[],
                int start, int argc, char **argv)
 {
     int i, t, ns;
-    xmlDocPtr style;
     xmlNodePtr root, root_template;
     xmlNsPtr xslns;
-    xmlChar num_buf[8];
+    xmlChar num_buf[1+10+1];    /* d+maxnumber+NUL */
 
-    style = xmlNewDoc(NULL);
     xslns = xmlNewNs(NULL, BAD_CAST "http://www.w3.org/1999/XSL/Transform",
         BAD_CAST "xsl");
     root = xmlNewDocRawNode(style, xslns, BAD_CAST "stylesheet", NULL);
@@ -639,14 +634,6 @@ selPrepareXslt(char* xsl_buf, int *len, selOptionsPtr ops, xmlChar *ns_arr[],
             if (lastTempl) break;
         }
     }
-
-    {
-        xmlChar *buf;
-        xmlDocDumpFormatMemory(style, &buf, len, 1);
-        memcpy(xsl_buf, buf, *len);
-        xmlFree(buf);
-    }
-
     return i;
 }
 
@@ -660,9 +647,11 @@ selMain(int argc, char **argv)
     static selOptions ops;
     static const char *params[2 * MAX_PARAMETERS + 1];
     static xmlChar *ns_arr[2 * MAX_NS_ARGS + 1];
-    int start, c, i, n, status = 0;
+    int start, i, n, status = 0;
     int nCount = 0;
     int nbparams;
+    xmlDocPtr style_tree;
+    xsltStylesheetPtr style;
 
     if (argc <= 2) selUsage(argv[0], EXIT_BAD_ARGS);
 
@@ -676,14 +665,20 @@ selMain(int argc, char **argv)
     /* set parameters */
     selParseNSArr(ns_arr, &nCount, start, argv+2);
 
-    c = sizeof(xsl_buf);
-    i = selPrepareXslt(xsl_buf, &c, &ops, ns_arr, start, argc, argv);
+    style_tree = xmlNewDoc(NULL);
+    i = selPrepareXslt(style_tree, &ops, ns_arr, start, argc, argv);
 
     if (ops.printXSLT)
     {
-        fprintf(stdout, "%s", xsl_buf);
+        xmlDocFormatDump(stdout, style_tree, 1);
         exit(0);
     }
+
+    /*
+     *  Parse XSLT stylesheet
+     */
+    style = xsltParseStylesheetDoc(style_tree);
+    if (!style) exit(2);
 
     for (n=i; n<argc; n++)
     {
@@ -699,42 +694,29 @@ selMain(int argc, char **argv)
         value = xmlStrcat((xmlChar *)value, (const xmlChar *)"'");
         params[1] = (char *) value;
 
-        /*
-         *  Parse XSLT stylesheet
-         */
         {
-            xmlDocPtr style = xmlParseMemory(xsl_buf, c);
-            xsltStylesheetPtr cur = xsltParseStylesheetDoc(style);
-            xmlDocPtr doc = NULL;
-            if (!cur) exit(2);
-            doc = xmlParseFile(argv[n]);
+            xmlDocPtr doc = xmlParseFile(argv[n]);
             if (doc != NULL) {
-                xsltProcess(&xsltOps, doc, params, cur, argv[n]);
+                xsltProcess(&xsltOps, doc, params, style, argv[n]);
             } else {
                 status = 2;
             }
-            xsltFreeStylesheet(cur);
         }
-        
         xmlFree(value);
     }
 
     if (i == argc)
     {
-        /*
-         *  Parse XSLT stylesheet
-         */
-        xmlDocPtr style = xmlParseMemory(xsl_buf, c);
-        xsltStylesheetPtr cur = xsltParseStylesheetDoc(style);
-        xmlDocPtr doc = NULL;
-        if (!cur) exit(2);
-        doc = xmlParseFile("-");
+        nbparams = 2;
+        params[0] = "inputFile";
+        params[1] = "'-'";
+
+        xmlDocPtr doc = xmlParseFile("-");
         if (doc != NULL) {
-            xsltProcess(&xsltOps, doc, params, cur, "-");
+            xsltProcess(&xsltOps, doc, params, style, "-");
         } else {
             status = 2;
         }
-        xsltFreeStylesheet(cur);
     }
 
     /* 
