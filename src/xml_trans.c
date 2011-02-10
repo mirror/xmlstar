@@ -58,7 +58,7 @@ static const char trans_usage_str_2[] =
 "  -p              - parameter is XPATH expression (\"'string'\" to quote string)\n"
 "  -s              - parameter is a string literal\n"
 "<options> are:\n"
-"  --help or -h    - diplay help message\n"
+"  --help or -h    - display help message\n"
 "  --omit-decl     - omit xml declaration <?xml version=\"1.0\"?>\n"
 "  --embed or -E   - allow applying embedded stylesheet\n"
 "  --show-ext      - show list of extensions\n";
