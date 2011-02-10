@@ -276,7 +276,7 @@ int xsltRun(xsltOptionsPtr ops, char* xsl, const char** params,
     xmlDocPtr doc, style;
     int i, options = 0;
 
-    options = XML_PARSE_DTDATTR;
+    options = XSLT_PARSE_OPTIONS;
      
     /*
      * Compile XSLT Sylesheet
