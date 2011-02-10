@@ -7,6 +7,11 @@ AM_CFLAGS = -Wall
 endif
 
 dist-hook: xmlstarlet.spec
+	@ if [ -d .git ] ; then \
+	    if [ $(VERSION) != `git describe --tags --dirty` ] ; then \
+		echo 'ERROR: version mismatch, rerun autoreconf -f' ; exit 1 ; fi ; \
+	    $(SED) 's/\[m4_esyscmd_s(\[git describe --tags --dirty\])\]/[$(VERSION)]/' \
+	      $(srcdir)/configure.ac > $(distdir)/configure.ac ; fi
 	-cp xmlstarlet.spec $(distdir)
 	(cd $(srcdir) ; $(AMTAR) -cf - --exclude CVS doc examples solaris tests) | (cd $(distdir); $(AMTAR) xf -)
 
@@ -27,7 +32,18 @@ $(distdir)-win32.zip: xml.exe
 
 dist-win32: $(distdir)-win32.zip
 
-.PHONY: cleantar rpm dist-win32
+VERSION:
+	@if [ -d .git ] ; then \
+	    VERSION=`git describe --tags --dirty`; \
+	else VERSION=$(VERSION) ; fi; \
+	NEW_VERSION="#define VERSION \"$$VERSION\""; \
+	OLD_VERSION=`cat version.h` ; \
+	if [ "$$NEW_VERSION" != "$$OLD_VERSION" ] ; then \
+	    echo "$$NEW_VERSION" > version.h ; \
+	    echo "version.h: $$NEW_VERSION"; fi
+version.h : VERSION
+
+.PHONY: cleantar rpm dist-win32 VERSION
 
 # testing
 egdir = $(srcdir)/examples
@@ -59,7 +75,7 @@ xml_SOURCES = src/xml.c src/xml_edit.c src/xml_ls.c src/xml_escape.c    \
 src/xml_pyx.c src/xml_depyx.c src/xml_select.c src/xml_trans.c          \
 src/xml_validate.c src/xml_format.c src/xml_elem.c src/xml_C14N.c       \
 src/trans.c src/binsert.c src/stack.c src/binsert.h src/stack.h         \
-src/trans.h src/escape.h src/strdup.h src/strdup.c
+src/trans.h src/escape.h src/strdup.h src/strdup.c version.h
 
 # doc
 man_MANS = doc/xmlstarlet.1

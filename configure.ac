@@ -1,11 +1,11 @@
 AC_PREREQ([2.62])
-AC_INIT([XMLStarlet], [m4_esyscmd_s([git describe --tags])],
+AC_INIT([XMLStarlet], [m4_esyscmd_s([git describe --tags --dirty])],
         [http://sourceforge.net/projects/xmlstar/support],
         [],
         [http://xmlstar.sourceforge.net/])
 AC_REVISION(AC_PACKAGE_VERSION)
 
-AM_INIT_AUTOMAKE([1.11 foreign -Wall subdir-objects])
+AM_INIT_AUTOMAKE([1.11 foreign -Wall subdir-objects no-define])
 AM_SILENT_RULES
 AM_MAINTAINER_MODE
 
@@ -31,6 +31,7 @@ AC_PROG_CC
 AM_CONDITIONAL([GCC], [test x$GCC = xyes])
 AM_PROG_CC_C_O
 AC_ARG_PROGRAM          dnl Transforming Program Names When Installing
+AC_PROG_SED
 
 
 XSTAR_LIB_CHECK([LIBXML], [xml2-config])
@@ -123,6 +124,7 @@ AM_SUBST_NOTMAKE(PACKAGE_VERSION)
 dnl for the spec file
 
 AC_CONFIG_HEADERS([config.h])
+AH_BOTTOM([#include <version.h>])
 AC_CONFIG_FILES([
 xmlstarlet.spec
 Makefile

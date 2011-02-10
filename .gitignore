@@ -20,3 +20,4 @@ src/.deps/
 src/.dirstamp
 src/*.o
 xml
+/version.h
