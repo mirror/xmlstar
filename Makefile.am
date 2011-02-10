@@ -32,7 +32,7 @@ $(distdir)-win32.zip: xml.exe
 
 dist-win32: $(distdir)-win32.zip
 
-VERSION:
+version.h: VERSION
 	@if [ -d .git ] ; then \
 	    VERSION=`git describe --tags --dirty`; \
 	else VERSION=$(VERSION) ; fi; \
@@ -41,9 +41,7 @@ VERSION:
 	if [ "$$NEW_VERSION" != "$$OLD_VERSION" ] ; then \
 	    echo "$$NEW_VERSION" > version.h ; \
 	    echo "version.h: $$NEW_VERSION"; fi
-version.h : VERSION
--include version.h
-
+VERSION:
 .PHONY: cleantar rpm dist-win32 VERSION
 
 # testing
