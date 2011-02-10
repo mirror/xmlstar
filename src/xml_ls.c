@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 */
 
-#include "config.h"
+#include <config.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -40,11 +40,12 @@ THE SOFTWARE.
 #include <libxml/xmlmemory.h>
 #include <libxml/c14n.h>
 
+#include "xmlstar.h"
 #include "escape.h"
 
 static const char ls_usage_str[] =
 "XMLStarlet Toolkit: List directory as XML\n"
-"Usage: xml ls\n"
+"Usage: %s ls\n"
 "Lists current directory in XML format.\n"
 "Time is shown per ISO 8601 spec.\n"
 "\n";
@@ -53,13 +54,13 @@ static const char ls_usage_str[] =
  *  Print small help for command line options
  */
 void
-lsUsage(int argc, char **argv)
+lsUsage(int argc, char **argv, exit_status status)
 {
     extern const char more_info[];
     FILE* o = stderr;
-    fprintf(o, "%s", ls_usage_str);
+    fprintf(o, ls_usage_str, argv[0]);
     fprintf(o, "%s", more_info);
-    exit(1);
+    exit(status);
 }
 
 
@@ -205,7 +206,7 @@ int
 lsMain(int argc, char** argv)
 {
     int res = -1;
-    if (argc != 2) lsUsage(argc, argv);
+    if (argc != 2) lsUsage(argc, argv, EXIT_BAD_ARGS);
     printf("<dir>\n");
     res = xml_print_dir(".");
     printf("</dir>\n");

@@ -18,12 +18,14 @@
 
 #include <libxml/parser.h>
 
+#include "xmlstar.h"
+
 /*
  * usage string chunk : 509 char max on ISO C90
  */
 static const char pyx_usage_str_1[] =
 "XMLStarlet Toolkit: Convert XML into PYX format (based on ESIS - ISO 8879)\n"
-"Usage: xml pyx {<xml-file>}\n"
+"Usage: %s pyx {<xml-file>}\n"
 "where\n"
 "  <xml-file> - input XML document file name (stdin is used if missing)\n\n";
 
@@ -199,15 +201,15 @@ pyxCdataBlockHandler(void *ctx ATTRIBUTE_UNUSED, const xmlChar *value, int len)
 }
 
 static void
-pyxUsage()
+pyxUsage(const char *argv0, exit_status status)
 {
     extern const char more_info[];
     FILE* o = stderr;
-    fprintf(o, "%s", pyx_usage_str_1);
+    fprintf(o, pyx_usage_str_1, argv0);
     fprintf(o, "%s", pyx_usage_str_2);
     fprintf(o, "%s", pyx_usage_str_3);
     fprintf(o, "%s", more_info);
-    exit(1);
+    exit(status);
 }
 
 int
@@ -253,8 +255,7 @@ pyxMain(int argc,const char *argv[])
            (strcmp(argv[2],"--help") == 0)
        ))
     {
-        pyxUsage();
-        exit(0);
+        pyxUsage(argv[0], EXIT_SUCCESS);
     }
     if (argc == 2) {
         status = pyx_process_file("-");

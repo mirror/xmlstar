@@ -26,12 +26,13 @@ THE SOFTWARE.
 
 */
 
-#include "config.h"
+#include <config.h>
 
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "xmlstar.h"
 #include "trans.h"
 
 #ifdef LIBXML_SCHEMAS_ENABLED
@@ -78,7 +79,7 @@ typedef ErrorInfo *ErrorInfoPtr;
  */
 static const char validate_usage_str_1[] =
 "XMLStarlet Toolkit: Validate XML document(s)\n"
-"Usage: xml val <options> [ <xml-file-or-uri> ... ]\n"
+"Usage: %s val <options> [ <xml-file-or-uri> ... ]\n"
 "where <options>\n"
 "  -w or --well-formed        - validate well-formedness only (default)\n"
 "  -d or --dtd <dtd-file>     - validate against DTD\n";
@@ -107,17 +108,17 @@ static const char schema_notice[] =
  *  display short help message
  */
 void
-valUsage(int argc, char **argv)
+valUsage(int argc, char **argv, exit_status status)
 {
     extern const char more_info[];
     FILE* o = stderr;
-    fprintf(o, "%s", validate_usage_str_1);
+    fprintf(o, validate_usage_str_1, argv[0]);
     fprintf(o, "%s", validate_usage_str_2);
 #ifdef LIBXML_SCHEMAS_ENABLED
     fprintf(o, "%s", schema_notice);
 #endif
     fprintf(o, "%s", more_info);
-    exit(1);
+    exit(status);
 }
 
 /**
@@ -183,27 +184,27 @@ valParseOptions(valOptionsPtr ops, int argc, char **argv)
         else if (!strcmp(argv[i], "--dtd") || !strcmp(argv[i], "-d"))
         {
             i++;
-            if (i >= argc) valUsage(argc, argv);
+            if (i >= argc) valUsage(argc, argv, EXIT_BAD_ARGS);
             ops->dtd = argv[i];
             i++;
         }
         else if (!strcmp(argv[i], "--xsd") || !strcmp(argv[i], "-s"))
         {
             i++;
-            if (i >= argc) valUsage(argc, argv);
+            if (i >= argc) valUsage(argc, argv, EXIT_BAD_ARGS);
             ops->schema = argv[i];
             i++;
         }
         else if (!strcmp(argv[i], "--relaxng") || !strcmp(argv[i], "-r"))
         {
             i++;
-            if (i >= argc) valUsage(argc, argv);
+            if (i >= argc) valUsage(argc, argv, EXIT_BAD_ARGS);
             ops->relaxng = argv[i];
             i++;
         }
         else if (!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h"))
         {
-            valUsage(argc, argv);
+            valUsage(argc, argv, EXIT_SUCCESS);
         }
         else if (!strcmp(argv[i], "-"))
         {
@@ -212,7 +213,7 @@ valParseOptions(valOptionsPtr ops, int argc, char **argv)
         }
         else if (argv[i][0] == '-')
         {
-            valUsage(argc, argv);
+            valUsage(argc, argv, EXIT_BAD_ARGS);
         }
         else
         {
@@ -331,7 +332,7 @@ valMain(int argc, char **argv)
     static ErrorInfo errorInfo;
     int invalidFound = 0;
 
-    if (argc <= 2) valUsage(argc, argv);
+    if (argc <= 2) valUsage(argc, argv, EXIT_BAD_ARGS);
     valInitOptions(&ops);
     start = valParseOptions(&ops, argc, argv);
 

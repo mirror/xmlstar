@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 */
 
-#include "config.h"
+#include <config.h>
 
 #include <string.h>
 #include <stdio.h>
@@ -42,6 +42,8 @@ THE SOFTWARE.
 #include <libxml/xpointer.h>
 #include <libxml/parserInternals.h>
 #include <libxml/uri.h>
+
+#include "xmlstar.h"
 
 #ifndef HAVE_STRDUP
 #include "strdup.h"
@@ -73,7 +75,7 @@ typedef foOptions *foOptionsPtr;
  */
 static const char format_usage_str_1[] =
 "XMLStarlet Toolkit: Format XML document\n"
-"Usage: xml fo [<options>] <xml-file>\n"
+"Usage: %s fo [<options>] <xml-file>\n"
 "where <options> are\n"
 "  -n or --noindent            - do not indent\n"
 "  -t or --indent-tab          - indent output with tabulation\n"
@@ -98,14 +100,14 @@ const char *encoding = NULL;
  *  Print small help for command line options
  */
 void
-foUsage(int argc, char **argv)
+foUsage(int argc, char **argv, exit_status status)
 {
     extern const char more_info[];
     FILE* o = stderr;
     fprintf(o, "%s", format_usage_str_1);
     fprintf(o, "%s", format_usage_str_2);
     fprintf(o, "%s", more_info);
-    exit(1);
+    exit(status);
 }
 
 /**
@@ -232,14 +234,14 @@ foParseOptions(foOptionsPtr ops, int argc, char **argv)
         {
             int value;
             i++;
-            if (i >= argc) foUsage(argc, argv);
+            if (i >= argc) foUsage(argc, argv, EXIT_BAD_ARGS);
             if (sscanf(argv[i], "%d", &value) == 1)
             {
                 if (value > 0) ops->indent_spaces = value;
             }
             else
             {
-                foUsage(argc, argv);
+                foUsage(argc, argv, EXIT_BAD_ARGS);
             }
             ops->indent_tab = 0;
             i++;
@@ -258,7 +260,7 @@ foParseOptions(foOptionsPtr ops, int argc, char **argv)
 #endif
         else if (!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h"))
         {
-            foUsage(argc, argv);
+            foUsage(argc, argv, EXIT_BAD_ARGS);
         }
         else if (!strcmp(argv[i], "-"))
         {
@@ -267,7 +269,7 @@ foParseOptions(foOptionsPtr ops, int argc, char **argv)
         }
         else if (argv[i][0] == '-')
         {
-            foUsage(argc, argv);
+            foUsage(argc, argv, EXIT_BAD_ARGS);
         }
         else
         {
@@ -404,10 +406,10 @@ foMain(int argc, char **argv)
     int start;
     static foOptions ops;
 
-    if (argc <=1) foUsage(argc, argv);
+    if (argc <=1) foUsage(argc, argv, EXIT_BAD_ARGS);
     foInitOptions(&ops);
     start = foParseOptions(&ops, argc, argv);
-    if (argc-start > 1) foUsage(argc, argv);
+    if (argc-start > 1) foUsage(argc, argv, EXIT_BAD_ARGS);
     foInitLibXml(&ops);
     ret = foProcess(&ops, start, argc, argv);
     foCleanup();

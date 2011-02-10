@@ -10,7 +10,7 @@
  */
 
 #include <libxml/xmlversion.h>
-#include "config.h"
+#include <config.h>
 
 #if defined(LIBXML_C14N_ENABLED)
 
@@ -30,11 +30,11 @@
 
 #include <libxml/c14n.h>
 
-
+#include "xmlstar.h"
 
 static const char c14n_usage_str_1[] =
 "XMLStarlet Toolkit: XML canonicalization\n"
-"Usage: xml c14n <mode> <xml-file> [<xpath-file>] [<inclusive-ns-list>]\n"
+"Usage: %s c14n <mode> <xml-file> [<xpath-file>] [<inclusive-ns-list>]\n"
 "where\n"
 "  <xml-file>   - input XML document file name (stdin is used if '-')\n"
 "  <xpath-file> - XML file containing XPath expression for\n"
@@ -60,15 +60,15 @@ static const char c14n_usage_str_3[] =
 "  --exc-without-comments  Exclusive XML file canonicalization w/o comments\n"
 "\n";
 
-static void c14nUsage(const char *name)
+static void c14nUsage(const char *name, exit_status status)
 {
     extern const char more_info[];
     FILE* o = stderr;
-    fprintf(o, "%s", c14n_usage_str_1);
+    fprintf(o, c14n_usage_str_1, name);
     fprintf(o, "%s", c14n_usage_str_2);
     fprintf(o, "%s", c14n_usage_str_3);
     fprintf(o, "%s", more_info);
-    exit(1);
+    exit(status);
 }
 
 static xmlXPathObjectPtr
@@ -106,7 +106,7 @@ run_c14n(const char* xml_filename, int with_comments, int exclusive,
     doc = xmlReadFile(xml_filename, NULL, XML_PARSE_DTDATTR);
     if (doc == NULL) {
         fprintf(stderr, "Error: unable to parse file \"%s\"\n", xml_filename);
-        return(-1);
+        return(EXIT_BAD_FILE);
     }
     
     /*
@@ -115,7 +115,7 @@ run_c14n(const char* xml_filename, int with_comments, int exclusive,
     if(xmlDocGetRootElement(doc) == NULL) {
         fprintf(stderr,"Error: empty document for file \"%s\"\n", xml_filename);
         xmlFreeDoc(doc);
-        return(-1);
+        return(EXIT_BAD_FILE);
     }
 
     /* 
@@ -126,7 +126,7 @@ run_c14n(const char* xml_filename, int with_comments, int exclusive,
         if(xpath == NULL) {
             fprintf(stderr,"Error: unable to evaluate xpath expression\n");
             xmlFreeDoc(doc); 
-            return(-1);
+            return(EXIT_BAD_FILE);
         }
     }
 
@@ -148,7 +148,7 @@ run_c14n(const char* xml_filename, int with_comments, int exclusive,
         fprintf(stderr,"Error: failed to canonicalize XML file \"%s\" (ret=%d)\n", xml_filename, ret);
         if(result != NULL) xmlFree(result);
         xmlFreeDoc(doc);
-        return(-1);
+        return(EXIT_FAILURE);
     }
  
     /*
@@ -157,7 +157,7 @@ run_c14n(const char* xml_filename, int with_comments, int exclusive,
     if(xpath != NULL) xmlXPathFreeObject(xpath);
     xmlFreeDoc(doc);    
 
-    return(ret);
+    return(ret >= 0? EXIT_SUCCESS : EXIT_FAILURE);
 }
 
 int c14nMain(int argc, char **argv) {
@@ -175,8 +175,8 @@ int c14nMain(int argc, char **argv) {
     if (argc < 4) {
         if (argc >= 3)
         {
-            if ((!strcmp(argv[2], "--help")) || (!strcmp(argv[2], "-h")))
-                c14nUsage(argv[1]);
+            if (strcmp(argv[2], "--help") == 0 || strcmp(argv[2], "-h") == 0)
+                c14nUsage(argv[0], EXIT_SUCCESS);
         }
         ret = run_c14n((argc > 2)? argv[2] : "-", 1, 0, NULL, NULL);
     } else if(strcmp(argv[2], "--with-comments") == 0) {
@@ -199,7 +199,7 @@ int c14nMain(int argc, char **argv) {
         if(list != NULL) xmlFree(list);
     } else {
         fprintf(stderr, "error: bad arguments.\n");
-        c14nUsage(argv[1]);
+        c14nUsage(argv[0], EXIT_BAD_ARGS);
     }
 
     /* 
@@ -208,7 +208,7 @@ int c14nMain(int argc, char **argv) {
     xmlCleanupParser();
     xmlMemoryDump();
     
-    return ((ret >= 0) ? 0 : 1);
+    return ret;
 }
 
 /*

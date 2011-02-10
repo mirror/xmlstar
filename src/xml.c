@@ -26,11 +26,14 @@ THE SOFTWARE.
 
 */
 
-#include "config.h"
+#include <config.h>
+#include <version.h>
 
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "xmlstar.h"
 
 extern int edMain(int argc, char **argv);
 extern int selMain(int argc, char **argv);
@@ -49,7 +52,7 @@ extern int escMain(int argc, char **argv, int escape);
  */
 static const char usage_str_1[] = 
 "XMLStarlet Toolkit: Command line utilities for XML\n"
-"Usage: xml [<options>] <command> [<cmd-options>]\n";
+"Usage: %s [<options>] <command> [<cmd-options>]\n";
 
 static const char usage_str_2[] = 
 "where <command> is one of:\n"
@@ -74,7 +77,7 @@ static const char usage_str_4[] =
 "  --help               - show help\n"
 "Wherever file name mentioned in command help it is assumed\n"
 "that URL can be used instead as well.\n\n"
-"Type: xml <command> --help <ENTER> for command help\n\n";
+"Type: %s <command> --help <ENTER> for command help\n\n";
 
 
 
@@ -91,16 +94,16 @@ const char libxslt_more_info[] =
  *  Display usage syntax
  */
 void
-usage(int argc, char **argv)
+usage(int argc, char **argv, exit_status status)
 {
     FILE* o = stderr;
 
-    fprintf(o, "%s", usage_str_1);
+    fprintf(o, usage_str_1, argv[0]);
     fprintf(o, "%s", usage_str_2);
     fprintf(o, "%s", usage_str_3);
-    fprintf(o, "%s", usage_str_4);
+    fprintf(o, usage_str_4, argv[0]);
     fprintf(o, "%s", more_info);
-    exit(1);
+    exit(status);
 }  
 
 /**
@@ -111,9 +114,11 @@ main(int argc, char **argv)
 {
     int ret = 0;
 
-    if (argc <= 1) usage(argc, argv);
-
-    if (!strcmp(argv[1], "ed") || !strcmp(argv[1], "edit"))
+    if (argc <= 1)
+    {
+        usage(argc, argv, EXIT_BAD_ARGS);
+    }
+    else if (!strcmp(argv[1], "ed") || !strcmp(argv[1], "edit"))
     {
         ret = edMain(argc, argv);
     }
@@ -164,11 +169,12 @@ main(int argc, char **argv)
     else if (!strcmp(argv[1], "--version"))
     {
         fprintf(stdout, "%s\n", VERSION);
-        ret = 0;
+        ret = EXIT_SUCCESS;
     }
     else
     {
-        usage(argc, argv);
+        usage(argc, argv, strcmp(argv[1], "--help") == 0?
+            EXIT_SUCCESS : EXIT_BAD_ARGS);
     }
     
     exit(ret);

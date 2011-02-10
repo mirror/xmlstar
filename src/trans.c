@@ -1,6 +1,6 @@
 /*  $Id: trans.c,v 1.19 2004/11/22 02:28:21 mgrouch Exp $  */
 
-#include "config.h"
+#include <config.h>
 #include "trans.h"
 
 /*

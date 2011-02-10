@@ -42,6 +42,7 @@ VERSION:
 	    echo "$$NEW_VERSION" > version.h ; \
 	    echo "version.h: $$NEW_VERSION"; fi
 version.h : VERSION
+-include version.h
 
 .PHONY: cleantar rpm dist-win32 VERSION
 
@@ -75,7 +76,8 @@ xml_SOURCES = src/xml.c src/xml_edit.c src/xml_ls.c src/xml_escape.c    \
 src/xml_pyx.c src/xml_depyx.c src/xml_select.c src/xml_trans.c          \
 src/xml_validate.c src/xml_format.c src/xml_elem.c src/xml_C14N.c       \
 src/trans.c src/binsert.c src/stack.c src/binsert.h src/stack.h         \
-src/trans.h src/escape.h src/strdup.h src/strdup.c version.h
+src/trans.h src/escape.h src/strdup.h src/strdup.c version.h            \
+src/xmlstar.h
 
 # doc
 man_MANS = doc/xmlstarlet.1

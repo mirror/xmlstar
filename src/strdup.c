@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 */
 
-#include "config.h"
+#include <config.h>
 
 #ifndef HAVE_STRDUP
 

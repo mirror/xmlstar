@@ -32,13 +32,14 @@ THE SOFTWARE.
 
 #include <libxml/xmlmemory.h>
 
+#include "xmlstar.h"
 #include "escape.h"
 
 #define INSZ 4*1024
 
 static const char depyx_usage_str[] =
 "XMLStarlet Toolkit: Convert PYX into XML\n"
-"Usage: xml p2x [<pyx-file>]\n"
+"Usage: %s p2x [<pyx-file>]\n"
 "where\n"
 "  <pyx-file> - input PYX document file name (stdin is used if missing)\n\n"
 "The PYX format is a line-oriented representation of\n"
@@ -48,13 +49,13 @@ static const char depyx_usage_str[] =
 "\n";
 
 static void
-depyxUsage(int argc, char **argv)
+depyxUsage(int argc, char **argv, exit_status status)
 {
     extern const char more_info[];
     FILE* o = stderr;
-    fprintf(o, "%s", depyx_usage_str);
+    fprintf(o, depyx_usage_str, argv[0]);
     fprintf(o, "%s", more_info);
-    exit(1);
+    exit(status);
 }
 
 /**
@@ -121,7 +122,7 @@ pyxDePyx(char *file)
        if (in == NULL)
        {
           fprintf(stderr, "error: could not open: %s\n", file);
-          exit(2);
+          exit(EXIT_BAD_FILE);
        }
    }
    
@@ -215,7 +216,7 @@ pyxDePyx(char *file)
        }
    }
 
-   return 0;
+   return EXIT_SUCCESS;
 }
 
 /**
@@ -229,7 +230,7 @@ depyxMain(int argc, char **argv)
 
    if ((argc >= 3) && (!strcmp(argv[2], "-h") || !strcmp(argv[2], "--help")))
    {
-       depyxUsage(argc, argv);
+       depyxUsage(argc, argv, EXIT_SUCCESS);
    }
    else if (argc == 3)
    {
@@ -241,7 +242,7 @@ depyxMain(int argc, char **argv)
    }
    else
    {
-       depyxUsage(argc, argv);     
+       depyxUsage(argc, argv, EXIT_BAD_ARGS);
    }
    
    printf("\n");

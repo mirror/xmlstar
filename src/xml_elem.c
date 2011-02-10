@@ -26,12 +26,13 @@ THE SOFTWARE.
 
 */
 
-#include "config.h"
+#include <config.h>
 
 #include <libxml/parser.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "xmlstar.h"
 #include "binsert.h"
 #include "escape.h"
 
@@ -67,7 +68,7 @@ typedef struct _elOptions {
 
 static const char elem_usage_str[] =
 "XMLStarlet Toolkit: Display element structure of XML document\n"
-"Usage: xml el [<options>] <xml-file>\n"
+"Usage: %s el [<options>] <xml-file>\n"
 "where\n"
 "  <xml-file> - input XML document file name (stdin is used if missing)\n"
 "  <options> is one of:\n"
@@ -90,13 +91,13 @@ static int depth = 0;
  *  Display usage syntax
  */
 void
-elUsage(int argc, char **argv)
+elUsage(int argc, char **argv, exit_status status)
 {
     extern const char more_info[];
     FILE* o = stderr;
-    fprintf(o, "%s", elem_usage_str);
+    fprintf(o, elem_usage_str, argv[0]);
     fprintf(o, "%s", more_info);
-    exit(1);
+    exit(status);
 }
 
 /**
@@ -219,7 +220,7 @@ elMain(int argc, char **argv)
     int errorno = 0;
     char* inp_file = "-";
 
-    if (argc <= 1) elUsage(argc, argv);
+    if (argc <= 1) elUsage(argc, argv, EXIT_BAD_ARGS);
 
     elInitOptions(&elOps);
     
@@ -231,7 +232,7 @@ elMain(int argc, char **argv)
         if (!strcmp(argv[2], "--help") || !strcmp(argv[2], "-h") ||
             !strcmp(argv[2], "-?") || !strcmp(argv[2], "-Z"))
         {
-            elUsage(argc, argv);
+            elUsage(argc, argv, EXIT_SUCCESS);
         }
         else if (!strcmp(argv[2], "-a"))
         {
@@ -266,7 +267,7 @@ elMain(int argc, char **argv)
             errorno = parse_xml_file(argv[2]);
         }
         else
-            elUsage(argc, argv);
+            elUsage(argc, argv, EXIT_BAD_ARGS);
     }
 
     if (sorted)

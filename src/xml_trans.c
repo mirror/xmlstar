@@ -26,12 +26,13 @@ THE SOFTWARE.
 
 */
 
-#include "config.h"
+#include <config.h>
 
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "xmlstar.h"
 #include "trans.h"
 
 /*
@@ -47,7 +48,7 @@ THE SOFTWARE.
  */
 static const char trans_usage_str_1[] =
 "XMLStarlet Toolkit: Transform XML document(s) using XSLT\n"
-"Usage: xml tr [<options>] <xsl-file> {-p|-s <name>=<value>} [<xml-file>...]\n"
+"Usage: %s tr [<options>] <xsl-file> {-p|-s <name>=<value>} [<xml-file>...]\n"
 "where\n"
 "  <xsl-file>      - main XSLT stylesheet for transformation\n"
 "  <xml-file>      - input XML document file/URL (stdin is used if missing)\n";
@@ -83,17 +84,17 @@ static const char trans_usage_str_3[] =
  *  Display usage syntax
  */
 void
-trUsage(int argc, char **argv)
+trUsage(const char *argv0, exit_status status)
 {
     extern const char more_info[];
     extern const char libxslt_more_info[];
     FILE* o = stderr;
-    fprintf(o, "%s", trans_usage_str_1);
+    fprintf(o, trans_usage_str_1, argv0);
     fprintf(o, "%s", trans_usage_str_2);
     fprintf(o, "%s", trans_usage_str_3);
     fprintf(o, "%s", more_info);
     fprintf(o, "%s", libxslt_more_info);
-    exit(1);
+    exit(status);
 }
 
 /**
@@ -111,7 +112,7 @@ trParseOptions(xsltOptionsPtr ops, int argc, char **argv)
         {
             if (!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h"))
             {
-                trUsage(argc, argv);
+                trUsage(argv[0], EXIT_SUCCESS);
             }
             else if (!strcmp(argv[i], "--show-ext"))
             {
@@ -137,7 +138,7 @@ trParseOptions(xsltOptionsPtr ops, int argc, char **argv)
             {
                 int value;
                 i++;
-                if (i >= argc) trUsage(0, NULL);
+                if (i >= argc) trUsage(argv[0], EXIT_BAD_ARGS);
                 if (sscanf(argv[i], "%d", &value) == 1)
                     if (value > 0) xsltMaxDepth = value;
             }
@@ -195,10 +196,10 @@ trParseParams(const char** params, int* plen,
                 xmlChar *name, *value;
                 
                 i++;
-                if (i >= count) trUsage(0, NULL);
+                if (i >= count) trUsage(argv[0], EXIT_BAD_ARGS);
 
                 for(j=0; argv[i][j] && (argv[i][j] != '='); j++);
-                if (argv[i][j] != '=') trUsage(0, NULL);
+                if (argv[i][j] != '=') trUsage(argv[0], EXIT_BAD_ARGS);
                 
                 name = xmlStrndup((const xmlChar *) argv[i], j);
                 value = xmlStrdup((const xmlChar *) argv[i]+j+1);
@@ -222,10 +223,10 @@ trParseParams(const char** params, int* plen,
                 xmlChar *name, *value;
 
                 i++;
-                if (i >= count) trUsage(0, NULL);
+                if (i >= count) trUsage(argv[0], EXIT_BAD_ARGS);
 
                 for(j=0; argv[i][j] && (argv[i][j] != '='); j++);
-                if (argv[i][j] != '=') trUsage(0, NULL);
+                if (argv[i][j] != '=') trUsage(argv[0], EXIT_BAD_ARGS);
 
                 name = xmlStrndup((const xmlChar *)argv[i], j);
                 string = (const xmlChar *)(argv[i]+j+1);
@@ -298,7 +299,7 @@ trMain(int argc, char **argv)
     int start, xslt_ind;
     int pCount;
     
-    if (argc <= 2) trUsage(argc, argv);
+    if (argc <= 2) trUsage(argv[0], EXIT_BAD_ARGS);
 
     xsltInitOptions(&ops);
     start = trParseOptions(&ops, argc, argv);

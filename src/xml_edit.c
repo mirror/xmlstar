@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 */
 
-#include "config.h"
+#include <config.h>
 
 #include <string.h>
 #include <stdio.h>
@@ -42,6 +42,8 @@ THE SOFTWARE.
 #include <libxml/xpointer.h>
 #include <libxml/parserInternals.h>
 #include <libxml/uri.h>
+
+#include "xmlstar.h"
 
 /*
    TODO:
@@ -109,7 +111,7 @@ static XmlEdAction ops[MAX_XML_ED_OPS];
  */
 static const char edit_usage_str_1[] =
 "XMLStarlet Toolkit: Edit XML document(s)\n"
-"Usage: xml ed <global-options> {<action>} [ <xml-file-or-uri> ... ]\n"
+"Usage: %s ed <global-options> {<action>} [ <xml-file-or-uri> ... ]\n"
 "where\n"
 "  <global-options>  - global options for editing\n"
 "  <xml-file-or-uri> - input XML document file name/uri (stdin otherwise)\n\n";
@@ -152,16 +154,16 @@ static const char edit_usage_str_4[] =
  *  display short help message
  */
 void
-edUsage(int argc, char **argv)
+edUsage(const char *argv0, exit_status status)
 {
     extern const char more_info[];
     FILE* o = stderr;
-    fprintf(o, "%s", edit_usage_str_1);
+    fprintf(o, edit_usage_str_1, argv0);
     fprintf(o, "%s", edit_usage_str_2);
     fprintf(o, "%s", edit_usage_str_3);
     fprintf(o, "%s", edit_usage_str_4);
     fprintf(o, "%s", more_info);
-    exit(1);
+    exit(status);
 }
 
 /**
@@ -206,7 +208,7 @@ edParseOptions(edOptionsPtr ops, int argc, char **argv)
         else if (!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h") ||
                  !strcmp(argv[i], "-?") || !strcmp(argv[i], "-Z"))
         {
-            edUsage(argc, argv);
+            edUsage(argv[0], EXIT_SUCCESS);
         }
         else
         {
@@ -244,10 +246,10 @@ edParseNSArr(const char** ns_arr, int* plen,
                 xmlChar *name, *value;
 
                 i++;
-                if (i >= count) edUsage(0, NULL);
+                if (i >= count) edUsage(argv[0], EXIT_BAD_ARGS);
 
                 for(j=0; argv[i][j] && (argv[i][j] != '='); j++);
-                if (argv[i][j] != '=') edUsage(0, NULL);
+                if (argv[i][j] != '=') edUsage(argv[0], EXIT_BAD_ARGS);
 
                 name = xmlStrndup((const xmlChar *) argv[i], j);
                 value = xmlStrdup((const xmlChar *) argv[i]+j+1);
@@ -920,8 +922,9 @@ edMain(int argc, char **argv)
     int i, j, n, start = 0;
     static edOptions g_ops;
 
-    if (argc < 3) edUsage(argc, argv);
-    if (!strcmp(argv[2], "--help") || !strcmp(argv[2], "-h")) edUsage(argc, argv);
+    if (argc < 3) edUsage(argv[0], EXIT_BAD_ARGS);
+    if (!strcmp(argv[2], "--help") || !strcmp(argv[2], "-h"))
+        edUsage(argv[0], EXIT_BAD_ARGS);
 
     edInitOptions(&g_ops);
     start = edParseOptions(&g_ops, argc, argv);
@@ -939,7 +942,7 @@ edMain(int argc, char **argv)
         if (!strcmp(argv[i], "-d") || !strcmp(argv[i], "--delete"))
         {
             i++;
-            if (i >= argc) edUsage(argc, argv);
+            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
             ops[j].op = XML_ED_DELETE;
             ops[j].arg1 = argv[i];
             ops[j].arg2 = 0;
@@ -949,11 +952,11 @@ edMain(int argc, char **argv)
         else if (!strcmp(argv[i], "-m") || !strcmp(argv[i], "--move"))
         {
             i++;
-            if (i >= argc) edUsage(argc, argv);
+            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
             ops[j].op = XML_ED_MOVE;
             ops[j].arg1 = argv[i];
             i++;
-            if (i >= argc) edUsage(argc, argv);
+            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
             ops[j].arg2 = argv[i];
             ops[j].type = XML_UNDEFINED;
             j++;
@@ -961,19 +964,20 @@ edMain(int argc, char **argv)
         else if (!strcmp(argv[i], "-u") || !strcmp(argv[i], "--update"))
         {
             i++;
-            if (i >= argc) edUsage(argc, argv);
+            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
             ops[j].type = XML_UNDEFINED;
             ops[j].op = XML_ED_UPDATE;
             ops[j].arg1 = argv[i];
             i++;
-            if (i >= argc) edUsage(argc, argv);
+            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
             if (strcmp(argv[i], "-v") && strcmp(argv[i], "--value") &&
-                strcmp(argv[i], "-x") && strcmp(argv[i], "--expr")) edUsage(argc, argv);
+                strcmp(argv[i], "-x") && strcmp(argv[i], "--expr"))
+                edUsage(argv[0], EXIT_BAD_ARGS);
 
             if (!strcmp(argv[i], "-x") || !strcmp(argv[i], "--expr"))
                 ops[j].type = XML_EXPR;
             i++;
-            if (i >= argc) edUsage(argc, argv);
+            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
             ops[j].arg2 = argv[i];
 
             j++;
@@ -981,30 +985,31 @@ edMain(int argc, char **argv)
         else if (!strcmp(argv[i], "-r") || !strcmp(argv[i], "--rename"))
         {
             i++;
-            if (i >= argc) edUsage(argc, argv);
+            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
             ops[j].type = XML_UNDEFINED;
             ops[j].op = XML_ED_RENAME;
             ops[j].arg1 = argv[i];
             i++;
-            if (i >= argc) edUsage(argc, argv);
-            if (strcmp(argv[i], "-v") && strcmp(argv[i], "--value")) edUsage(argc, argv);
+            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
+            if (strcmp(argv[i], "-v") && strcmp(argv[i], "--value"))
+                edUsage(argv[0], EXIT_BAD_ARGS);
             i++;
-            if (i >= argc) edUsage(argc, argv);
+            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
             ops[j].arg2 = argv[i];
             j++;
         }
         else if (!strcmp(argv[i], "-i") || !strcmp(argv[i], "--insert"))
         {
             i++;
-            if (i >= argc) edUsage(argc, argv);
+            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
             ops[j].type = XML_UNDEFINED;
             ops[j].op = XML_ED_INSERT;
             ops[j].arg1 = argv[i];
             i++;
-            if (i >= argc) edUsage(argc, argv);
-            if (strcmp(argv[i], "-t") && strcmp(argv[i], "--type")) edUsage(argc, argv);
+            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
+            if (strcmp(argv[i], "-t") && strcmp(argv[i], "--type")) edUsage(argv[0], EXIT_BAD_ARGS);;
             i++;
-            if (i >= argc) edUsage(argc, argv);
+            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
             if (!strcmp(argv[i], "elem"))
             {
                 ops[j].type = XML_ELEM;
@@ -1017,33 +1022,33 @@ edMain(int argc, char **argv)
             {
                 ops[j].type = XML_TEXT;
             }
-            else edUsage(argc, argv);
+            else edUsage(argv[0], EXIT_BAD_ARGS);;
             i++;
-            if (i >= argc) edUsage(argc, argv);
-            if (strcmp(argv[i], "-n") && strcmp(argv[i], "--name")) edUsage(argc, argv);
+            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
+            if (strcmp(argv[i], "-n") && strcmp(argv[i], "--name")) edUsage(argv[0], EXIT_BAD_ARGS);;
             i++;
-            if (i >= argc) edUsage(argc, argv);
+            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
             ops[j].arg3 = argv[i];
             i++;
-            if (i >= argc) edUsage(argc, argv);
-            if (strcmp(argv[i], "-v") && strcmp(argv[i], "--value")) edUsage(argc, argv);
+            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
+            if (strcmp(argv[i], "-v") && strcmp(argv[i], "--value")) edUsage(argv[0], EXIT_BAD_ARGS);;
             i++;
-            if (i >= argc) edUsage(argc, argv);
+            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
             ops[j].arg2 = argv[i];
             j++;
         }
         else if (!strcmp(argv[i], "-a") || !strcmp(argv[i], "--append"))
         {
             i++;
-            if (i >= argc) edUsage(argc, argv);
+            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
             ops[j].type = XML_UNDEFINED;
             ops[j].op = XML_ED_APPEND;
             ops[j].arg1 = argv[i];
             i++;
-            if (i >= argc) edUsage(argc, argv);
-            if (strcmp(argv[i], "-t") && strcmp(argv[i], "--type")) edUsage(argc, argv);
+            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
+            if (strcmp(argv[i], "-t") && strcmp(argv[i], "--type")) edUsage(argv[0], EXIT_BAD_ARGS);;
             i++;
-            if (i >= argc) edUsage(argc, argv);
+            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
             if (!strcmp(argv[i], "elem"))
             {
                 ops[j].type = XML_ELEM;
@@ -1056,33 +1061,33 @@ edMain(int argc, char **argv)
             {
                 ops[j].type = XML_TEXT;
             }
-            else edUsage(argc, argv);
+            else edUsage(argv[0], EXIT_BAD_ARGS);;
             i++;
-            if (i >= argc) edUsage(argc, argv);
-            if (strcmp(argv[i], "-n") && strcmp(argv[i], "--name")) edUsage(argc, argv);
+            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
+            if (strcmp(argv[i], "-n") && strcmp(argv[i], "--name")) edUsage(argv[0], EXIT_BAD_ARGS);;
             i++;
-            if (i >= argc) edUsage(argc, argv);
+            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
             ops[j].arg3 = argv[i];
             i++;
-            if (i >= argc) edUsage(argc, argv);
-            if (strcmp(argv[i], "-v") && strcmp(argv[i], "--value")) edUsage(argc, argv);
+            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
+            if (strcmp(argv[i], "-v") && strcmp(argv[i], "--value")) edUsage(argv[0], EXIT_BAD_ARGS);;
             i++;
-            if (i >= argc) edUsage(argc, argv);
+            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
             ops[j].arg2 = argv[i];
             j++;
         }
         else if (!strcmp(argv[i], "-s") || !strcmp(argv[i], "--subnode"))
         {
             i++;
-            if (i >= argc) edUsage(argc, argv);
+            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
             ops[j].type = XML_UNDEFINED;
             ops[j].op = XML_ED_SUBNODE;
             ops[j].arg1 = argv[i];
             i++;
-            if (i >= argc) edUsage(argc, argv);
-            if (strcmp(argv[i], "-t") && strcmp(argv[i], "--type")) edUsage(argc, argv);
+            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
+            if (strcmp(argv[i], "-t") && strcmp(argv[i], "--type")) edUsage(argv[0], EXIT_BAD_ARGS);;
             i++;
-            if (i >= argc) edUsage(argc, argv);
+            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
             if (!strcmp(argv[i], "elem"))
             {
                 ops[j].type = XML_ELEM;
@@ -1095,18 +1100,18 @@ edMain(int argc, char **argv)
             {
                 ops[j].type = XML_TEXT;
             }
-            else edUsage(argc, argv);
+            else edUsage(argv[0], EXIT_BAD_ARGS);;
             i++;
-            if (i >= argc) edUsage(argc, argv);
-            if (strcmp(argv[i], "-n") && strcmp(argv[i], "--name")) edUsage(argc, argv);
+            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
+            if (strcmp(argv[i], "-n") && strcmp(argv[i], "--name")) edUsage(argv[0], EXIT_BAD_ARGS);;
             i++;
-            if (i >= argc) edUsage(argc, argv);
+            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
             ops[j].arg3 = argv[i];
             i++;
-            if (i >= argc) edUsage(argc, argv);
-            if (strcmp(argv[i], "-v") && strcmp(argv[i], "--value")) edUsage(argc, argv);
+            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
+            if (strcmp(argv[i], "-v") && strcmp(argv[i], "--value")) edUsage(argv[0], EXIT_BAD_ARGS);;
             i++;
-            if (i >= argc) edUsage(argc, argv);
+            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
             ops[j].arg2 = argv[i];
             j++;
         }

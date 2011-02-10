@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 */
 
-#include "config.h"
+#include <config.h>
 
 #include <string.h>
 #include <stdio.h>
@@ -41,6 +41,7 @@ THE SOFTWARE.
 #include "strdup.h"
 #endif
 
+#include "xmlstar.h"
 #include "escape.h"
 
 #define INSZ 4*1024
@@ -52,7 +53,7 @@ THE SOFTWARE.
 
 static const char escape_usage_str[] =
 "XMLStarlet Toolkit: %s special XML characters\n"
-"Usage: xml %s [<options>] [<string>]\n"
+"Usage: %s %s [<options>] [<string>]\n"
 "where <options> are\n"
 "  --help      - print usage\n"
 "  (TODO: more to be added in future)\n"
@@ -63,13 +64,13 @@ static const char escape_usage_str[] =
  *  Print small help for command line options
  */
 void
-escUsage(int argc, char **argv, int escape)
+escUsage(int argc, char **argv, int escape, exit_status status)
 {
     extern const char more_info[];
     FILE* o = stderr;
-    fprintf(o, escape_usage_str, escape?"Escape":"Unescape", escape?"esc":"unesc");
+    fprintf(o, escape_usage_str, argv[0], escape?"Escape":"Unescape", escape?"esc":"unesc");
     fprintf(o, "%s", more_info);
-    exit(1);
+    exit(status);
 }
 
 struct xmlPredefinedChar {
@@ -281,14 +282,15 @@ escMain(int argc, char **argv, int escape)
     char* inp = NULL;
     xmlChar* outBuf = NULL;
     
-    if (argc < 2) escUsage(argc, argv, escape);
+    if (argc < 2) escUsage(argc, argv, escape, EXIT_BAD_ARGS);
 
     inp = argv[2];
 
     if (argc > 2)
     {
         if (!strcmp(argv[2], "--help") || !strcmp(argv[2], "-h") ||
-           !strcmp(argv[2], "-?") || !strcmp(argv[2], "-Z")) escUsage(argc, argv, escape);
+           !strcmp(argv[2], "-?") || !strcmp(argv[2], "-Z"))
+            escUsage(argc, argv, escape, EXIT_SUCCESS);
         if (!strcmp(argv[2], "-")) readStdIn = 1;
     }
     else

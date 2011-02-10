@@ -26,12 +26,13 @@ THE SOFTWARE.
 
 */
 
-#include "config.h"
+#include <config.h>
 
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "xmlstar.h"
 #include "trans.h"
 #include "stack.h"
 
@@ -65,7 +66,7 @@ typedef selOptions *selOptionsPtr;
  */
 static const char select_usage_str_1[] =
 "XMLStarlet Toolkit: Select from XML document(s)\n"
-"Usage: xml sel <global-options> {<template>} [ <xml-file> ... ]\n"
+"Usage: %s sel <global-options> {<template>} [ <xml-file> ... ]\n"
 "where\n"
 "  <global-options> - global options for selecting\n"
 "  <xml-file> - input XML document file name/uri (stdin is used if missing)\n"
@@ -152,12 +153,12 @@ static const char select_usage_str_9[] =
  *  Print small help for command line options
  */
 void
-selUsage(int argc, char **argv)
+selUsage(const char *argv0, exit_status status)
 {
     extern const char more_info[];
     extern const char libxslt_more_info[];
     FILE* o = stderr;
-    fprintf(o, "%s", select_usage_str_1);
+    fprintf(o, select_usage_str_1, argv0);
     fprintf(o, "%s", select_usage_str_2);
     fprintf(o, "%s", select_usage_str_3);
     fprintf(o, "%s", select_usage_str_4);
@@ -168,7 +169,7 @@ selUsage(int argc, char **argv)
     fprintf(o, "%s", select_usage_str_9);
     fprintf(o, "%s", more_info);
     fprintf(o, "%s", libxslt_more_info);
-    exit(1);
+    exit(status);
 }
 
 /**
@@ -209,10 +210,10 @@ selParseNSArr(const char** ns_arr, int* plen,
                 xmlChar *name, *value;
 
                 i++;
-                if (i >= count) selUsage(0, NULL);
+                if (i >= count) selUsage(argv[0], EXIT_BAD_ARGS);
 
                 for(j=0; argv[i][j] && (argv[i][j] != '='); j++);
-                if (argv[i][j] != '=') selUsage(0, NULL);
+                if (argv[i][j] != '=') selUsage(argv[0], EXIT_BAD_ARGS);
 
                 name = xmlStrndup((const xmlChar *) argv[i], j);
                 value = xmlStrdup((const xmlChar *) argv[i]+j+1);
@@ -317,7 +318,7 @@ selParseOptions(selOptionsPtr ops, int argc, char **argv)
         else if (!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h") ||
                  !strcmp(argv[i], "-?") || !strcmp(argv[i], "-Z"))
         {
-            selUsage(argc, argv);
+            selUsage(argv[0], EXIT_SUCCESS);
         }
         i++;
     }
@@ -772,7 +773,7 @@ selMain(int argc, char **argv)
     int nCount = 0;
     int nbparams;
 
-    if (argc <= 2) selUsage(argc, argv);
+    if (argc <= 2) selUsage(argv[0], EXIT_BAD_ARGS);
 
     selInitOptions(&ops);
     xsltInitOptions(&xsltOps);
