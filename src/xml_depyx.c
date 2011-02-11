@@ -52,7 +52,7 @@ static void
 depyxUsage(int argc, char **argv, exit_status status)
 {
     extern const char more_info[];
-    FILE* o = stderr;
+    FILE *o = (status == EXIT_SUCCESS)? stdout : stderr;
     fprintf(o, depyx_usage_str, argv[0]);
     fprintf(o, "%s", more_info);
     exit(status);

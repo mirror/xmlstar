@@ -67,7 +67,7 @@ void
 escUsage(int argc, char **argv, int escape, exit_status status)
 {
     extern const char more_info[];
-    FILE* o = stderr;
+    FILE *o = (status == EXIT_SUCCESS)? stdout : stderr;
     fprintf(o, escape_usage_str, argv[0], escape?"Escape":"Unescape", escape?"esc":"unesc");
     fprintf(o, "%s", more_info);
     exit(status);

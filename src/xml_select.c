@@ -157,7 +157,7 @@ selUsage(const char *argv0, exit_status status)
 {
     extern const char more_info[];
     extern const char libxslt_more_info[];
-    FILE* o = stderr;
+    FILE *o = (status == EXIT_SUCCESS)? stdout : stderr;
     fprintf(o, select_usage_str_1, argv0);
     fprintf(o, "%s", select_usage_str_2);
     fprintf(o, "%s", select_usage_str_3);

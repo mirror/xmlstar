@@ -103,7 +103,7 @@ void
 foUsage(int argc, char **argv, exit_status status)
 {
     extern const char more_info[];
-    FILE* o = stderr;
+    FILE *o = (status == EXIT_SUCCESS)? stdout : stderr;
     fprintf(o, "%s", format_usage_str_1);
     fprintf(o, "%s", format_usage_str_2);
     fprintf(o, "%s", more_info);

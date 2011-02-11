@@ -5,7 +5,7 @@ AC_INIT([XMLStarlet], [m4_esyscmd_s([git describe --tags --dirty])],
         [http://xmlstar.sourceforge.net/])
 AC_REVISION(AC_PACKAGE_VERSION)
 
-AM_INIT_AUTOMAKE([1.11 foreign -Wall subdir-objects check-news no-define std-options color-tests])
+AM_INIT_AUTOMAKE([1.11 foreign -Wall subdir-objects no-define std-options color-tests])
 AM_SILENT_RULES
 AM_MAINTAINER_MODE
 

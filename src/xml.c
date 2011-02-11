@@ -96,7 +96,7 @@ const char libxslt_more_info[] =
 void
 usage(int argc, char **argv, exit_status status)
 {
-    FILE* o = stderr;
+    FILE* o = (status == EXIT_SUCCESS)? stdout : stderr;
 
     fprintf(o, usage_str_1, argv[0]);
     fprintf(o, "%s", usage_str_2);

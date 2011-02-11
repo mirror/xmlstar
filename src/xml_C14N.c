@@ -63,7 +63,7 @@ static const char c14n_usage_str_3[] =
 static void c14nUsage(const char *name, exit_status status)
 {
     extern const char more_info[];
-    FILE* o = stderr;
+    FILE *o = (status == EXIT_SUCCESS)? stdout : stderr;
     fprintf(o, c14n_usage_str_1, name);
     fprintf(o, "%s", c14n_usage_str_2);
     fprintf(o, "%s", c14n_usage_str_3);

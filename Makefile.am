@@ -42,6 +42,10 @@ version.h: VERSION
 	    echo "$$NEW_VERSION" > version.h ; \
 	    echo "version.h: $$NEW_VERSION"; fi
 VERSION:
+
+clean-local:
+	-rm version.h
+
 .PHONY: cleantar rpm dist-win32 VERSION
 
 # testing
