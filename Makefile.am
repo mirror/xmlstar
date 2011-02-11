@@ -3,7 +3,7 @@ WIN32_DIST = $(EXTRA_DIST) AUTHORS ChangeLog INSTALL NEWS xml.exe doc
 
 ACLOCAL_AMFLAGS = -I m4
 if GCC
-AM_CFLAGS = -Wall
+AM_CFLAGS = -Wall -ansi -pedantic
 endif
 
 dist-hook: xmlstarlet.spec

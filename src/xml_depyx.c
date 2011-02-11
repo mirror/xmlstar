@@ -226,7 +226,7 @@ pyxDePyx(char *file)
 int
 depyxMain(int argc, char **argv)
 {
-   int ret;
+   int ret = EXIT_SUCCESS;
 
    if ((argc >= 3) && (!strcmp(argv[2], "-h") || !strcmp(argv[2], "--help")))
    {

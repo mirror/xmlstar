@@ -120,7 +120,9 @@ AC_SUBST([LIBXSLT_REQUIRED_VERSION])
 AM_SUBST_NOTMAKE(PACKAGE_NAME)
 AM_SUBST_NOTMAKE(PACKAGE_TARNAME)
 AM_SUBST_NOTMAKE(PACKAGE_VERSION)
- 
+
+AC_DEFINE([_XOPEN_SOURCE], [500], [needed to get lstat, snprintf, and strdup declarations in -ansi mode])
+
 dnl for the spec file
 
 AC_CONFIG_HEADERS([config.h])

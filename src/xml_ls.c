@@ -67,30 +67,16 @@ lsUsage(int argc, char **argv, exit_status status)
 char *
 get_file_type(mode_t mode)
 {
-   switch(mode & S_IFMT)
-   {
-       case S_IFREG:
-            return("f"); /* regular file */
-       case S_IFDIR:
-            return("d"); /* directory */
-       case S_IFCHR:
-            return("c"); /* character device */
-       case S_IFBLK:
-            return("b"); /* block device */
-#ifdef S_IFLNK
-       case S_IFLNK:
-            return("l"); /* symbolic link */
+    if (S_ISREG(mode)) return "f";       /* regular file */
+    else if (S_ISDIR(mode)) return "d";  /* directory */
+    else if (S_ISCHR(mode)) return "c";  /* character device */
+    else if (S_ISBLK(mode)) return "b";  /* block device */
+    else if (S_ISLNK(mode)) return "l";  /* symlink */
+    else if (S_ISFIFO(mode)) return "p"; /* fifo */
+#ifdef S_ISSOCK
+    else if (S_ISSOCK(mode)) return "s"; /* socket */
 #endif
-       case S_IFIFO:
-            return("p"); /* fifo */
-#ifdef S_IFSOCK
-       case S_IFSOCK:
-            return("s"); /* socket */
-#endif
-       default:
-            return("u"); /* unknown */
-   }
-   return(NULL);
+    else return "u";                     /* unknown */
 }
 
 char *
@@ -105,15 +91,15 @@ get_file_perms(mode_t mode)
 
    for(i=0; i<3; i++)
    {
-       if(mode &(S_IREAD>>(i*3)))
+       if(mode &(S_IRUSR>>(i*3)))
            *p='r';
        ++p;
 
-       if(mode &(S_IWRITE>>(i*3)))
+       if(mode &(S_IWUSR>>(i*3)))
            *p='w';
        ++p;
 
-       if(mode &(S_IEXEC>>(i*3)))
+       if(mode &(S_IXUSR>>(i*3)))
            *p='x';
        ++p;
    }
