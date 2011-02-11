@@ -1,4 +1,12 @@
 #!/bin/sh
+exepath=`dirname $0`
+xml="${srcdir-$exepath/..}"/xml
 
-"$srcdir"/xml ${@+"$@"}
+if [ x"$OSTYPE" = xmsys ] ; then
+    # MSYS does unix -> windows path conversion, eg: /x -> C:\Mingw\msys\1.0\x
+    # so we double all leading /'s to avoid this
+    exec "$xml" "${@/#\////}"
+fi
+
+exec "$xml" "$@"
 
