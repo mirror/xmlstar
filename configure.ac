@@ -132,6 +132,5 @@ Makefile
 solaris/package/sol8-sparc/pkginfo
 solaris/package/sol9-sparc/pkginfo
 ])
-
 AC_OUTPUT
 

@@ -37,7 +37,7 @@ version.h: VERSION
 	    VERSION=`git describe --tags --dirty`; \
 	else VERSION=$(VERSION) ; fi; \
 	NEW_VERSION="#define VERSION \"$$VERSION\""; \
-	OLD_VERSION=`cat version.h` ; \
+	OLD_VERSION=`cat version.h 2>/dev/null` ; \
 	if [ "$$NEW_VERSION" != "$$OLD_VERSION" ] ; then \
 	    echo "$$NEW_VERSION" > version.h ; \
 	    echo "version.h: $$NEW_VERSION"; fi
@@ -49,37 +49,13 @@ clean-local:
 .PHONY: cleantar rpm dist-win32 VERSION
 
 # testing
-egdir = $(srcdir)/examples
-TESTS_ENVIRONMENT = srcdir=$(srcdir) $(srcdir)/tests/runTest.sh
-TESTS = $(egdir)/bigxml-dtd $(egdir)/bigxml-embed                       \
-$(egdir)/bigxml-embed-ref $(egdir)/bigxml-relaxng                       \
-$(egdir)/bigxml-well-formed $(egdir)/bigxml-xsd $(egdir)/count1         \
-$(egdir)/countnode1 $(egdir)/c14n-default-attr $(egdir)/c14n1           \
-$(egdir)/c14n2 $(egdir)/delete1 $(egdir)/dtd1 $(egdir)/dtd2             \
-$(egdir)/dtd3 $(egdir)/dtd4 $(egdir)/ed-literal $(egdir)/elem1          \
-$(egdir)/elem2 $(egdir)/elem3 $(egdir)/escape1 $(egdir)/exslt1          \
-$(egdir)/findfile1 $(egdir)/genxml1 $(egdir)/hello1                     \
-$(egdir)/localname1 $(egdir)/look1 $(egdir)/move1 $(egdir)/noindent1    \
-$(egdir)/ns1 $(egdir)/recover1 $(egdir)/rename-attr1                    \
-$(egdir)/rename-elem1 $(egdir)/schema1 $(egdir)/sel-literal             \
-$(egdir)/sel1 $(egdir)/sort1 $(egdir)/structure1 $(egdir)/sum1          \
-$(egdir)/tab1 $(egdir)/table1 $(egdir)/table2 $(egdir)/table3           \
-$(egdir)/update-attr1 $(egdir)/unicode1 $(egdir)/update-elem1           \
-$(egdir)/valid1 $(egdir)/xinclude1 $(egdir)/xsl-param1                  \
-$(egdir)/xsl-sum1 $(egdir)/sel-xpath-c $(egdir)/sel-xpath-v             \
-$(egdir)/sel-xpath-m $(egdir)/sel-xpath-i $(egdir)/ed-namespace
-
-XFAIL_TESTS = $(egdir)/bigxml-dtd $(egdir)/ed-namespace
+include examples/tests.mk
 
 # building executable
 bin_PROGRAMS = xml
 
-xml_SOURCES = src/xml.c src/xml_edit.c src/xml_ls.c src/xml_escape.c    \
-src/xml_pyx.c src/xml_depyx.c src/xml_select.c src/xml_trans.c          \
-src/xml_validate.c src/xml_format.c src/xml_elem.c src/xml_C14N.c       \
-src/trans.c src/binsert.c src/stack.c src/binsert.h src/stack.h         \
-src/trans.h src/escape.h src/strdup.h src/strdup.c version.h            \
-src/xmlstar.h
+include src/sources.mk
+xml_SOURCES += version.h
 
 # doc
 man_MANS = doc/xmlstarlet.1
