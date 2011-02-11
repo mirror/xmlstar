@@ -43,6 +43,23 @@ THE SOFTWARE.
 #include "xmlstar.h"
 #include "escape.h"
 
+#if !HAVE_LSTAT
+# if HAVE_STAT
+#  define lstat stat
+# else
+/* TODO: #ifdef out code that uses stat instead */
+#  error "lstat() or stat() required"
+# endif
+#endif
+
+#ifndef S_ISLNK
+# define S_ISLNK(m) 0
+#endif
+
+#ifndef S_ISSOCK
+# define S_ISSOCK(m) 0
+#endif
+
 static const char ls_usage_str[] =
 "XMLStarlet Toolkit: List directory as XML\n"
 "Usage: %s ls\n"
@@ -73,9 +90,7 @@ get_file_type(mode_t mode)
     else if (S_ISBLK(mode)) return "b";  /* block device */
     else if (S_ISLNK(mode)) return "l";  /* symlink */
     else if (S_ISFIFO(mode)) return "p"; /* fifo */
-#ifdef S_ISSOCK
     else if (S_ISSOCK(mode)) return "s"; /* socket */
-#endif
     else return "u";                     /* unknown */
 }
 
@@ -147,12 +162,8 @@ xml_print_dir(char* dir)
 
       if ((d->d_name == NULL) || !strcmp(d->d_name, ".") || !strcmp(d->d_name, ".."))
           continue;
-      
-#if defined (__MINGW32__)
-      if(stat(d->d_name, &stats) != 0)
-#else
+
       if(lstat(d->d_name, &stats) != 0)
-#endif
       {
         fprintf(stderr, "couldn't stat: %s\n", d->d_name);
       }

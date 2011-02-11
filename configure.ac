@@ -29,6 +29,7 @@ dnl
 AC_CANONICAL_HOST
 AC_PROG_CC
 AM_CONDITIONAL([GCC], [test x$GCC = xyes])
+AS_IF([test x$GCC = xyes], [CFLAGS="-ansi $CFLAGS"])
 AM_PROG_CC_C_O
 AC_ARG_PROGRAM          dnl Transforming Program Names When Installing
 AC_PROG_SED
@@ -76,8 +77,7 @@ AS_CASE(["${host}"],
       [AS_IF([test "x$GCC" != "xyes"],
              [CFLAGS="-Ae"])],
   [*mingw*],
-      [WIN32_EXTRA_LDFLAGS='-no-undefined'
-       WIN32_EXTRA_LIBS='-lwsock32'
+      [WIN32_EXTRA_LIBS='-lwsock32'
        AC_DEFINE([_WINSOCKAPI_],1,[Using the Win32 Socket implementation])
        AC_DEFINE([snprintf],[_snprintf],[Win32 Std C name mangling work-around])
        AC_DEFINE([vsnprintf],[_vsnprintf],[Win32 Std C name mangling work-around])])
@@ -107,10 +107,11 @@ AS_IF([test "x$STATIC_LIBS" != xno],
     AC_SEARCH_LIBS([setsockopt], [socket net network], [], [], "$USER_LIBS")
     AC_SEARCH_LIBS([connect], [inet], [], [], "$USER_LIBS")])
 
-AC_CHECK_FUNCS_ONCE([gettimeofday mktime localtime asctime time gmtime ftime strdup])
+AC_CHECK_DECLS_ONCE([strdup])
+AC_CHECK_FUNCS_ONCE([gettimeofday mktime localtime asctime time gmtime ftime strdup lstat stat])
 
 AC_SUBST([AM_CPPFLAGS], ["$LIBXSLT_CPPFLAGS $LIBXML_CPPFLAGS"])
-AC_SUBST([AM_LDFLAGS], ["$LIBXSLT_LDFLAGS $LIBXML_LDFLAGS $WIN32_EXTRA_LDFLAGS"])
+AC_SUBST([AM_LDFLAGS], ["$LIBXSLT_LDFLAGS $LIBXML_LDFLAGS"])
 AC_SUBST([LDADD], ["$LIBXSLT_LIBS $LIBXML_LIBS $WIN32_EXTRA_LIBS $LIBS"])
 AC_SUBST([LIBS], ["$USER_LIBS"])
 AC_SUBST([LIBXML_REQUIRED_VERSION])
