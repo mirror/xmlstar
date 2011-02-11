@@ -145,7 +145,7 @@ static const template_option
     OPT_IF       = { 'i', "if", BAD_CAST"if", {{BAD_CAST "test", TARG_XPATH}}, 1 },
     OPT_ELEM     = { 'e', "elem", BAD_CAST "element", {{BAD_CAST "name", TARG_XPATH}}, 1 },
     OPT_ATTR     = { 'a', "attr", BAD_CAST "attribute", {{BAD_CAST "name", TARG_XPATH}}, 1 },
-    OPT_BREAK    = { 'b', "break", NULL, {}, -1 },
+    OPT_BREAK    = { 'b', "break", NULL, {{NULL}}, -1 },
     OPT_SORT     = { 's', "sort", BAD_CAST "sort", {{NULL, TARG_SORT_OP}, {BAD_CAST "select", TARG_XPATH}}, 0 },
 
     *TEMPLATE_OPTIONS[] = {
@@ -451,7 +451,8 @@ selGenTemplate(xmlNodePtr root, xmlNsPtr xslns, selOptionsPtr ops,
 
         for (j = 0; j < TEMPLATE_OPT_MAX_ARGS && targ->arguments[j].type; j++)
         {
-            if (i >= argc && targ->arguments[j].type < TARG_NO_CMDLINE) selUsage(argc, argv);
+            if (i >= argc && targ->arguments[j].type < TARG_NO_CMDLINE)
+                selUsage(argv[0], EXIT_BAD_ARGS);
             switch (targ->arguments[j].type)
             {
             case TARG_XPATH:
@@ -474,7 +475,7 @@ selGenTemplate(xmlNodePtr root, xmlNsPtr xslns, selOptionsPtr ops,
                 char order, data_type, case_order;
                 int nread;
                 nread = sscanf(argv[i], "%c:%c:%c", &order, &data_type, &case_order);
-                if (nread != 3) selUsage(argc, argv); /* TODO: allow missing letters */
+                if (nread != 3) selUsage(argv[0], EXIT_BAD_ARGS); /* TODO: allow missing letters */
 
                 if (order == 'A' || order == 'D')
                     xmlNewProp(newnode, BAD_CAST "order",
@@ -707,11 +708,12 @@ selMain(int argc, char **argv)
 
     if (i == argc)
     {
+        xmlDocPtr doc;
         nbparams = 2;
         params[0] = "inputFile";
         params[1] = "'-'";
 
-        xmlDocPtr doc = xmlParseFile("-");
+        doc = xmlParseFile("-");
         if (doc != NULL) {
             xsltProcess(&xsltOps, doc, params, style, "-");
         } else {
