@@ -1,5 +1,4 @@
 #!/bin/sh
 
-while read -r LITERAL ; do
-    ./xmlstarlet sel --text -t -m /doc -o "$LITERAL" --nl xml/foo.xml
-done < results/sel-literal.out
+xargs -d '\n' -I LIT ./xmlstarlet sel --text -t -m /doc -o LIT --nl \
+    xml/foo.xml < results/sel-literal.out

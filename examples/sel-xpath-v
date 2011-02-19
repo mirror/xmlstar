@@ -1,5 +1,4 @@
 #!/bin/sh
 
-while read -r XPATH ; do
-    ./xmlstarlet sel --text -t -m /doc -v "$XPATH" --nl xml/foo.xml
-done < sel-xpath.input
+xargs -d '\n' -I XPATH ./xmlstarlet sel --text -t -m /doc -v XPATH --nl \
+    xml/foo.xml < sel-xpath.input
