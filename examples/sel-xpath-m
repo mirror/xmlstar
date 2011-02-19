@@ -1,4 +1,4 @@
 #!/bin/sh
 
-xargs -d '\n' -I XPATH ./xmlstarlet sel --text -t -m '/*[boolean(XPATH)]' -v XPATH --nl \
-    xml/foo.xml < sel-xpath.input
+tr '\n' '\0' < sel-xpath.input | xargs -0 -I XPATH \
+    ./xmlstarlet sel --text -t -m '/*[boolean(XPATH)]' -v XPATH --nl xml/foo.xml
