@@ -11,7 +11,7 @@ xmldoc()
     echo '<?xml version="1.0"?>'
     [ -n "$DOCTYPE" ] && echo "$DOCTYPE"
     echo '<root>'
-    yes '<a />' | head -69999
+    awk 'BEGIN{for(i=0; i < 69999; i++) print "<a/>"}' < /dev/null
     echo "$BAD"
     echo '</root>'
 }
