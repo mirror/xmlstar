@@ -1,4 +1,4 @@
 #!/bin/sh
 
-tr '\n' '\0' < results/sel-literal.out | xargs -0 -I LIT \
+${SED:-sed} "s/[\\'\"]/\\\&/g" < results/sel-literal.out | xargs -I LIT \
     ./xmlstarlet sel --text -t -m /doc -o LIT --nl xml/foo.xml
