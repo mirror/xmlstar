@@ -9,6 +9,7 @@ examples/bigxml-xsd\
 examples/c14n-default-attr\
 examples/c14n1\
 examples/c14n2\
+examples/command-help\
 examples/count1\
 examples/countnode1\
 examples/delete1\

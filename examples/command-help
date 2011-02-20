@@ -1,0 +1,6 @@
+#!/bin/sh
+
+for command in ed sel tr val fo el c14n ls esc unesc pyx p2x ; do
+    ./xmlstarlet $command --help | \
+        ${SED:-sed} -n "s@\\(Usage: \\)[/.]*\\(xml $command\\).*@\\1\\2@p"
+done
