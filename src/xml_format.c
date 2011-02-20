@@ -104,7 +104,7 @@ foUsage(int argc, char **argv, exit_status status)
 {
     extern const char more_info[];
     FILE *o = (status == EXIT_SUCCESS)? stdout : stderr;
-    fprintf(o, "%s", format_usage_str_1);
+    fprintf(o, format_usage_str_1, argv[0]);
     fprintf(o, "%s", format_usage_str_2);
     fprintf(o, "%s", more_info);
     exit(status);
@@ -260,7 +260,7 @@ foParseOptions(foOptionsPtr ops, int argc, char **argv)
 #endif
         else if (!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h"))
         {
-            foUsage(argc, argv, EXIT_BAD_ARGS);
+            foUsage(argc, argv, EXIT_SUCCESS);
         }
         else if (!strcmp(argv[i], "-"))
         {

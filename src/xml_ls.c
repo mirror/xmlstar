@@ -62,7 +62,7 @@ THE SOFTWARE.
 
 static const char ls_usage_str[] =
 "XMLStarlet Toolkit: List directory as XML\n"
-"Usage: %s ls\n"
+"Usage: %s ls [ --help ]\n"
 "Lists current directory in XML format.\n"
 "Time is shown per ISO 8601 spec.\n"
 "\n";
@@ -202,8 +202,13 @@ xml_print_dir(char* dir)
 int
 lsMain(int argc, char** argv)
 {
-    int res = -1;
-    if (argc != 2) lsUsage(argc, argv, EXIT_BAD_ARGS);
+    int res = -1, i;
+    for (i = 2; i < argc; i++) {
+        if (strcmp(argv[i], "--help") == 0)
+            lsUsage(argc, argv, EXIT_SUCCESS);
+        else
+            lsUsage(argc, argv, EXIT_BAD_ARGS);
+    }
     printf("<dir>\n");
     res = xml_print_dir(".");
     printf("</dir>\n");

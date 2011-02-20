@@ -923,8 +923,6 @@ edMain(int argc, char **argv)
     static edOptions g_ops;
 
     if (argc < 3) edUsage(argv[0], EXIT_BAD_ARGS);
-    if (!strcmp(argv[2], "--help") || !strcmp(argv[2], "-h"))
-        edUsage(argv[0], EXIT_BAD_ARGS);
 
     edInitOptions(&g_ops);
     start = edParseOptions(&g_ops, argc, argv);
