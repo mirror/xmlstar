@@ -7,6 +7,7 @@ examples/bigxml-relaxng\
 examples/bigxml-well-formed\
 examples/bigxml-xsd\
 examples/c14n-default-attr\
+examples/c14n-newlines\
 examples/c14n1\
 examples/c14n2\
 examples/command-help\

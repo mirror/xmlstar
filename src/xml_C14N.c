@@ -16,11 +16,15 @@
 
 #include <stdio.h>
 #include <string.h>
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
+#endif
+
+#if !HAVE_SETMODE
+# define setmode(fd, mode)
+#else
+# include <io.h>
+# include <fcntl.h>
 #endif
 
 #include <libxml/xmlmemory.h>
@@ -85,7 +89,6 @@ run_c14n(const char* xml_filename, int with_comments, int exclusive,
          const char* xpath_filename, xmlChar **inclusive_namespaces) {
     xmlDocPtr doc;
     xmlXPathObjectPtr xpath = NULL; 
-    xmlChar *result = NULL;
     int ret;
     xmlExternalEntityLoader defaultEntityLoader = NULL;
 
@@ -132,21 +135,15 @@ run_c14n(const char* xml_filename, int with_comments, int exclusive,
 
     /*
      * Canonical form
-     */      
-    /* fprintf(stderr,"File \"%s\" loaded: start canonization\n", xml_filename); */
-    ret = xmlC14NDocDumpMemory(doc, 
-            (xpath) ? xpath->nodesetval : NULL, 
-            exclusive, inclusive_namespaces,
-            with_comments, &result);
-    if(ret >= 0) {
-        if(result != NULL) {
-            write(1, result, ret);
-            fflush(NULL);
-            xmlFree(result);
-        }
-    } else {
-        fprintf(stderr,"Error: failed to canonicalize XML file \"%s\" (ret=%d)\n", xml_filename, ret);
-        if(result != NULL) xmlFree(result);
+     */
+    setmode(1, O_BINARY);       /* avoid line ending conversion */
+    ret = xmlC14NDocSave(doc,
+        (xpath) ? xpath->nodesetval : NULL,
+        exclusive, inclusive_namespaces,
+        with_comments, "-", 0);
+    if(ret < 0) {
+        fprintf(stderr,"Error: failed to canonicalize XML file \"%s\" (ret=%d)\n",
+            xml_filename, ret);
         xmlFreeDoc(doc);
         return(EXIT_FAILURE);
     }

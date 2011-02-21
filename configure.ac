@@ -110,6 +110,12 @@ AS_IF([test "x$STATIC_LIBS" != xno],
 AC_CHECK_DECLS_ONCE([strdup])
 AC_CHECK_FUNCS_ONCE([gettimeofday mktime localtime asctime time gmtime ftime strdup lstat stat])
 
+AC_CHECK_DECL([O_BINARY], [], [], [[
+#include <io.h>
+#include <fcntl.h>
+]])
+AC_CHECK_FUNCS_ONCE([setmode])
+
 AC_SUBST([AM_CPPFLAGS], ["$LIBXSLT_CPPFLAGS $LIBXML_CPPFLAGS"])
 AC_SUBST([AM_LDFLAGS], ["$LIBXSLT_LDFLAGS $LIBXML_LDFLAGS"])
 AC_SUBST([LDADD], ["$LIBXSLT_LIBS $LIBXML_LIBS $WIN32_EXTRA_LIBS $LIBS"])
