@@ -37,10 +37,6 @@ THE SOFTWARE.
 #include <libxml/xmlIO.h>
 #include <libxml/parserInternals.h>
 
-#ifndef HAVE_STRDUP
-#include "strdup.h"
-#endif
-
 #include "xmlstar.h"
 #include "escape.h"
 
@@ -210,7 +206,7 @@ xml_unescape(char* str)
    char *p = str, *p2 = NULL;
    char *ret = NULL;
 
-   ret = strdup(str);
+   ret = (char*) xmlCharStrdup(str);
    p2 = ret;
    
    while(*p)

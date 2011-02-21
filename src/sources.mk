@@ -4,8 +4,6 @@ src/binsert.h\
 src/escape.h\
 src/stack.c\
 src/stack.h\
-src/strdup.c\
-src/strdup.h\
 src/trans.c\
 src/trans.h\
 src/xml.c\

@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include <config.h>
 
 #include <libxml/parser.h>
+#include <libxml/xmlstring.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -36,16 +37,7 @@ THE SOFTWARE.
 #include "binsert.h"
 #include "escape.h"
 
-#ifndef HAVE_STRDUP
-#include "strdup.h"
-#endif
-
-
 /* TODO:
-
-   1. Option for equivalent of
-      xml el <xml-file> | sort | uniq
-      Maintain sorted array and do binary insertion
 
    2. Option to display this only for nodes matching
       an XPATH expression
@@ -53,8 +45,6 @@ THE SOFTWARE.
       -p <xpath>
 
       so it will be able to deal with subtrees as well
-
-   3. Use stdin if input file is missing         
 
 */
 
@@ -84,7 +74,7 @@ static SortedArray sorted = NULL;
 
 #define LINE_BUF_SZ  4*1024
 
-static char curXPath[LINE_BUF_SZ]; /* TODO: do not hardcode size */
+static xmlChar *curXPath = NULL;
 static int depth = 0;
 
 /**
@@ -105,10 +95,8 @@ elUsage(int argc, char **argv, exit_status status)
  */
 void elStartElement(void *user_data, const xmlChar *name, const xmlChar **attrs)
 {
-    char *tmpXPath = NULL;
-    
-    if (*curXPath != (char)0) strcat(curXPath, "/");
-    strncat(curXPath, (char*) name, LINE_BUF_SZ - 1);
+    if (depth > 0) curXPath = xmlStrcat(curXPath, BAD_CAST "/");
+    curXPath = xmlStrcat(curXPath, name);
     depth++;
 
     if (elOps.show_attr)
@@ -156,7 +144,7 @@ void elStartElement(void *user_data, const xmlChar *name, const xmlChar **attrs)
             if ((elOps.check_depth == 0) || (elOps.check_depth != 0 && depth <= elOps.check_depth))
             { 
                 int idx;
-                tmpXPath = strdup(curXPath);
+                xmlChar *tmpXPath = xmlStrdup(curXPath);
     
                 idx = array_binary_insert(sorted, tmpXPath);
                 if (idx < 0)
@@ -175,7 +163,7 @@ void elStartElement(void *user_data, const xmlChar *name, const xmlChar **attrs)
  */
 void elEndElement(void *user_data, const xmlChar *name)
 {
-    *(curXPath + strlen(curXPath) - strlen((char*) name) - 1) = '\0';
+    *(curXPath + xmlStrlen(curXPath) - xmlStrlen(name) - 1) = '\0';
     depth--;
 }
 
@@ -223,8 +211,7 @@ elMain(int argc, char **argv)
     if (argc <= 1) elUsage(argc, argv, EXIT_BAD_ARGS);
 
     elInitOptions(&elOps);
-    
-    /* TODO: more options to be added */
+
     if (argc == 2)
         errorno = parse_xml_file("-");  
     else
@@ -278,7 +265,7 @@ elMain(int argc, char **argv)
 
         for (i=0; i < array_len(sorted); i++)
         {
-            char* item = array_item(sorted, i);
+            xmlChar* item = array_item(sorted, i);
             printf("%s\n", item);
             free(item);
         }

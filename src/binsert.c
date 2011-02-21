@@ -69,7 +69,7 @@ array_binary_insert(SortedArray array, ArrayItem item)
       middle = (top + bottom) / 2;
       middle_item = array->data[middle];
 
-      compare_result = strcmp(item, middle_item);
+      compare_result = xmlStrcmp(item, middle_item);
       if(compare_result > 0)
           bottom = middle + 1;
       else if(compare_result < 0)

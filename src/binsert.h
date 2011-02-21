@@ -3,9 +3,11 @@
 #ifndef __BINSERT_H
 #define __BINSERT_H
 
+#include <libxml/xmlstring.h>
+
 typedef struct _SortedArrayObj SortedArrayObj;
 typedef SortedArrayObj*  SortedArray;
-typedef char* ArrayItem;
+typedef xmlChar* ArrayItem;
 
 SortedArray array_create();
 void array_free(SortedArray array);

@@ -107,8 +107,7 @@ AS_IF([test "x$STATIC_LIBS" != xno],
     AC_SEARCH_LIBS([setsockopt], [socket net network], [], [], "$USER_LIBS")
     AC_SEARCH_LIBS([connect], [inet], [], [], "$USER_LIBS")])
 
-AC_CHECK_DECLS_ONCE([strdup])
-AC_CHECK_FUNCS_ONCE([gettimeofday mktime localtime asctime time gmtime ftime strdup lstat stat])
+AC_CHECK_FUNCS_ONCE([gettimeofday mktime localtime asctime time gmtime ftime lstat stat])
 
 AC_CHECK_DECL([O_BINARY], [], [], [[
 #include <io.h>

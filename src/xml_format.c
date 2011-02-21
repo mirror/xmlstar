@@ -45,10 +45,6 @@ THE SOFTWARE.
 
 #include "xmlstar.h"
 
-#ifndef HAVE_STRDUP
-#include "strdup.h"
-#endif
-
 /*
  *  TODO:  1. Attribute formatting options (as every attribute on a new line)
  *         2. exit values on errors
@@ -95,6 +91,7 @@ static const char format_usage_str_2[] =
 "  -h or --help                - print help\n\n";
 
 const char *encoding = NULL;
+static char *spaces = NULL;
 
 /**
  *  Print small help for command line options
@@ -161,16 +158,14 @@ foInitLibXml(foOptionsPtr ops)
         xmlIndentTreeOutput = 1;
         if (ops->indent_tab) 
         {
-            xmlTreeIndentString = strdup("\t");
+            xmlTreeIndentString = "\t";
         }
         else if (ops->indent_spaces > 0)
         {
-            int i;
-            char *p;
-            p = malloc(ops->indent_spaces + 1);
-            xmlTreeIndentString = p;
-            for (i=0; i<ops->indent_spaces; i++) p[i] = ' ';
-            p[ops->indent_spaces] = 0;
+            spaces = malloc(ops->indent_spaces + 1);
+            xmlTreeIndentString = spaces;
+            memset(spaces, ' ', ops->indent_spaces);
+            spaces[ops->indent_spaces] = '\0';
         }
     }
     else
@@ -387,9 +382,8 @@ foProcess(foOptionsPtr ops, int start, int argc, char **argv)
 void
 foCleanup()
 {
-    if (xmlTreeIndentString) free((char *)xmlTreeIndentString);
-    xmlTreeIndentString = NULL;
-    
+    free(spaces);
+    spaces = NULL;
     xmlCleanupParser();
 #if 0
     xmlMemoryDump();
