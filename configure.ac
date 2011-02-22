@@ -96,8 +96,8 @@ AC_TYPE_SIZE_T
 AS_IF([test "x$STATIC_LIBS" != xno],
    [AC_SEARCH_LIBS([dlopen], [dl], [], [], "$USER_LIBS")
     AC_SEARCH_LIBS([sqrt], [m], [], [], "$USER_LIBS")
-    AC_SEARCH_LIBS([iconv_open], [iconv], [], [], "$USER_LIBS")
-    AC_SEARCH_LIBS([libiconv_open], [iconv], [], [], "$USER_LIBS")
+    AC_SEARCH_LIBS([iconv_open], [iconv], [],
+    [AC_SEARCH_LIBS([libiconv_open], [iconv], [], [], "$USER_LIBS")], "$USER_LIBS")
     AC_SEARCH_LIBS([clock_gettime], [rt], [], [], "$USER_LIBS")
     AC_SEARCH_LIBS([deflate], [z], [], [], "$USER_LIBS")
     AC_SEARCH_LIBS([gcry_cipher_encrypt], [gcrypt], [], [], "$USER_LIBS")
@@ -107,7 +107,7 @@ AS_IF([test "x$STATIC_LIBS" != xno],
     AC_SEARCH_LIBS([setsockopt], [socket net network], [], [], "$USER_LIBS")
     AC_SEARCH_LIBS([connect], [inet], [], [], "$USER_LIBS")])
 
-AC_CHECK_FUNCS_ONCE([gettimeofday mktime localtime asctime time gmtime ftime lstat stat])
+AC_CHECK_FUNCS_ONCE([lstat stat])
 
 AC_CHECK_DECL([O_BINARY], [], [], [[
 #include <io.h>
