@@ -46,6 +46,10 @@ VERSION:
 clean-local:
 	-rm version.h
 
+# need to build version.h even if dependency files haven't been
+# generated
+src/xml.o : version.h
+
 .PHONY: cleantar rpm dist-win32 VERSION
 
 # testing
