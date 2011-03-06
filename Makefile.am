@@ -1,25 +1,27 @@
-EXTRA_DIST = README TODO Copyright COPYING
-WIN32_DIST = $(EXTRA_DIST) AUTHORS ChangeLog INSTALL NEWS xml.exe doc
+EXTRA_DIST = Copyright doc examples solaris tests
+WIN32_DIST = README TODO Copyright COPYING AUTHORS ChangeLog INSTALL NEWS xml.exe doc
 
 ACLOCAL_AMFLAGS = -I m4
 if GCC
 AM_CFLAGS = -Wall -pedantic
 endif
 
-dist-hook: xmlstarlet.spec
+GIT_DESCRIBE = git describe --tags --dirty
+
+dist-hook:
 	@ if [ -d .git ] ; then \
-	    if [ $(VERSION) != `git describe --tags --dirty` ] ; then \
-		echo 'ERROR: version mismatch, rerun autoreconf -f' ; exit 1 ; fi ; \
-	    $(SED) 's/\[m4_esyscmd_s(\[git describe --tags --dirty\])\]/[$(VERSION)]/' \
+	    if [ $(VERSION) != `$(GIT_DESCRIBE)` ] ; then \
+		echo 'ERROR: version mismatch, rerun autoconf -f' ; exit 1 ; fi ; \
+	    $(SED) 's/\[m4_esyscmd_s(\[$(GIT_DESCRIBE)\])\]/[$(VERSION)]/' \
 	      $(srcdir)/configure.ac > $(distdir)/configure.ac ; fi
-	-cp xmlstarlet.spec $(distdir)
-	(cd $(srcdir) ; $(AMTAR) -cf - --exclude CVS doc examples solaris tests) | (cd $(distdir); $(AMTAR) xf -)
 
 cleantar:
 	@(rm -f xmlstarlet*.tar.gz)
 
-rpm: cleantar
-	@(unset CDPATH ; $(MAKE) dist && rpmbuild -ta $(distdir).tar.gz)
+rpm: cleantar distdir xmlstarlet.spec
+	cp xmlstarlet.spec $(distdir)
+	$(AMTAR) -czf $(distdir).tar.gz $(distdir)
+	rpmbuild -ta $(distdir).tar.gz
 
 $(distdir)-win32.zip: xml.exe
 	mkdir -p /tmp/$(distdir)
@@ -34,7 +36,7 @@ dist-win32: $(distdir)-win32.zip
 
 version.h: VERSION
 	@if [ -d .git ] ; then \
-	    VERSION=`git describe --tags --dirty`; \
+	    VERSION=`$(GIT_DESCRIBE)`; \
 	else VERSION=$(VERSION) ; fi; \
 	NEW_VERSION="#define VERSION \"$$VERSION\""; \
 	OLD_VERSION=`cat version.h 2>/dev/null` ; \
