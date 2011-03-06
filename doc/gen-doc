@@ -15,7 +15,7 @@ echo "1. BASIC COMMAND LINE OPTIONS"
 echo "===================================================="
 echo ""
 echo "xml"
-../src/xml 2>&1
+../xml --help
 
 echo ""
 echo ""
@@ -24,7 +24,7 @@ echo "2. Select/Query XML documents"
 echo "===================================================="
 echo ""
 echo "xml sel --help"
-../src/xml sel --help 2>&1
+../xml sel --help
 
 echo ""
 echo ""
@@ -33,7 +33,7 @@ echo "3. Editing XML documents"
 echo "===================================================="
 echo ""
 echo "xml ed --help"
-../src/xml ed --help 2>&1
+../xml ed --help
 
 echo ""
 echo ""
@@ -42,7 +42,7 @@ echo "4. Using XSLT to transform XML documents"
 echo "===================================================="
 echo ""
 echo "xml tr --help"
-../src/xml tr --help 2>&1
+../xml tr --help
 
 echo ""
 echo ""
@@ -51,7 +51,7 @@ echo "5. Formatting XML documents"
 echo "===================================================="
 echo ""
 echo "xml fo --help"
-../src/xml fo --help 2>&1
+../xml fo --help
 
 echo ""
 echo ""
@@ -60,7 +60,7 @@ echo "6. Validating XML documents"
 echo "===================================================="
 echo ""
 echo "xml val --help"
-../src/xml val --help 2>&1
+../xml val --help
 
 echo ""
 echo ""
@@ -69,7 +69,7 @@ echo "7. Displaying structure of XML documents"
 echo "===================================================="
 echo ""
 echo "xml el --help"
-../src/xml el --help 2>&1
+../xml el --help
 
 echo ""
 echo ""
@@ -79,7 +79,7 @@ echo "8. Escape/Unescape special XML characters"
 echo "===================================================="
 echo ""
 echo "xml esc --help"
-../src/xml esc --help 2>&1
+../xml esc --help
 
 echo ""
 echo ""
@@ -89,7 +89,7 @@ echo "9. List directory as XML"
 echo "===================================================="
 echo ""
 echo "xml ls --help"
-../src/xml ls --help 2>&1
+../xml ls --help
 
 echo ""
 echo ""
@@ -99,7 +99,7 @@ echo "10. XML canonicalization"
 echo "===================================================="
 echo ""
 echo "xml c14n --help"
-../src/xml c14n --help 2>&1
+../xml c14n --help
 
 echo ""
 echo ""
@@ -109,7 +109,7 @@ echo "11. Convert XML into PYX format (based on ESIS - ISO 8879)"
 echo "===================================================="
 echo ""
 echo "xml pyx --help"
-../src/xml pyx --help 2>&1
+../xml pyx --help
 
 echo ""
 echo ""
@@ -178,6 +178,6 @@ do
 done
 
 echo ""
-} | sed -e "s#./xmlstarlet#xml#g"
+} | sed -e 's#\./xmlstarlet#xml#g;s#\.\./xml#xml#'
 
 

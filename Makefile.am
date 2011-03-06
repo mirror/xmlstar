@@ -1,4 +1,4 @@
-EXTRA_DIST = Copyright doc examples solaris tests
+EXTRA_DIST = Copyright examples solaris tests
 WIN32_DIST = README TODO Copyright COPYING AUTHORS ChangeLog INSTALL NEWS xml.exe doc
 
 ACLOCAL_AMFLAGS = -I m4
@@ -64,5 +64,26 @@ include src/sources.mk
 xml_SOURCES += version.h
 
 # doc
+
+.xml.html:
+	xsltproc \
+	  --param section.autolabel 1 \
+	  --stringparam generate.toc 'book toc,title' \
+	  --stringparam html.stylesheet html.css \
+	  http://docbook.sourceforge.net/release/xsl/current/html/docbook.xsl \
+	  $< > $@
+
+doc/xmlstarlet-ug.html: doc/xmlstarlet-ug.xml
+
+doc/xmlstarlet-man.html: doc/xmlstarlet-man.xml
+
+doc/xmlstarlet.1: doc/xmlstarlet-man.xml
+	cd doc && xsltproc \
+	  http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl \
+	  xmlstarlet-man.xml
+
+doc/xmlstarlet.txt: doc/gen-doc xml
+	cd doc && ./gen-doc > xmlstarlet.txt
+
 man_MANS = doc/xmlstarlet.1
-EXTRA_DIST += doc/xmlstarlet.txt
+EXTRA_DIST += doc/gen-doc doc/xmlstarlet-ug.xml doc/xmlstarlet-man.xml
