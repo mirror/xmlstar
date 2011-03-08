@@ -73,9 +73,17 @@ xml_SOURCES += version.h
 	  http://docbook.sourceforge.net/release/xsl/current/html/docbook.xsl \
 	  $< > $@
 
-doc/xmlstarlet-ug.html: doc/xmlstarlet-ug.xml
+.xml.fo:
+	xsltproc \
+	  --param section.autolabel 1 \
+	  --stringparam generate.toc 'book toc,title' \
+	  --stringparam html.stylesheet html.css \
+	  http://docbook.sourceforge.net/release/xsl/current/fo/docbook.xsl \
+	  $< > $@
 
-doc/xmlstarlet-man.html: doc/xmlstarlet-man.xml
+doc/xmlstarlet-ug.fo doc/xmlstarlet-ug.html: doc/xmlstarlet-ug.xml
+
+doc/xmlstarlet-man.fo doc/xmlstarlet-man.html: doc/xmlstarlet-man.xml
 
 doc/xmlstarlet.1: doc/xmlstarlet-man.xml
 	cd doc && xsltproc \
