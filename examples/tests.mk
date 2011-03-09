@@ -1,4 +1,4 @@
-TESTS_ENVIRONMENT = srcdir=$(srcdir) EXEEXT=$(EXEEXT) SED=$(SED) \
+TESTS_ENVIRONMENT = abs_builddir=$(abs_builddir) EXEEXT=$(EXEEXT) SED=$(SED) \
  $(srcdir)/tests/runTest.sh
 
 TESTS = examples/bigxml-dtd\

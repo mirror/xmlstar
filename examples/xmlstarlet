@@ -1,6 +1,6 @@
 #!/bin/sh
 exepath=`dirname $0`
-xml="${srcdir-$exepath/..}"/xml
+xml="${abs_builddir-$exepath/..}"/xml
 
 if [ x"$OSTYPE" = xmsys ] ; then
     # MSYS does unix -> windows path conversion, eg: /x -> C:\Mingw\msys\1.0\x
