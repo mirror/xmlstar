@@ -20,7 +20,7 @@ AC_ARG_WITH(libxxx-libs-prefix,
 m4_if($2, [with-src],
 [AC_ARG_WITH(libxxx-src,
         AS_HELP_STRING([--with-libxxx-src=[DIR]],
-                        For libxxx that\'s not installed yet (sets all three above)),
+                        For libxxx that's not installed yet (sets all three above)),
         [LIBXXX()_SRCDIR="$withval"
          LIBXXX()_LIBDIR="$LIBXXX()_SRCDIR/.libs"])])
 m4_popdef([libxxx], [LIBXXX])])
