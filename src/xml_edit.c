@@ -119,8 +119,8 @@ static const char edit_usage_str_1[] =
 
 static const char edit_usage_str_2[] =
 "<global-options> are:\n"
-"  -P (or --pf)        - preserve original formatting\n"
-"  -S (or --ps)        - preserve non-significant spaces\n"
+"  -P, or -S           - preserve whitespace nodes.\n"
+"     (or --pf, --ps)    Note that space between attributes is not preserved\n"
 "  -O (or --omit-decl) - omit XML declaration (<?xml ...?>)\n"
 "  -L (or --inplace)   - edit file inplace\n"
 "  -N <name>=<value>   - predefine namespaces (name without \'xmlns:\')\n"
