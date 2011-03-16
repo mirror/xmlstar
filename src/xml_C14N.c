@@ -20,11 +20,11 @@
 #include <stdlib.h>
 #endif
 
-#if !HAVE_SETMODE
-# define setmode(fd, mode)
-#else
+#if HAVE_SETMODE && HAVE_DECL_O_BINARY
 # include <io.h>
 # include <fcntl.h>
+#else
+# define setmode(fd, mode)
 #endif
 
 #include <libxml/xmlmemory.h>

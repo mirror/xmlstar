@@ -109,7 +109,8 @@ AS_IF([test "x$STATIC_LIBS" != xno],
 
 AC_CHECK_FUNCS_ONCE([lstat stat])
 
-AC_CHECK_DECL([O_BINARY], [], [], [[
+AC_CHECK_DECL([O_BINARY], [AC_DEFINE([HAVE_DECL_O_BINARY],1,[have O_BINARY])],
+[AC_DEFINE([HAVE_DECL_O_BINARY],0,[don't have O_BINARY])], [[
 #include <io.h>
 #include <fcntl.h>
 ]])
