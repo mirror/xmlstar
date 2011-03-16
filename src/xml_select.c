@@ -39,13 +39,6 @@ THE SOFTWARE.
 #include "xmlstar.h"
 #include "trans.h"
 
-/*
- *  TODO:
- *
- *   1. free memory (check for memory leaks)
- *   2. --nonet option (to disable fetching DTD over network)
- */
-
 #define MAX_NS_ARGS    256
 
 typedef struct _selOptions {
@@ -583,12 +576,11 @@ selPrepareXslt(xmlDocPtr style, selOptionsPtr ops, xmlChar *ns_arr[],
     xmlNsPtr xslns;
     xmlChar num_buf[1+10+1];    /* d+maxnumber+NUL */
 
-    xslns = xmlNewNs(NULL, BAD_CAST "http://www.w3.org/1999/XSL/Transform",
-        BAD_CAST "xsl");
-    root = xmlNewDocRawNode(style, xslns, BAD_CAST "stylesheet", NULL);
+    root = xmlNewDocRawNode(style, NULL, BAD_CAST "stylesheet", NULL);
     xmlDocSetRootElement(style, root);
     xmlNewProp(root, BAD_CAST "version", BAD_CAST "1.0");
-    xmlNewNs(root, BAD_CAST "http://www.w3.org/1999/XSL/Transform", BAD_CAST "xsl");
+    xslns = xmlNewNs(root, BAD_CAST "http://www.w3.org/1999/XSL/Transform", BAD_CAST "xsl");
+    xmlSetNs(root, xslns);
     xmlNewNs(root, BAD_CAST "http://exslt.org/common", BAD_CAST "exslt");
     xmlNewNs(root, BAD_CAST "http://exslt.org/math", BAD_CAST "math");
     xmlNewNs(root, BAD_CAST "http://exslt.org/dates-and-times", BAD_CAST "date");
@@ -766,6 +758,7 @@ selMain(int argc, char **argv)
     /* 
      * Shutdown libxml
      */
+    xsltFreeStylesheet(style);
     xsltCleanupGlobals();
     xmlCleanupParser();
     
