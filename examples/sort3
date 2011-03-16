@@ -1,0 +1,3 @@
+# Case-insensitive sort
+./xmlstarlet sel -T -t -m /root/elem -s A:T:- @name -v @name -n xml/unsorted.xml
+

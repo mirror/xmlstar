@@ -46,6 +46,7 @@ examples/sel-xpath-v\
 examples/sel1\
 examples/sort1\
 examples/sort2\
+examples/sort3\
 examples/structure1\
 examples/sum1\
 examples/tab1\
