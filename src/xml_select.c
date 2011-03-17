@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <ctype.h>
 
 #include <libxml/tree.h>
 #include <libxslt/templates.h>
@@ -41,6 +42,40 @@ THE SOFTWARE.
 #include "trans.h"
 
 #define MAX_NS_ARGS    256
+/* max length of xmlstarlet supplied (ie not from command line) namespaces
+ * currently xalanredirect is longest, at 13 characters*/
+#define MAX_NS_PREFIX_LEN 20
+
+typedef struct {
+    const xmlChar *href, *prefix;
+} NsEntry;
+
+static const NsEntry ns_entries[] = {
+    { BAD_CAST "http://exslt.org/common", BAD_CAST "exslt" },
+    { BAD_CAST "http://exslt.org/math", BAD_CAST "math" },
+    { BAD_CAST "http://exslt.org/dates-and-times", BAD_CAST "date" },
+    { BAD_CAST "http://exslt.org/functions", BAD_CAST "func" },
+    { BAD_CAST "http://exslt.org/sets", BAD_CAST "set" },
+    { BAD_CAST "http://exslt.org/strings", BAD_CAST "str" },
+    { BAD_CAST "http://exslt.org/dynamic", BAD_CAST "dyn" },
+    { BAD_CAST "http://icl.com/saxon", BAD_CAST "saxon" },
+    { BAD_CAST "org.apache.xalan.xslt.extensions.Redirect",
+      BAD_CAST "xalanredirect"}, /* see MAX_NS_PREFIX_LEN */
+    { BAD_CAST "http://www.jclark.com/xt", BAD_CAST "xt" },
+    { BAD_CAST "http://xmlsoft.org/XSLT/namespace", BAD_CAST "libxslt" },
+    { BAD_CAST "http://xmlsoft.org/XSLT/", BAD_CAST "test" },
+};
+
+static const NsEntry*
+lookup_ns_entry(const char *prefix, int len) {
+    int i;
+    for (i = 0; i < COUNT_OF(ns_entries); i++) {
+        if (xmlStrncmp(BAD_CAST prefix, ns_entries[i].prefix, len) == 0)
+            return &ns_entries[i];
+    }
+    return NULL;
+}
+
 
 typedef struct _selOptions {
     int printXSLT;        /* Display prepared XSLT */
@@ -498,9 +533,33 @@ selGenTemplate(xmlNodePtr root, xmlNsPtr xslns, selOptionsPtr ops,
                 selUsage(argv[0], EXIT_BAD_ARGS);
             switch (newtarg->arguments[j].type)
             {
-            case TARG_XPATH:
+            case TARG_XPATH: {
+                /* Search for namespace references. Note that we might pickup
+                 * things that aren't actually namespace references because we
+                 * don't have a full XPath parser. That's okay, an extra
+                 * namespace definition won't hurt anyone. */
+                const char *colon;
+                for (colon = argv[i]; colon; colon++) {
+                    int ns_idx = -1;
+
+                    colon = strchr(colon, ':');
+                    if (!colon) break;
+
+                    for (;; ns_idx--) {
+                        if (&colon[ns_idx] < argv[i]
+                            ||!isalnum(colon[ns_idx])) {
+                            const NsEntry *ns;
+                            ns_idx++;
+                            ns = lookup_ns_entry(&colon[ns_idx], -ns_idx);
+                            if (ns) xmlNewNs(root, ns->href, ns->prefix);
+                            break;
+                        }
+                        if (-ns_idx >= MAX_NS_PREFIX_LEN) break;
+                    }
+                }
                 xmlNewProp(newnode, newtarg->arguments[j].attrname, BAD_CAST argv[i]);
                 break;
+            }
 
             case TARG_STRING:
                 xmlNodeAddContent(newnode, BAD_CAST argv[i]);
@@ -580,24 +639,13 @@ selPrepareXslt(xmlDocPtr style, selOptionsPtr ops, xmlChar *ns_arr[],
     xmlNodePtr root, root_template;
     xmlNsPtr xslns;
     xmlChar num_buf[1+10+1];    /* d+maxnumber+NUL */
+    xmlBufferPtr attr_buf;
 
     root = xmlNewDocRawNode(style, NULL, BAD_CAST "stylesheet", NULL);
     xmlDocSetRootElement(style, root);
     xmlNewProp(root, BAD_CAST "version", BAD_CAST "1.0");
     xslns = xmlNewNs(root, BAD_CAST "http://www.w3.org/1999/XSL/Transform", BAD_CAST "xsl");
     xmlSetNs(root, xslns);
-    xmlNewNs(root, BAD_CAST "http://exslt.org/common", BAD_CAST "exslt");
-    xmlNewNs(root, BAD_CAST "http://exslt.org/math", BAD_CAST "math");
-    xmlNewNs(root, BAD_CAST "http://exslt.org/dates-and-times", BAD_CAST "date");
-    xmlNewNs(root, BAD_CAST "http://exslt.org/functions", BAD_CAST "func");
-    xmlNewNs(root, BAD_CAST "http://exslt.org/sets", BAD_CAST "set");
-    xmlNewNs(root, BAD_CAST "http://exslt.org/strings", BAD_CAST "str");
-    xmlNewNs(root, BAD_CAST "http://exslt.org/dynamic", BAD_CAST "dyn");
-    xmlNewNs(root, BAD_CAST "http://icl.com/saxon", BAD_CAST "saxon");
-    xmlNewNs(root, BAD_CAST "org.apache.xalan.xslt.extensions.Redirect", BAD_CAST "xalanredirect");
-    xmlNewNs(root, BAD_CAST "http://www.jclark.com/xt", BAD_CAST "xt");
-    xmlNewNs(root, BAD_CAST "http://xmlsoft.org/XSLT/namespace", BAD_CAST "libxslt");
-    xmlNewNs(root, BAD_CAST "http://xmlsoft.org/XSLT/", BAD_CAST "test");
 
     ns = 0;
     while(ns_arr[ns])
@@ -606,10 +654,6 @@ selPrepareXslt(xmlDocPtr style, selOptionsPtr ops, xmlChar *ns_arr[],
         ns += 2;
     }
     selCleanupNSArr(ns_arr);
-
-    xmlNewProp(root, BAD_CAST "extension-element-prefixes",
-        BAD_CAST "exslt math date func set str dyn saxon xalanredirect xt libxslt test");
-    xmlNewProp(root, BAD_CAST "exclude-result-prefixes", BAD_CAST "math str");
 
     {
         xmlNodePtr output;
@@ -674,6 +718,20 @@ selPrepareXslt(xmlDocPtr style, selOptionsPtr ops, xmlChar *ns_arr[],
             if (lastTempl) break;
         }
     }
+    attr_buf = xmlBufferCreate();
+    for (ns = 0; ns < COUNT_OF(ns_entries); ns++) {
+        if (xmlSearchNs(NULL, root, ns_entries[ns].prefix)) {
+            if (xmlBufferLength(attr_buf) != 0)
+                xmlBufferWriteChar(attr_buf, " ");
+            xmlBufferCat(attr_buf, ns_entries[ns].prefix);
+        }
+    }
+    if (xmlBufferLength(attr_buf) != 0)
+        xmlNewProp(root, BAD_CAST "extension-element-prefixes",
+            xmlBufferContent(attr_buf));
+
+    xmlBufferFree(attr_buf);
+
     return i;
 }
 
