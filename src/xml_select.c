@@ -459,8 +459,9 @@ find_alternative(alt_template_index alt, const char *option)
  *  Assumes start points to -t option
  */
 int
-selGenTemplate(xmlNodePtr root, xmlNsPtr xslns, selOptionsPtr ops,
-    const xmlChar *name, int* lastTempl, int start, int argc, char **argv)
+selGenTemplate(xmlNodePtr root, xmlNodePtr *template,
+    xmlNsPtr xslns, selOptionsPtr ops, const xmlChar *name, int* lastTempl,
+    int start, int argc, char **argv)
 {
     int i;
     int templateEmpty;
@@ -615,6 +616,8 @@ selGenTemplate(xmlNodePtr root, xmlNsPtr xslns, selOptionsPtr ops,
         exit(3);
     }
 
+    if (template) *template = template_node;
+
     if (!nextTempl)
     {
         if (i >= argc || argv[i][0] != '-' || strcmp(argv[i], "-") == 0)
@@ -636,7 +639,7 @@ selPrepareXslt(xmlDocPtr style, selOptionsPtr ops, xmlChar *ns_arr[],
                int start, int argc, char **argv)
 {
     int i, t, ns;
-    xmlNodePtr root, root_template;
+    xmlNodePtr root, root_template = NULL;
     xmlNsPtr xslns;
     xmlChar num_buf[1+10+1];    /* d+maxnumber+NUL */
     xmlBufferPtr attr_buf;
@@ -672,28 +675,12 @@ selPrepareXslt(xmlDocPtr style, selOptionsPtr ops, xmlChar *ns_arr[],
         xmlNewProp(param, BAD_CAST "name", BAD_CAST "inputFile");
     }
 
-    {
-        root_template = xmlNewChild(root, xslns, BAD_CAST "template", NULL);
-        xmlNewProp(root_template, BAD_CAST "match", BAD_CAST "/");
-    }
-
     if (!ops->outText && ops->printRoot)
         root = xmlNewChild(root, xslns, BAD_CAST "xsl-select", NULL);
 
-    t = 0;
-    i = start;
-    while(i < argc)
-    {
+    for (i = start, t = 0; i < argc; i++)
         if(!strcmp(argv[i], "-t") || !strcmp(argv[i], "--template"))
-        {
-            xmlNodePtr call_template;
             t++;
-            xmlStrPrintf(num_buf, sizeof num_buf, BAD_CAST "t%d", t);
-            call_template = xmlNewChild(root_template, xslns, BAD_CAST "call-template", NULL);
-            xmlNewProp(call_template, BAD_CAST "name", num_buf);
-        }
-        i++;
-    }
 
     /*
      *  At least one -t option must be found
@@ -702,8 +689,11 @@ selPrepareXslt(xmlDocPtr style, selOptionsPtr ops, xmlChar *ns_arr[],
     {
         fprintf(stderr, "error in arguments:");
         fprintf(stderr, " no -t or --template options found\n");
-        exit(2);
+        exit(EXIT_BAD_ARGS);
     }
+
+    if (t > 1)
+        root_template = xmlNewChild(root, xslns, BAD_CAST "template", NULL);
 
     t = 0;
     i = start;
@@ -711,13 +701,23 @@ selPrepareXslt(xmlDocPtr style, selOptionsPtr ops, xmlChar *ns_arr[],
     {
         if(!strcmp(argv[i], "-t") || !strcmp(argv[i], "--template"))
         {
+            xmlNodePtr call_template;
             int lastTempl = 0;
             t++;
             xmlStrPrintf(num_buf, sizeof num_buf, BAD_CAST "t%d", t);
-            i = selGenTemplate(root, xslns, ops, num_buf, &lastTempl, i, argc, argv);
+            if (root_template) {
+                call_template = xmlNewChild(root_template, xslns,
+                    BAD_CAST "call-template", NULL);
+                xmlNewProp(call_template, BAD_CAST "name", num_buf);
+            }
+            i = selGenTemplate(root, root_template?  NULL : &root_template,
+                xslns, ops, num_buf, &lastTempl, i, argc, argv);
             if (lastTempl) break;
         }
     }
+
+    xmlNewProp(root_template, BAD_CAST "match", BAD_CAST "/");
+
     attr_buf = xmlBufferCreate();
     for (ns = 0; ns < COUNT_OF(ns_entries); ns++) {
         if (xmlSearchNs(NULL, root, ns_entries[ns].prefix)) {
