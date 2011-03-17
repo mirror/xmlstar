@@ -523,10 +523,10 @@ selGenTemplate(xmlNodePtr root, xmlNsPtr xslns, selOptionsPtr ops,
                     xmlNewProp(newnode, BAD_CAST "order",
                         BAD_CAST (order == 'A'? "ascending" : "descending"));
                 if (data_type == 'N' || data_type == 'T')
-                    xmlNewProp(newnode, BAD_CAST "data_type",
-                        BAD_CAST (data_type == 'N'? "numeric" : "text"));
+                    xmlNewProp(newnode, BAD_CAST "data-type",
+                        BAD_CAST (data_type == 'N'? "number" : "text"));
                 if (case_order == 'U' || case_order == 'L')
-                    xmlNewProp(newnode, BAD_CAST "case_order",
+                    xmlNewProp(newnode, BAD_CAST "case-order",
                         BAD_CAST (case_order == 'U'? "upper-first" : "lower-first"));
             } break;
 
