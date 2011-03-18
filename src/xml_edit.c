@@ -257,7 +257,7 @@ edParseNSArr(const char** ns_arr, int* plen,
                 if (*plen >= MAX_NS_ARGS)
                 {
                     fprintf(stderr, "too many namespaces increase MAX_NS_ARGS\n");
-                    exit(2);
+                    exit(EXIT_BAD_ARGS);
                 }
 
                 ns_arr[*plen] = (char *)name;
@@ -646,7 +646,7 @@ edDelete(xmlDocPtr doc, char *str)
                 {
                     if (cur->nodeTab[i]->type == XML_NAMESPACE_DECL) {
                         fprintf(stderr, "FIXME: can't delete namespace nodes\n");
-                        exit(2);
+                        exit(EXIT_INTERNAL_ERROR);
                     }
                     /*
                      *  delete node
@@ -879,7 +879,7 @@ edOutput(const char* filename, edOptions g_ops)
         edCleanupNSArr(ns_arr);
         xmlCleanupParser();
         xmlCleanupGlobals();
-        exit(2);
+        exit(EXIT_BAD_FILE);
     }
 
     edProcess(doc, ops, ops_count);

@@ -207,7 +207,7 @@ trParseParams(const char** params, int* plen,
                 if (*plen >= MAX_PARAMETERS)
                 {
                     fprintf(stderr, "too many params increase MAX_PARAMETERS\n");
-                    exit(2);
+                    exit(EXIT_INTERNAL_ERROR);
                 }
 
                 params[*plen] = (char *)name;
@@ -238,7 +238,7 @@ trParseParams(const char** params, int* plen,
                     {
                         fprintf(stderr,
                             "string parameter contains both quote and double-quotes\n");
-                        exit(8);
+                        exit(EXIT_INTERNAL_ERROR);
                     }
                     value = xmlStrdup((const xmlChar *)"'");
                     value = xmlStrcat(value, string);
@@ -254,7 +254,7 @@ trParseParams(const char** params, int* plen,
                 if (*plen >= MAX_PARAMETERS)
                 {
                     fprintf(stderr, "too many params increase MAX_PARAMETERS\n");
-                    exit(2);
+                    exit(EXIT_INTERNAL_ERROR);
                 }
 
                 params[*plen] = (char *)name;

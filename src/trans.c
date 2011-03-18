@@ -71,7 +71,7 @@ xsltInitLibXml(xsltOptionsPtr ops)
     if (ops->show_extensions)
     {
         xsltDebugDumpExtensions(stderr);
-        exit(0);
+        exit(EXIT_SUCCESS);
     }
     
     /*

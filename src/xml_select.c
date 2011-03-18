@@ -333,7 +333,7 @@ selParseNSArr(xmlChar** ns_arr, int* plen,
                 if (*plen >= MAX_NS_ARGS)
                 {
                     fprintf(stderr, "too many namespaces increase MAX_NS_ARGS\n");
-                    exit(2);
+                    exit(EXIT_BAD_ARGS);
                 }
 
                 ns_arr[*plen] = name;
@@ -409,7 +409,7 @@ selParseOptions(selOptionsPtr ops, int argc, char **argv)
                 if (argv[i + 1][0] == '-')
                 {
                     fprintf(stderr, "-E option requires argument <encoding> ex: (utf-8, unicode...)\n");
-                    exit(2);
+                    exit(EXIT_BAD_ARGS);
                 }
                 else
                 {
@@ -419,7 +419,7 @@ selParseOptions(selOptionsPtr ops, int argc, char **argv)
             else
             {
                 fprintf(stderr, "-E option requires argument <encoding> ex: (utf-8, unicode...)\n");
-                exit(2);
+                exit(EXIT_BAD_ARGS);
             }
 
         }
@@ -613,7 +613,7 @@ selGenTemplate(xmlNodePtr root, xmlNodePtr *template,
         fprintf(stderr, "error in arguments:");
         fprintf(stderr, " -t or --template option must be followed by");
         fprintf(stderr, " --match or other options\n");
-        exit(3);
+        exit(EXIT_BAD_ARGS);
     }
 
     if (template) *template = template_node;
@@ -770,14 +770,14 @@ selMain(int argc, char **argv)
     if (ops.printXSLT)
     {
         xmlDocFormatDump(stdout, style_tree, 1);
-        exit(0);
+        exit(EXIT_SUCCESS);
     }
 
     /*
      *  Parse XSLT stylesheet
      */
     style = xsltParseStylesheetDoc(style_tree);
-    if (!style) exit(2);
+    if (!style) exit(EXIT_LIB_ERROR);
 
     for (n=i; n<argc; n++)
     {
