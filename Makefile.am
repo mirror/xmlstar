@@ -45,14 +45,11 @@ version.h: VERSION
 	    echo "version.h: $$NEW_VERSION"; fi
 VERSION:
 
-clean-local:
-	-rm version.h
-
 # need to build version.h even if dependency files haven't been
 # generated
 src/xml.o : version.h
 
-.PHONY: cleantar rpm dist-win32 VERSION
+
 
 # testing
 include examples/tests.mk
@@ -64,34 +61,16 @@ include src/sources.mk
 xml_SOURCES += version.h
 
 # doc
-
-.xml.html:
-	xsltproc \
-	  --param section.autolabel 1 \
-	  --stringparam generate.toc 'book toc,title' \
-	  --stringparam html.stylesheet html.css \
-	  http://docbook.sourceforge.net/release/xsl/current/html/docbook.xsl \
-	  $< > $@
-
-.xml.fo:
-	xsltproc \
-	  --param section.autolabel 1 \
-	  --stringparam generate.toc 'book toc,title' \
-	  --stringparam html.stylesheet html.css \
-	  http://docbook.sourceforge.net/release/xsl/current/fo/docbook.xsl \
-	  $< > $@
-
-doc/xmlstarlet-ug.fo doc/xmlstarlet-ug.html: doc/xmlstarlet-ug.xml
-
-doc/xmlstarlet-man.fo doc/xmlstarlet-man.html: doc/xmlstarlet-man.xml
-
-doc/xmlstarlet.1: doc/xmlstarlet-man.xml
-	cd doc && xsltproc \
-	  http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl \
-	  xmlstarlet-man.xml
-
-doc/xmlstarlet.txt: doc/gen-doc xml
-	cd doc && ./gen-doc > xmlstarlet.txt
+include doc/doc.mk
+doc: $(docs_gen)
 
 man_MANS = doc/xmlstarlet.1
-EXTRA_DIST += doc/gen-doc doc/xmlstarlet-ug.xml doc/xmlstarlet-man.xml
+dist_doc_DATA = $(docs_noman_gen)
+EXTRA_DIST += $(docs_src)
+
+
+
+CLEANFILES = version.h
+MAINTAINERCLEANFILES = $(docs_gen)
+
+.PHONY: cleantar rpm dist-win32 VERSION doc

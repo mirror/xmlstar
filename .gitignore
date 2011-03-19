@@ -21,3 +21,8 @@
 /src/*.o
 /xml
 /version.h
+/doc/xmlstarlet-ug.html
+/doc/xmlstarlet-ug.pdf
+/doc/xmlstarlet-ug.ps
+/doc/xmlstarlet.1
+/doc/xmlstarlet.txt
