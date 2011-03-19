@@ -1,0 +1,2 @@
+echo '<x/>' | ./xmlstarlet sel --root -t -c /
+echo '<x/>' | ./xmlstarlet sel --root -t -c / -t -c /

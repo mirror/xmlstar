@@ -145,8 +145,7 @@ static const char select_usage_str_6[] =
 "      Z is L - for case-order=\"lower-first\"\n\n";
 
 typedef enum { TARG_NONE = 0, TARG_SORT_OP, TARG_XPATH, TARG_STRING,
-               TARG_NEWLINE, TARG_NO_CMDLINE = TARG_NEWLINE, TARG_INP_NAME,
-               TARG_TNAME
+               TARG_NEWLINE, TARG_NO_CMDLINE = TARG_NEWLINE, TARG_INP_NAME
 } template_argument_type;
 typedef struct {
     const xmlChar *attrname;
@@ -177,7 +176,7 @@ struct struct_template_option {
 
 const template_option
     OPT_TEMPLATE = { 't', "template", BAD_CAST "template",
-                     {{BAD_CAST "name", TARG_TNAME}},
+                     {{NULL}},
                      {ALT_TEMPLATES}, ALT_BREAK },
     OPT_COPY_OF  = { 'c', "copy-of", BAD_CAST "copy-of",
                      {{BAD_CAST "select", TARG_XPATH}}},
@@ -459,19 +458,15 @@ find_alternative(alt_template_index alt, const char *option)
  *  Assumes start points to -t option
  */
 int
-selGenTemplate(xmlNodePtr root, xmlNodePtr *template,
-    xmlNsPtr xslns, selOptionsPtr ops, const xmlChar *name, int* lastTempl,
+selGenTemplate(xmlNodePtr root, xmlNodePtr template_node,
+    xmlNsPtr xslns, selOptionsPtr ops, int* lastTempl,
     int start, int argc, char **argv)
 {
     int i;
     int templateEmpty;
     int nextTempl;
     const template_option *targ = NULL, *prev_targ = NULL;
-
-    xmlNodePtr template_node = xmlNewChild(root, xslns, BAD_CAST "template", NULL);
     xmlNodePtr node = template_node;
-
-    xmlNewProp(template_node, BAD_CAST "name", name);
 
     if (strcmp(argv[start], "-t") != 0 &&
         strcmp(argv[start], "--template") != 0)
@@ -574,10 +569,6 @@ selGenTemplate(xmlNodePtr root, xmlNodePtr *template,
                 xmlNewProp(newnode, BAD_CAST "select", BAD_CAST "$inputFile");
                 break;
 
-            case TARG_TNAME:
-                xmlNewProp(newnode, BAD_CAST "name", name);
-                break;
-
             case TARG_SORT_OP: {
                 char order, data_type, case_order;
                 int nread;
@@ -616,8 +607,6 @@ selGenTemplate(xmlNodePtr root, xmlNodePtr *template,
         exit(EXIT_BAD_ARGS);
     }
 
-    if (template) *template = template_node;
-
     if (!nextTempl)
     {
         if (i >= argc || argv[i][0] != '-' || strcmp(argv[i], "-") == 0)
@@ -641,7 +630,6 @@ selPrepareXslt(xmlDocPtr style, selOptionsPtr ops, xmlChar *ns_arr[],
     int i, t, ns;
     xmlNodePtr root, root_template = NULL;
     xmlNsPtr xslns;
-    xmlChar num_buf[1+10+1];    /* d+maxnumber+NUL */
     xmlBufferPtr attr_buf;
 
     root = xmlNewDocRawNode(style, NULL, BAD_CAST "stylesheet", NULL);
@@ -675,9 +663,6 @@ selPrepareXslt(xmlDocPtr style, selOptionsPtr ops, xmlChar *ns_arr[],
         xmlNewProp(param, BAD_CAST "name", BAD_CAST "inputFile");
     }
 
-    if (!ops->outText && ops->printRoot)
-        root = xmlNewChild(root, xslns, BAD_CAST "xsl-select", NULL);
-
     for (i = start, t = 0; i < argc; i++)
         if(!strcmp(argv[i], "-t") || !strcmp(argv[i], "--template"))
             t++;
@@ -701,19 +686,37 @@ selPrepareXslt(xmlDocPtr style, selOptionsPtr ops, xmlChar *ns_arr[],
     {
         if(!strcmp(argv[i], "-t") || !strcmp(argv[i], "--template"))
         {
-            xmlNodePtr call_template;
+            xmlNodePtr call_template, template;
             int lastTempl = 0;
             t++;
-            xmlStrPrintf(num_buf, sizeof num_buf, BAD_CAST "t%d", t);
+            template = xmlNewChild(root, xslns, BAD_CAST "template", NULL);
+
             if (root_template) {
+                xmlChar num_buf[1+10+1];    /* t+maxnumber+NUL */
+                xmlStrPrintf(num_buf, sizeof num_buf, BAD_CAST "t%d", t);
+
                 call_template = xmlNewChild(root_template, xslns,
                     BAD_CAST "call-template", NULL);
                 xmlNewProp(call_template, BAD_CAST "name", num_buf);
+                xmlNewProp(template, BAD_CAST "name", num_buf);
+            } else {
+                root_template = template;
             }
-            i = selGenTemplate(root, root_template?  NULL : &root_template,
-                xslns, ops, num_buf, &lastTempl, i, argc, argv);
+
+            i = selGenTemplate(root, template,
+                xslns, ops, &lastTempl, i, argc, argv);
             if (lastTempl) break;
         }
+    }
+
+    if (!ops->outText && ops->printRoot) {
+        xmlNodePtr result_root = root_template;
+        xmlNodeSetName(result_root, BAD_CAST "xsl-select");
+        xmlSetNs(result_root, NULL);
+        xmlUnlinkNode(result_root);
+
+        root_template = xmlNewChild(root, xslns, BAD_CAST "template", NULL);
+        xmlAddChild(root_template, result_root);
     }
 
     xmlNewProp(root_template, BAD_CAST "match", BAD_CAST "/");

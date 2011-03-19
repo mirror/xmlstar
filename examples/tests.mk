@@ -39,6 +39,7 @@ examples/rename-attr1\
 examples/rename-elem1\
 examples/schema1\
 examples/sel-literal\
+examples/sel-root\
 examples/sel-xpath-c\
 examples/sel-xpath-i\
 examples/sel-xpath-m\
