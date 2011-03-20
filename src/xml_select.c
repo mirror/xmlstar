@@ -162,7 +162,7 @@ typedef struct {
     int length;
 } template_option_alternatives;
 
-typedef enum { ALT_NONE = 0, ALT_TEMPLATES, ALT_SORTS, ALT_BREAK
+typedef enum { ALT_NONE = 0, ALT_TEMPLATES, ALT_SORTS, ALT_BREAK, ALT_ELIF_BREAK
 } alt_template_index;
 
 struct struct_template_option {
@@ -189,8 +189,14 @@ const template_option
     OPT_MATCH    = { 'm', "match", BAD_CAST "for-each",
                      {{BAD_CAST "select", TARG_XPATH}},
                      {ALT_SORTS, ALT_TEMPLATES}, ALT_BREAK },
-    OPT_IF       = { 'i', "if", BAD_CAST"if",
+    OPT_IF       = { 'i', "if", BAD_CAST "when",
                      {{BAD_CAST "test", TARG_XPATH}},
+                     {ALT_TEMPLATES}, ALT_ELIF_BREAK},
+    OPT_ELIF     = { 0, "elif", BAD_CAST "when",
+                     {{BAD_CAST "test", TARG_XPATH}},
+                     {ALT_TEMPLATES}, ALT_ELIF_BREAK},
+    OPT_ELSE     = { 0, "else", BAD_CAST "otherwise",
+                     {{NULL}},
                      {ALT_TEMPLATES}, ALT_BREAK},
     OPT_ELEM     = { 'e', "elem", BAD_CAST "element",
                      {{BAD_CAST "name", TARG_XPATH}},
@@ -212,6 +218,9 @@ const template_option
     },
     *TEMPLATE_BREAK_ALTERNATIVES[] = {
         &OPT_BREAK, &OPT_TEMPLATE
+    },
+    *TEMPLATE_ELIF_BREAK_ALTERNATIVES[] = {
+        &OPT_ELIF, &OPT_ELSE, &OPT_BREAK, &OPT_TEMPLATE
     };
 
 #define DEFINE_ALT(alt_array) { alt_array, COUNT_OF(alt_array) }
@@ -219,7 +228,8 @@ const template_option_alternatives ALTERNATIVES[] = {
     { NULL, 0 },                /* 1 based array */
     DEFINE_ALT(TEMPLATE_ALTERNATIVES),
     DEFINE_ALT(TEMPLATE_SORT_ALTERNATIVES),
-    DEFINE_ALT(TEMPLATE_BREAK_ALTERNATIVES)
+    DEFINE_ALT(TEMPLATE_BREAK_ALTERNATIVES),
+    DEFINE_ALT(TEMPLATE_ELIF_BREAK_ALTERNATIVES)
 };
 
 void
@@ -465,7 +475,7 @@ selGenTemplate(xmlNodePtr root, xmlNodePtr template_node,
     int i;
     int templateEmpty;
     int nextTempl;
-    const template_option *targ = NULL, *prev_targ = NULL;
+    const template_option *targ = NULL;
     xmlNodePtr node = template_node;
 
     if (strcmp(argv[start], "-t") != 0 &&
@@ -486,17 +496,19 @@ selGenTemplate(xmlNodePtr root, xmlNodePtr template_node,
         int j;
         xmlNodePtr newnode = NULL;
         const template_option *newtarg = NULL;
-        prev_targ = targ;
 
         if (argv[i][0] == '-')
         {
-            newtarg = find_alternative(prev_targ->suboptions[0], argv[i]);
+            newtarg = find_alternative(targ->suboptions[0], argv[i]);
             if (newtarg) goto found_option;
-            newtarg = find_alternative(prev_targ->suboptions[1], argv[i]);
+            newtarg = find_alternative(targ->suboptions[1], argv[i]);
             if (newtarg) goto found_option;
-            newtarg = find_alternative(prev_targ->end, argv[i]);
+            newtarg = find_alternative(targ->end, argv[i]);
             if (newtarg) {
                 node = node->parent;
+                if ((targ == &OPT_IF || targ == &OPT_ELIF || targ == &OPT_ELSE)
+                    && newtarg == &OPT_BREAK)
+                    node = node->parent;
                 targ = node->_private;
                 goto found_option;
             }
@@ -515,6 +527,12 @@ selGenTemplate(xmlNodePtr root, xmlNodePtr template_node,
             nextTempl = 1;
             i--;
             break;
+        }
+        else if (newtarg == &OPT_IF)
+        {
+            node->_private = (void*) targ;
+            targ = newtarg;
+            node = xmlNewChild(node, xslns, BAD_CAST "choose", NULL);
         }
 
         i++;
