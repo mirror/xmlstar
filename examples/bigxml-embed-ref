@@ -1,3 +1,4 @@
+#!/bin/sh
 . ./bigxml
 xmldoc '<a>foo</a>' '<!DOCTYPE root SYSTEM "dtd/bigxml.dtd">' \
     | ./xmlstarlet val --embed --err - 2>&1 >/dev/null \

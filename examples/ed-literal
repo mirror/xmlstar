@@ -1,1 +1,2 @@
+#!/bin/sh
 ./xmlstarlet ed -u /doc -v '"<>& &quot; &amp; &lt; &gt;' xml/foo.xml

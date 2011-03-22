@@ -1,3 +1,4 @@
+#!/bin/sh
 . ./bigxml
 xmldoc '<a> foo </a>' \
        '<!DOCTYPE root [<!ELEMENT root (a*)> <!ELEMENT a EMPTY>]>' \

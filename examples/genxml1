@@ -1,2 +1,3 @@
+#!/bin/sh
 # Generate XML document using command line xml sel
 echo "<x/>" | ./xmlstarlet sel -t -m / -e xml -e child -a data -o value
