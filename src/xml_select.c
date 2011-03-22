@@ -417,7 +417,7 @@ selParseOptions(selOptionsPtr ops, int argc, char **argv)
  */
 int
 selGenTemplate(xmlNodePtr root, xmlNodePtr template_node,
-    xmlNsPtr xslns, selOptionsPtr ops, int* lastTempl,
+    xmlNsPtr xslns, selOptionsPtr ops, int* use_inputfile, int* lastTempl,
     int start, int argc, char **argv)
 {
     int i;
@@ -537,6 +537,7 @@ selGenTemplate(xmlNodePtr root, xmlNodePtr template_node,
                 break;
 
             case TARG_INP_NAME:
+                *use_inputfile = 1;
                 xmlNewProp(newnode, BAD_CAST "select", BAD_CAST "$inputFile");
                 break;
 
@@ -606,7 +607,7 @@ int
 selPrepareXslt(xmlDocPtr style, selOptionsPtr ops, xmlChar *ns_arr[],
                int start, int argc, char **argv)
 {
-    int i, t, ns;
+    int i, t, ns, use_inputfile = 0;
     xmlNodePtr root, root_template = NULL;
     xmlNsPtr xslns;
     xmlBufferPtr attr_buf;
@@ -634,12 +635,6 @@ selPrepareXslt(xmlDocPtr style, selOptionsPtr ops, xmlChar *ns_arr[],
             BAD_CAST ((ops->indent)?"yes":"no"));
         if (ops->encoding) xmlNewProp(output, BAD_CAST "encoding", ops->encoding);
         if (ops->outText) xmlNewProp(output, BAD_CAST "method", BAD_CAST "text");
-    }
-
-    {
-        xmlNodePtr param;
-        param = xmlNewChild(root, xslns, BAD_CAST "param", BAD_CAST "-");
-        xmlNewProp(param, BAD_CAST "name", BAD_CAST "inputFile");
     }
 
     for (i = start, t = 0; i < argc; i++)
@@ -683,7 +678,7 @@ selPrepareXslt(xmlDocPtr style, selOptionsPtr ops, xmlChar *ns_arr[],
             }
 
             i = selGenTemplate(root, template,
-                xslns, ops, &lastTempl, i, argc, argv);
+                xslns, ops, &use_inputfile, &lastTempl, i, argc, argv);
             if (lastTempl) break;
         }
     }
@@ -713,6 +708,12 @@ selPrepareXslt(xmlDocPtr style, selOptionsPtr ops, xmlChar *ns_arr[],
             xmlBufferContent(attr_buf));
 
     xmlBufferFree(attr_buf);
+
+    if (use_inputfile) {
+        xmlNodePtr param;
+        param = xmlNewChild(root, xslns, BAD_CAST "param", BAD_CAST "-");
+        xmlNewProp(param, BAD_CAST "name", BAD_CAST "inputFile");
+    }
 
     return i;
 }
