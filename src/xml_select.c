@@ -90,6 +90,25 @@ typedef struct _selOptions {
 
 typedef selOptions *selOptionsPtr;
 
+typedef enum { TARG_NONE = 0, TARG_SORT_OP, TARG_XPATH, TARG_STRING,
+               TARG_NEWLINE, TARG_NO_CMDLINE = TARG_NEWLINE, TARG_INP_NAME
+} template_argument_type;
+typedef struct {
+    const xmlChar *attrname;
+    template_argument_type type;
+} template_option_argument;
+
+#define TEMPLATE_OPT_MAX_ARGS 2
+
+typedef struct {
+    char shortopt;
+    const char *longopt;
+    const xmlChar *xslname;
+    template_option_argument arguments[TEMPLATE_OPT_MAX_ARGS];
+    int nest;
+} template_option;
+
+
 /*
  * usage string chunk : 509 char max on ISO C90
  */
@@ -144,93 +163,38 @@ static const char select_usage_str_6[] =
 "      Z is U - for case-order=\"upper-first\"\n"
 "      Z is L - for case-order=\"lower-first\"\n\n";
 
-typedef enum { TARG_NONE = 0, TARG_SORT_OP, TARG_XPATH, TARG_STRING,
-               TARG_NEWLINE, TARG_NO_CMDLINE = TARG_NEWLINE, TARG_INP_NAME
-} template_argument_type;
-typedef struct {
-    const xmlChar *attrname;
-    template_argument_type type;
-} template_option_argument;
+static const template_option
+    OPT_TEMPLATE = { 't', "template" },
+    OPT_COPY_OF  = { 'c', "copy-of", BAD_CAST "copy-of", {{BAD_CAST "select", TARG_XPATH}}, 0 },
+    OPT_VALUE_OF = { 'v', "value-of", BAD_CAST "value-of", {{BAD_CAST "select", TARG_XPATH}}, 0 },
+    OPT_OUTPUT   = { 'o', "output", BAD_CAST "text", {{NULL, TARG_STRING}}, 0 },
+    OPT_NL       = { 'n', "nl", BAD_CAST "value-of", {{NULL, TARG_NEWLINE}}, 0 },
+    OPT_INP_NAME = { 'f', "inp-name", BAD_CAST "copy-of", {{NULL, TARG_INP_NAME}}, 0 },
+    OPT_MATCH    = { 'm', "match", BAD_CAST "for-each", {{BAD_CAST "select", TARG_XPATH}}, 1 },
+    OPT_IF       = { 'i', "if", BAD_CAST"when", {{BAD_CAST "test", TARG_XPATH}}, 1 },
+    OPT_ELIF     = { 0,   "elif", BAD_CAST "when", {{BAD_CAST "test", TARG_XPATH}}, 1 },
+    OPT_ELSE     = { 0,   "else", BAD_CAST "otherwise", {{NULL}}, 1 },
+    OPT_ELEM     = { 'e', "elem", BAD_CAST "element", {{BAD_CAST "name", TARG_XPATH}}, 1 },
+    OPT_ATTR     = { 'a', "attr", BAD_CAST "attribute", {{BAD_CAST "name", TARG_XPATH}}, 1 },
+    OPT_BREAK    = { 'b', "break", NULL, {{NULL}}, -1 },
+    OPT_SORT     = { 's', "sort", BAD_CAST "sort", {{NULL, TARG_SORT_OP}, {BAD_CAST "select", TARG_XPATH}}, 0 },
 
-#define TEMPLATE_OPT_MAX_ARGS 2
-#define TEMPLATE_SUBOPT_MAX 2
-
-typedef struct struct_template_option template_option;
-
-typedef struct {
-    const template_option **alternatives;
-    int length;
-} template_option_alternatives;
-
-typedef enum { ALT_NONE = 0, ALT_TEMPLATES, ALT_SORTS, ALT_BREAK, ALT_ELIF_BREAK
-} alt_template_index;
-
-struct struct_template_option {
-    char shortopt;
-    const char *longopt;
-    const xmlChar *xslname;
-    template_option_argument arguments[TEMPLATE_OPT_MAX_ARGS];
-    const alt_template_index suboptions[TEMPLATE_SUBOPT_MAX];
-    const alt_template_index end;
-};
-
-const template_option
-    OPT_TEMPLATE = { 't', "template", BAD_CAST "template",
-                     {{NULL}},
-                     {ALT_TEMPLATES}, ALT_BREAK },
-    OPT_COPY_OF  = { 'c', "copy-of", BAD_CAST "copy-of",
-                     {{BAD_CAST "select", TARG_XPATH}}},
-    OPT_VALUE_OF = { 'v', "value-of", BAD_CAST "value-of",
-                     {{BAD_CAST "select", TARG_XPATH}}},
-    OPT_OUTPUT   = { 'o', "output", BAD_CAST "text", {{NULL, TARG_STRING}}},
-    OPT_NL       = { 'n', "nl", BAD_CAST "value-of", {{NULL, TARG_NEWLINE}}},
-    OPT_INP_NAME = { 'f', "inp-name", BAD_CAST "copy-of",
-                     {{NULL, TARG_INP_NAME}}},
-    OPT_MATCH    = { 'm', "match", BAD_CAST "for-each",
-                     {{BAD_CAST "select", TARG_XPATH}},
-                     {ALT_SORTS, ALT_TEMPLATES}, ALT_BREAK },
-    OPT_IF       = { 'i', "if", BAD_CAST "when",
-                     {{BAD_CAST "test", TARG_XPATH}},
-                     {ALT_TEMPLATES}, ALT_ELIF_BREAK},
-    OPT_ELIF     = { 0, "elif", BAD_CAST "when",
-                     {{BAD_CAST "test", TARG_XPATH}},
-                     {ALT_TEMPLATES}, ALT_ELIF_BREAK},
-    OPT_ELSE     = { 0, "else", BAD_CAST "otherwise",
-                     {{NULL}},
-                     {ALT_TEMPLATES}, ALT_BREAK},
-    OPT_ELEM     = { 'e', "elem", BAD_CAST "element",
-                     {{BAD_CAST "name", TARG_XPATH}},
-                     {ALT_TEMPLATES}, ALT_BREAK },
-    OPT_ATTR     = { 'a', "attr", BAD_CAST "attribute",
-                     {{BAD_CAST "name", TARG_XPATH}},
-                     {ALT_TEMPLATES}, ALT_BREAK },
-    OPT_BREAK    = { 'b', "break", NULL, {{NULL}}},
-    OPT_SORT     = { 's', "sort", BAD_CAST "sort",
-                     {{NULL, TARG_SORT_OP}, {BAD_CAST "select", TARG_XPATH}}},
-
-    *TEMPLATE_ALTERNATIVES[] = {
-        &OPT_COPY_OF, &OPT_VALUE_OF, &OPT_OUTPUT, &OPT_NL, &OPT_INP_NAME,
-        &OPT_MATCH, &OPT_IF, &OPT_ELEM, &OPT_ATTR
-    },
-    *TEMPLATE_SORT_ALTERNATIVES[] = {
-        &OPT_COPY_OF, &OPT_VALUE_OF, &OPT_OUTPUT, &OPT_NL, &OPT_INP_NAME,
-        &OPT_MATCH, &OPT_IF, &OPT_ELEM, &OPT_ATTR, &OPT_SORT
-    },
-    *TEMPLATE_BREAK_ALTERNATIVES[] = {
-        &OPT_BREAK, &OPT_TEMPLATE
-    },
-    *TEMPLATE_ELIF_BREAK_ALTERNATIVES[] = {
-        &OPT_ELIF, &OPT_ELSE, &OPT_BREAK, &OPT_TEMPLATE
+    *TEMPLATE_OPTIONS[] = {
+        &OPT_TEMPLATE,
+        &OPT_COPY_OF,
+        &OPT_VALUE_OF,
+        &OPT_OUTPUT,
+        &OPT_NL,
+        &OPT_INP_NAME,
+        &OPT_MATCH,
+        &OPT_IF,
+        &OPT_ELIF,
+        &OPT_ELSE,
+        &OPT_ELEM,
+        &OPT_ATTR,
+        &OPT_BREAK,
+        &OPT_SORT
     };
-
-#define DEFINE_ALT(alt_array) { alt_array, COUNT_OF(alt_array) }
-const template_option_alternatives ALTERNATIVES[] = {
-    { NULL, 0 },                /* 1 based array */
-    DEFINE_ALT(TEMPLATE_ALTERNATIVES),
-    DEFINE_ALT(TEMPLATE_SORT_ALTERNATIVES),
-    DEFINE_ALT(TEMPLATE_BREAK_ALTERNATIVES),
-    DEFINE_ALT(TEMPLATE_ELIF_BREAK_ALTERNATIVES)
-};
 
 void
 caseSortFunction(xsltTransformContextPtr ctxt, xmlNodePtr *sorts,
@@ -448,22 +412,6 @@ selParseOptions(selOptionsPtr ops, int argc, char **argv)
 }
 
 /**
- * return option descriptor that matches @option, or NULL if none
- */
-static const template_option*
-find_alternative(alt_template_index alt, const char *option)
-{
-    int i;
-    if (alt) for (i = 0; i < ALTERNATIVES[alt].length; i++)
-    {
-        const template_option *targ = ALTERNATIVES[alt].alternatives[i];
-        if ((option[1] == '-' && strcmp(targ->longopt, &option[2]) == 0) ||
-            targ->shortopt == option[1])
-            return targ;
-    }
-    return NULL;
-}
-/**
  *  Prepare XSLT template based on command line options
  *  Assumes start points to -t option
  */
@@ -484,7 +432,6 @@ selGenTemplate(xmlNodePtr root, xmlNodePtr template_node,
         fprintf(stderr, "not at the beginning of template\n");
         abort();
     }
-    targ = &OPT_TEMPLATE;
 
     *lastTempl = 0;
     templateEmpty = 1;
@@ -493,26 +440,20 @@ selGenTemplate(xmlNodePtr root, xmlNodePtr template_node,
 
     while(i < argc)
     {
-        int j;
         xmlNodePtr newnode = NULL;
         const template_option *newtarg = NULL;
+        int j;
 
         if (argv[i][0] == '-')
         {
-            newtarg = find_alternative(targ->suboptions[0], argv[i]);
-            if (newtarg) goto found_option;
-            newtarg = find_alternative(targ->suboptions[1], argv[i]);
-            if (newtarg) goto found_option;
-            newtarg = find_alternative(targ->end, argv[i]);
-            if (newtarg) {
-                node = node->parent;
-                if ((targ == &OPT_IF || targ == &OPT_ELIF || targ == &OPT_ELSE)
-                    && newtarg == &OPT_BREAK)
-                    node = node->parent;
-                targ = node->_private;
-                goto found_option;
+            for (j = 0; j < sizeof(TEMPLATE_OPTIONS)/sizeof(*TEMPLATE_OPTIONS); j++)
+            {
+                newtarg = TEMPLATE_OPTIONS[j];
+                if (argv[i][1] == '-' && strcmp(newtarg->longopt, &argv[i][2]) == 0)
+                    goto found_option; /* long option */
+                else if(newtarg->shortopt == argv[i][1])
+                    goto found_option; /* short option */
             }
-
             fprintf(stderr, "unrecognized option: %s\n", argv[i]);
             exit(EXIT_BAD_ARGS);
         }
@@ -522,7 +463,12 @@ selGenTemplate(xmlNodePtr root, xmlNodePtr template_node,
         }
 
     found_option:
-        if (newtarg == &OPT_TEMPLATE)
+        if (newtarg == &OPT_SORT && (targ != &OPT_MATCH && targ != &OPT_SORT))
+        {
+            fprintf(stderr, "sort(s) must follow match\n");
+            exit(EXIT_BAD_ARGS);
+        }
+        else if (newtarg == &OPT_TEMPLATE)
         {
             nextTempl = 1;
             i--;
@@ -530,9 +476,16 @@ selGenTemplate(xmlNodePtr root, xmlNodePtr template_node,
         }
         else if (newtarg == &OPT_IF)
         {
-            node->_private = (void*) targ;
-            targ = newtarg;
             node = xmlNewChild(node, xslns, BAD_CAST "choose", NULL);
+            node->_private = (void*) &OPT_IF;
+        }
+        else if (newtarg == &OPT_ELIF || newtarg == &OPT_ELSE)
+        {
+            node = node->parent;
+            if (node->_private != &OPT_IF) {
+                fprintf(stderr, "else without if\n");
+                exit(EXIT_BAD_ARGS);
+            }
         }
 
         i++;
@@ -610,11 +563,19 @@ selGenTemplate(xmlNodePtr root, xmlNodePtr template_node,
             if (newtarg->arguments[j].type < TARG_NO_CMDLINE) i++;
         }
 
-        if (*newtarg->suboptions) {
-            node->_private = (void*) targ;
+        switch (newtarg->nest) {
+        case -1:
+            do { node = node->parent; } while(node->_private);
+            break;
+        case 0:
+            break;
+        case 1:
             node = newnode;
-            targ = newtarg;
+            break;
+        default:
+            assert(0);
         }
+        targ = newtarg;
     }
 
     if (templateEmpty)
