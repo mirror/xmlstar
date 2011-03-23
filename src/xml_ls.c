@@ -62,7 +62,7 @@ THE SOFTWARE.
 
 static const char ls_usage_str[] =
 "XMLStarlet Toolkit: List directory as XML\n"
-"Usage: %s ls [ --help ]\n"
+"Usage: %s ls [ <dir> | --help ]\n"
 "Lists current directory in XML format.\n"
 "Time is shown per ISO 8601 spec.\n"
 "\n";
@@ -138,16 +138,18 @@ get_file_perms(mode_t mode)
 }
 
 int
-xml_print_dir(char* dir)
+xml_print_dir(const char* dir)
 {
    DIR *dirp;
    struct dirent *d;
    struct stat stats;
-   int i = 0, num_files = 0;
+   int num_files = 0;
 
    if((dirp = opendir(dir)) == NULL)
       return(-1);
-   
+
+   chdir(dir);
+
    while((d = readdir(dirp)) != NULL)
    {
       xmlChar *xml_str = NULL;
@@ -189,29 +191,33 @@ xml_print_dir(char* dir)
       xml_str = xml_C11NNormalizeAttr((const xmlChar *) d->d_name);      
       printf("<%s p=\"%s\" a=\"%s\" m=\"%s\" s=\"%s\"%s n=\"%s\"/>\n",
               type, perm, last_acc, last_mod, sz, sp, xml_str);
-      i++;
+      num_files++;
       xmlFree(xml_str);
 
    } /* end of for loop */
 
    closedir(dirp);
-   num_files = i;
    return num_files;
 }
 
 int
 lsMain(int argc, char** argv)
 {
-    int res = -1, i;
-    for (i = 2; i < argc; i++) {
-        if (strcmp(argv[i], "--help") == 0)
+    const char *dir = ".";
+    int files;
+
+    if (argc == 3) {
+        if (strcmp(argv[2], "--help") == 0)
             lsUsage(argc, argv, EXIT_SUCCESS);
         else
-            lsUsage(argc, argv, EXIT_BAD_ARGS);
+            dir = argv[2];
+    } else if (argc > 3) {
+        lsUsage(argc, argv, EXIT_BAD_ARGS);
     }
+
     printf("<dir>\n");
-    res = xml_print_dir(".");
+    files = xml_print_dir(dir);
     printf("</dir>\n");
-    return res;
+    return (files >= 0)? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
