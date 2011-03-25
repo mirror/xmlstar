@@ -411,6 +411,37 @@ selParseOptions(selOptionsPtr ops, int argc, char **argv)
     return i;
 }
 
+
+/**
+ * Search for namespace references in @xpath and add them to @root. Note that we
+ * might pickup things that aren't actually namespace references because we
+ * don't have a full XPath parser. That's okay, an extra namespace definition
+ * won't hurt anyone.
+ */
+static void
+checkNsRefs(xmlNodePtr root, const char *xpath)
+{
+    const char *colon;
+    for (colon = xpath; colon; colon++) {
+        int ns_idx = -1;
+
+        colon = strchr(colon, ':');
+        if (!colon) break;
+
+        for (;; ns_idx--) {
+            if (&colon[ns_idx] < xpath
+                ||!isalnum(colon[ns_idx])) {
+                const NsEntry *ns;
+                ns_idx++;
+                ns = lookup_ns_entry(&colon[ns_idx], -ns_idx);
+                if (ns) xmlNewNs(root, ns->href, ns->prefix);
+                break;
+            }
+            if (-ns_idx >= MAX_NS_PREFIX_LEN) break;
+        }
+    }
+}
+
 /**
  *  Prepare XSLT template based on command line options
  *  Assumes start points to -t option
@@ -501,29 +532,7 @@ selGenTemplate(xmlNodePtr root, xmlNodePtr template_node,
             switch (newtarg->arguments[j].type)
             {
             case TARG_XPATH: {
-                /* Search for namespace references. Note that we might pickup
-                 * things that aren't actually namespace references because we
-                 * don't have a full XPath parser. That's okay, an extra
-                 * namespace definition won't hurt anyone. */
-                const char *colon;
-                for (colon = argv[i]; colon; colon++) {
-                    int ns_idx = -1;
-
-                    colon = strchr(colon, ':');
-                    if (!colon) break;
-
-                    for (;; ns_idx--) {
-                        if (&colon[ns_idx] < argv[i]
-                            ||!isalnum(colon[ns_idx])) {
-                            const NsEntry *ns;
-                            ns_idx++;
-                            ns = lookup_ns_entry(&colon[ns_idx], -ns_idx);
-                            if (ns) xmlNewNs(root, ns->href, ns->prefix);
-                            break;
-                        }
-                        if (-ns_idx >= MAX_NS_PREFIX_LEN) break;
-                    }
-                }
+                checkNsRefs(root, argv[i]);
                 xmlNewProp(newnode, newtarg->arguments[j].attrname, BAD_CAST argv[i]);
                 break;
             }
