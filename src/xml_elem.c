@@ -28,7 +28,6 @@ THE SOFTWARE.
 
 #include <config.h>
 
-#include <libxml/parser.h>
 #include <libxml/xmlstring.h>
 #include <libxml/hash.h>
 #include <stdlib.h>
@@ -68,14 +67,9 @@ static const char elem_usage_str[] =
 "  -d<n> - print out sorted unique lines up to depth <n>\n" 
 "\n";
 
-static xmlSAXHandler xmlSAX_handler;
 static elOptions elOps;
 static xmlHashTablePtr uniq = NULL;
-
-#define LINE_BUF_SZ  4*1024
-
 static xmlChar *curXPath = NULL;
-static int depth = 0;
 
 /**
  *  Display usage syntax
@@ -91,92 +85,111 @@ elUsage(int argc, char **argv, exit_status status)
 }
 
 /**
- *  onStartElement SAX parser callback
+ * xmlStrrchr:
+ * @str:  the xmlChar * array
+ * @val:  the xmlChar to search
+ *
+ * a strrchr for xmlChar's
+ *
+ * Returns the xmlChar * for the last occurrence or NULL.
  */
-void elStartElement(void *user_data, const xmlChar *name, const xmlChar **attrs)
+
+xmlChar *
+xmlStrrchr(const xmlChar *str, xmlChar val) {
+    const xmlChar *end;
+    if (str == NULL) return(NULL);
+    for (end = str + xmlStrlen(str); end >= str; end--) {
+        if (*end == val) return((xmlChar *) end);
+    }
+    return(NULL);
+}
+
+
+/**
+ *  read file and print element paths
+ */
+int
+parse_xml_file(const char *filename)
 {
-    if (depth > 0) curXPath = xmlStrcat(curXPath, BAD_CAST "/");
-    curXPath = xmlStrcat(curXPath, name);
-    depth++;
+    int ret, prev_depth = 0;
+    xmlTextReaderPtr reader;
 
-    if (elOps.show_attr)
+    for (reader = xmlReaderForFile(filename, NULL, 0);;)
     {
-        const xmlChar **p = attrs;
+        int depth;
+        const xmlChar *name;
+        xmlReaderTypes type;
 
-        fprintf(stdout, "%s\n", curXPath);
-        while (p && *p)
+        ret = xmlTextReaderRead(reader);
+        if (ret <= 0) break;
+        type = xmlTextReaderNodeType(reader);
+        depth = xmlTextReaderDepth(reader);
+        name = xmlTextReaderConstName(reader);
+
+        if (type != XML_READER_TYPE_ELEMENT)
+            continue;
+
+        while (depth <= prev_depth)
         {
-            fprintf(stdout, "%s/@%s\n", curXPath, *p);
-            p += 2;
+            xmlChar *slash = xmlStrrchr(curXPath, '/');
+            if (slash) *slash = '\0';
+            prev_depth--;
         }
-    }
-    else if (elOps.show_attr_and_val)
-    {
-        const xmlChar **p = attrs;
-        xmlChar *xml_str = NULL;
-        
-        fprintf(stdout, "%s", curXPath);
-        if (attrs) fprintf(stdout, "[");
-        while (p && *p)
+        prev_depth = depth;
+
+        if (depth > 0) curXPath = xmlStrcat(curXPath, BAD_CAST "/");
+        curXPath = xmlStrcat(curXPath, name);
+
+        if (elOps.show_attr)
         {
-            if (p != attrs) fprintf(stdout, " and ");
-            
-            /*xml_str = xml_C11NNormalizeAttr((const xmlChar *) *(p+1));*/
-            xml_str = xmlStrdup((const xmlChar *) *(p+1));
-            if (xmlStrchr(xml_str, '\''))
+            int have_attr;
+
+            fprintf(stdout, "%s\n", curXPath);
+            for (have_attr = xmlTextReaderMoveToFirstAttribute(reader);
+                 have_attr;
+                 have_attr = xmlTextReaderMoveToNextAttribute(reader))
             {
-                fprintf(stdout, "@%s=&quot;%s&quot;", *p, xml_str);
+                const xmlChar *aname = xmlTextReaderConstName(reader);
+                fprintf(stdout, "%s/@%s\n", curXPath, aname);
             }
-            else
-            {
-                fprintf(stdout, "@%s=\'%s\'", *p, xml_str);
-            }
-            p += 2;
-            xmlFree(xml_str);
         }
-        if (attrs) fprintf(stdout, "]");
-        fprintf(stdout, "\n");
-    }
-    else
-    {
-        if (elOps.sort_uniq)
+        else if (elOps.show_attr_and_val)
         {
-            if ((elOps.check_depth == 0) || (elOps.check_depth != 0 && depth <= elOps.check_depth))
+            fprintf(stdout, "%s", curXPath);
+            if (xmlTextReaderHasAttributes(reader))
+            {
+                int have_attr, first = 1;
+                fprintf(stdout, "[");
+                for (have_attr = xmlTextReaderMoveToFirstAttribute(reader);
+                     have_attr;
+                     have_attr = xmlTextReaderMoveToNextAttribute(reader))
+                {
+                    const xmlChar *aname = xmlTextReaderConstName(reader),
+                        *avalue = xmlTextReaderConstValue(reader);
+                    char quote;
+                    if (!first)
+                        fprintf(stdout, " and ");
+                    first = 0;
+
+                    quote = xmlStrchr(avalue, '\'')? '"' : '\'';
+                    fprintf(stdout, "@%s=%c%s%c", aname, quote, avalue, quote);
+                }
+                fprintf(stdout, "]");
+            }
+            fprintf(stdout, "\n");
+        }
+        else if (elOps.sort_uniq)
+        {
+            if ((elOps.check_depth == 0) || (elOps.check_depth != 0 && depth < elOps.check_depth))
             {
                 xmlHashAddEntry(uniq, curXPath, (void*) 1);
             }
         }
         else fprintf(stdout, "%s\n", curXPath);
+
     }
-}
 
-/**
- *  onEndElement SAX parser callback
- */
-void elEndElement(void *user_data, const xmlChar *name)
-{
-    *(curXPath + xmlStrlen(curXPath) - xmlStrlen(name) - 1) = '\0';
-    depth--;
-}
-
-/**
- *  run SAX parser on XML file
- */
-int
-parse_xml_file(const char *filename)
-{ 
-    int ret;
-
-    xmlInitParser();
-
-    memset(&xmlSAX_handler, 0, sizeof(xmlSAX_handler));
-
-    xmlSAX_handler.startElement = elStartElement;
-    xmlSAX_handler.endElement = elEndElement;
-
-    ret = xmlSAXUserParseFile(&xmlSAX_handler, NULL, filename);
-    xmlCleanupParser();
-    return ret;
+    return ret == -1? EXIT_LIB_ERROR : ret;
 }
 
 /**
