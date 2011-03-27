@@ -162,7 +162,7 @@ foInitLibXml(foOptionsPtr ops)
         }
         else if (ops->indent_spaces > 0)
         {
-            spaces = malloc(ops->indent_spaces + 1);
+            spaces = xmlMalloc(ops->indent_spaces + 1);
             xmlTreeIndentString = spaces;
             memset(spaces, ' ', ops->indent_spaces);
             spaces[ops->indent_spaces] = '\0';

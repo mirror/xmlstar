@@ -113,12 +113,7 @@ void reportError(void *ptr, xmlErrorPtr error)
 {
     ErrorInfo *errorInfo = (ErrorInfo*) ptr;
 
-    if (error->code == XML_ERR_NO_MEMORY)
-    {
-        fprintf(stderr, "out of memory\n");
-        exit(EXIT_INTERNAL_ERROR);
-    }
-    else if (errorInfo && errorInfo->verbose)
+    if (errorInfo && errorInfo->verbose)
     {
         int line = (!errorInfo->filename)? 0 :
             (errorInfo->xmlReader)?
@@ -136,6 +131,30 @@ void reportError(void *ptr, xmlErrorPtr error)
     }
 }
 
+#define CHECK_MEM(ret) if (!ret) \
+        (fprintf(stderr, "out of memory\n"), exit(EXIT_INTERNAL_ERROR))
+
+void*
+xmalloc(size_t size)
+{
+    void *ret = malloc(size);
+    CHECK_MEM(ret);
+    return ret;
+}
+void*
+xrealloc(void *ptr, size_t size)
+{
+    void *ret = realloc(ptr, size);
+    CHECK_MEM(ret);
+    return ret;
+}
+char*
+xstrdup(const char *str)
+{
+    char *ret = strdup(str);
+    CHECK_MEM(ret);
+    return ret;
+}
 
 /**
  *  This is the main function
@@ -145,6 +164,7 @@ main(int argc, char **argv)
 {
     int ret = 0;
 
+    xmlMemSetup(free, xmalloc, xrealloc, xstrdup);
     xmlSetStructuredErrorFunc(NULL, reportError);
 
     if (argc <= 1)

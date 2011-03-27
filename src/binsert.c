@@ -6,6 +6,8 @@
 #include <string.h>
 #include <stdio.h>
 
+#include <libxml/xmlmemory.h>
+
 #ifndef NULL
 #define NULL 0
 #endif
@@ -25,8 +27,8 @@ array_create()
 {
    SortedArray array;
 
-   array = malloc(sizeof(SortedArrayObj));
-   array->data = malloc(ARR_INIT_SZ * sizeof(ArrayItem));
+   array = xmlMalloc(sizeof(SortedArrayObj));
+   array->data = xmlMalloc(ARR_INIT_SZ * sizeof(ArrayItem));
    array->size = ARR_INIT_SZ;
    array->len = 0;
    
