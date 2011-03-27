@@ -30,11 +30,11 @@ THE SOFTWARE.
 
 #include <libxml/parser.h>
 #include <libxml/xmlstring.h>
+#include <libxml/hash.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "xmlstar.h"
-#include "binsert.h"
 #include "escape.h"
 
 /* TODO:
@@ -70,7 +70,7 @@ static const char elem_usage_str[] =
 
 static xmlSAXHandler xmlSAX_handler;
 static elOptions elOps;
-static SortedArray sorted = NULL;
+static xmlHashTablePtr uniq = NULL;
 
 #define LINE_BUF_SZ  4*1024
 
@@ -142,16 +142,8 @@ void elStartElement(void *user_data, const xmlChar *name, const xmlChar **attrs)
         if (elOps.sort_uniq)
         {
             if ((elOps.check_depth == 0) || (elOps.check_depth != 0 && depth <= elOps.check_depth))
-            { 
-                int idx;
-                xmlChar *tmpXPath = xmlStrdup(curXPath);
-    
-                idx = array_binary_insert(sorted, tmpXPath);
-                if (idx < 0)
-                {
-                   free(tmpXPath);
-                   tmpXPath = NULL;
-                }
+            {
+                xmlHashAddEntry(uniq, curXPath, (void*) 1);
             }
         }
         else fprintf(stdout, "%s\n", curXPath);
@@ -199,6 +191,33 @@ elInitOptions(elOptions *ops)
     ops->check_depth = 0; 
 }
 
+typedef struct {
+    xmlChar **array;
+    int offset;
+} ArrayDest;
+
+/**
+ * put @name into @data->array[@data->offset]
+ */
+static void
+hash_key_put(void *payload, void *data, xmlChar *name)
+{
+    ArrayDest *dest = data;
+    dest->array[dest->offset++] = name;
+}
+
+/**
+ * a compare function for qsort
+ * takes pointers to 2 xmlChar* and compares them
+ */
+static int
+compare_string_ptr(const void *p1, const void *p2)
+{
+    typedef xmlChar const *const xmlCChar;
+    xmlCChar *str1 = p1, *str2 = p2;
+    return xmlStrcmp(*str1, *str2);
+}
+
 /**
  *  This is the main function for 'el' option
  */
@@ -237,7 +256,7 @@ elMain(int argc, char **argv)
         {
             elOps.sort_uniq = 1;
             if (argc >= 4) inp_file = argv[3];
-            sorted = array_create();
+            uniq = xmlHashCreate(0);
             errorno = parse_xml_file(inp_file);
         }
         else if (!strncmp(argv[2], "-d", 2)) 
@@ -245,8 +264,8 @@ elMain(int argc, char **argv)
             elOps.check_depth = atoi(argv[2]+2); 
             /* printf("Checking depth (%d)\n", elOps.check_depth); */ 
             elOps.sort_uniq = 1; 
-            if (argc >= 4) inp_file = argv[3]; 
-            sorted = array_create(); 
+            if (argc >= 4) inp_file = argv[3];
+            uniq = xmlHashCreate(0);
             errorno = parse_xml_file(inp_file); 
         }
         else if (argv[2][0] != '-')
@@ -257,22 +276,24 @@ elMain(int argc, char **argv)
             elUsage(argc, argv, EXIT_BAD_ARGS);
     }
 
-    if (sorted)
+    if (uniq)
     {
         int i;
+        ArrayDest lines;
+        lines.array = xmlMalloc(sizeof(xmlChar*) * xmlHashSize(uniq));
+        lines.offset = 0;
+        xmlHashScan(uniq, hash_key_put, &lines);
 
-        /* printf("array len: %d\n", array_len(sorted)); */
+        qsort(lines.array, lines.offset, sizeof(xmlChar*), compare_string_ptr);
 
-        for (i=0; i < array_len(sorted); i++)
+        for (i = 0; i < lines.offset; i++)
         {
-            xmlChar* item = array_item(sorted, i);
-            printf("%s\n", item);
-            free(item);
+            printf("%s\n", lines.array[i]);
         }
-        
-        array_free(sorted);
-        sorted = NULL;
-    }  
+
+        xmlFree(lines.array);
+        xmlHashFree(uniq, NULL);
+    }
 
     return errorno;
 }

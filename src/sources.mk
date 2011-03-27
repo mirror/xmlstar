@@ -1,6 +1,4 @@
 xml_SOURCES =\
-src/binsert.c\
-src/binsert.h\
 src/escape.h\
 src/trans.c\
 src/trans.h\
