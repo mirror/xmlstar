@@ -24,6 +24,8 @@ examples/ed-namespace\
 examples/elem1\
 examples/elem2\
 examples/elem3\
+examples/elem-depth\
+examples/elem-uniq\
 examples/escape1\
 examples/exslt1\
 examples/findfile1\
