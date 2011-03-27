@@ -107,12 +107,45 @@ usage(int argc, char **argv, exit_status status)
 }  
 
 /**
+ * Error reporting function
+ */
+void reportError(void *ptr, xmlErrorPtr error)
+{
+    ErrorInfo *errorInfo = (ErrorInfo*) ptr;
+
+    if (error->code == XML_ERR_NO_MEMORY)
+    {
+        fprintf(stderr, "out of memory\n");
+        exit(EXIT_INTERNAL_ERROR);
+    }
+    else if (errorInfo && errorInfo->verbose)
+    {
+        int line = (!errorInfo->filename)? 0 :
+            (errorInfo->xmlReader)?
+            xmlTextReaderGetParserLineNumber(errorInfo->xmlReader) :
+            error->line;
+        if (line)
+        {
+            fprintf(stderr, "%s:%d: ", errorInfo->filename, line);
+        }
+    }
+
+    if (!errorInfo || errorInfo->verbose)
+    {
+        fprintf(stderr, "%s", error->message);
+    }
+}
+
+
+/**
  *  This is the main function
  */
 int
 main(int argc, char **argv)
 {
     int ret = 0;
+
+    xmlSetStructuredErrorFunc(NULL, reportError);
 
     if (argc <= 1)
     {

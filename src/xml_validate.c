@@ -66,14 +66,6 @@ typedef struct _valOptions {
 
 typedef valOptions *valOptionsPtr;
 
-typedef struct _errorInfo {
-    const char *filename; /* file error occured in, if any, else NULL */
-    xmlTextReaderPtr xmlReader;
-    int verbose;
-} ErrorInfo;
-
-typedef ErrorInfo *ErrorInfoPtr;
-
 /*
  * usage string chunk : 509 char max on ISO C90
  */
@@ -298,27 +290,6 @@ valAgainstDtd(valOptionsPtr ops, char* dtdvalid, xmlDocPtr doc, char* filename)
     }
 
     return result;
-}
-
-/**
- * Error reporting function
- */
-void reportError(void *filename, xmlErrorPtr error)
-{
-    ErrorInfoPtr errorInfo = (ErrorInfoPtr) filename;
-
-    if (errorInfo->verbose)
-    {
-        int line = (!errorInfo->filename)? 0 :
-            (errorInfo->xmlReader)?
-            xmlTextReaderGetParserLineNumber(errorInfo->xmlReader) :
-            error->line;
-        if (line)
-        {
-            fprintf(stderr, "%s:%d: ", errorInfo->filename, line);
-        }
-        fprintf(stderr, "%s", error->message);
-    }
 }
 
 /**
