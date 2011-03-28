@@ -85,27 +85,6 @@ elUsage(int argc, char **argv, exit_status status)
 }
 
 /**
- * xmlStrrchr:
- * @str:  the xmlChar * array
- * @val:  the xmlChar to search
- *
- * a strrchr for xmlChar's
- *
- * Returns the xmlChar * for the last occurrence or NULL.
- */
-
-xmlChar *
-xmlStrrchr(const xmlChar *str, xmlChar val) {
-    const xmlChar *end;
-    if (str == NULL) return(NULL);
-    for (end = str + xmlStrlen(str); end >= str; end--) {
-        if (*end == val) return((xmlChar *) end);
-    }
-    return(NULL);
-}
-
-
-/**
  *  read file and print element paths
  */
 int
@@ -129,9 +108,9 @@ parse_xml_file(const char *filename)
         if (type != XML_READER_TYPE_ELEMENT)
             continue;
 
-        while (depth <= prev_depth)
+        while (curXPath && depth <= prev_depth)
         {
-            xmlChar *slash = xmlStrrchr(curXPath, '/');
+            xmlChar *slash = BAD_CAST strrchr((char*) curXPath, '/');
             if (slash) *slash = '\0';
             prev_depth--;
         }
