@@ -326,13 +326,6 @@ valMain(int argc, char **argv)
             ret = 0;
             doc = NULL;
 
-            if (!ops.err)
-            {
-                xmlDefaultSAXHandlerInit();
-                xmlDefaultSAXHandler.error = NULL;
-                xmlDefaultSAXHandler.warning = NULL;
-            }                       
-
             errorInfo.filename = argv[i];
             doc = xmlReadFile(argv[i], NULL, options);
             if (doc)

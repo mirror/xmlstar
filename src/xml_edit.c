@@ -552,19 +552,7 @@ edRename(xmlDocPtr doc, char *loc, char *val, XmlNodeType type)
                 */
                 for (i = 0; i < cur->nodeNr; i++)
                 {
-                    /*
-                     *  rename node
-                     */
-                    if (cur->nodeTab[i]->type == XML_ATTRIBUTE_NODE)
-                    {
-                        xmlFree((xmlChar *) cur->nodeTab[i]->name);
-                        cur->nodeTab[i]->name = xmlStrdup((const xmlChar*) val);
-                    }
-                    else
-                    {
-                        xmlFree((xmlChar *)cur->nodeTab[i]->name);
-                        cur->nodeTab[i]->name = xmlStrdup((const xmlChar*) val);
-                    }
+                    xmlNodeSetName(cur->nodeTab[i], BAD_CAST val);
                 }
             }
             break;
@@ -871,7 +859,7 @@ edProcess(xmlDocPtr doc, XmlEdAction* ops, int ops_count)
 void
 edOutput(const char* filename, edOptions g_ops)
 {
-    xmlDocPtr doc = xmlParseFile(filename);
+    xmlDocPtr doc = xmlReadFile(filename, NULL, 0);
     int format = (g_ops.noblanks && !g_ops.preserveFormat);
 
     if (!doc)

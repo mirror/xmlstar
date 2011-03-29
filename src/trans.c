@@ -341,12 +341,6 @@ int xsltRun(xsltOptionsPtr ops, char* xsl, const char** params,
     }
 
     /*
-     * disable CDATA from being built in the document tree
-     */
-    xmlDefaultSAXHandlerInit();
-    xmlDefaultSAXHandler.cdataBlock = NULL;
-
-    /*
      * run XSLT
      */
     if ((cur != NULL) && (cur->errors == 0))
@@ -355,7 +349,7 @@ int xsltRun(xsltOptionsPtr ops, char* xsl, const char** params,
         {
             doc = NULL;
 #ifdef LIBXML_HTML_ENABLED
-            if (ops->html) doc = htmlParseFile(docs[i], NULL);
+            if (ops->html) doc = htmlReadFile(docs[i], NULL, options);
             else
 #endif
             {

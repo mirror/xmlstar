@@ -45,7 +45,7 @@ static const char pyx_usage_str_3[] =
  *  Required both for attribute values and character data (#PCDATA)
  */
 static void
-SanitizeData(const char *s, int len)
+SanitizeData(const xmlChar *s, int len)
 {
     while (len--)
     {
@@ -69,56 +69,77 @@ SanitizeData(const char *s, int len)
     }
 }
 
+static void
+print_qname(const xmlChar *prefix, const xmlChar *localname)
+{
+    if (prefix)
+        printf("%s:", prefix);
+    printf("%s", localname);
+}
+
 int
 CompareAttributes(const void *a1,const void *a2)
 {
-    return xmlStrcmp(*(unsigned char* const *)a1, *(unsigned char* const *)a2);
+    typedef xmlChar const *const xmlCStr;
+    xmlCStr *attr1 = a1, *attr2 = a2;
+    return xmlStrcmp(*attr1, *attr2);
 }
 
 void
-pyxStartElement(void *userData, const xmlChar *name, const xmlChar **atts)
+pyxStartElement (void * ctx,
+    const xmlChar * localname,
+    const xmlChar * prefix,
+    const xmlChar * URI,
+    int nb_namespaces,
+    const xmlChar ** namespaces,
+    int nb_attributes,
+    int nb_defaulted,
+    const xmlChar ** attributes)
 {
-    const xmlChar **p;
-    int AttributeCount;
-    fprintf (stdout,"(%s\n",name);
+    int i;
+    fprintf(stdout,"(");
+    print_qname(prefix, localname);
 
-    if (atts != NULL)
-    {
-        /* Count the number of attributes */
-        for (p = atts; *p != NULL; p++);
 
-        AttributeCount = (p - atts) >> 1; /* (name,value) pairs 
-                                           so divide by two */
-        if (AttributeCount > 1)
-            /* Sort the pairs based on the name part of the pair */
-            qsort ((void *)atts,
-                    AttributeCount,
-                    sizeof(char *)*2,
-                    CompareAttributes);
+    if (nb_attributes > 1)
+        /* Sort the pairs based on the name part of the pair */
+        qsort ((void *)attributes,
+            nb_attributes,
+            sizeof(xmlChar *)*5,
+            CompareAttributes);
 
-        while (*atts) {
-            /* Attribute Name */
-            fprintf (stdout,"A%s ",*atts);
-            atts++; /* Now pointing at value - can contain literal "\n" 
-                       so escape */
-            SanitizeData((const char *) *atts, xmlStrlen(*atts));
-            atts++;
-            putchar('\n');
-        }
+    for (i = 0; i < nb_attributes; i++) {
+        int aidx = i * 5;
+        const xmlChar *localname = attributes[aidx],
+            *prefix = attributes[aidx+1],
+            /* *nsURI = attributes[aidx+2], */
+            *valueBegin = attributes[aidx+3],
+            *valueEnd = attributes[aidx+4];
+        int valueLen = valueEnd - valueBegin;
+
+        /* Attribute Name */
+        fprintf(stdout, "A");
+        print_qname(prefix, localname);
+        /* value - can contain literal "\n" so escape */
+        SanitizeData(valueBegin, valueLen);
+        putchar('\n');
     }
 }
 
 void
-pyxEndElement(void *userData, const xmlChar *name)
+pyxEndElement(void *userData, const xmlChar *localname, const xmlChar *prefix,
+    const xmlChar *URI)
 {
-    fprintf(stdout,")%s\n",name);
+    fprintf(stdout,")");
+    print_qname(prefix, localname);
+    putchar('\n');
 }
 
 void
 pyxCharacterData(void *userData, const xmlChar *s, int len)
 {
     fprintf(stdout, "-");
-    SanitizeData((const char *) s,len);
+    SanitizeData(s, len);
     putchar('\n');
 }
 
@@ -128,7 +149,7 @@ pyxProcessingInstruction(void *userData,
                          const xmlChar *data)
 {
     fprintf(stdout,"?%s ",target);
-    SanitizeData((const char *) data, xmlStrlen(data));
+    SanitizeData(data, xmlStrlen(data));
     fprintf(stdout,"\n");
 }
 
@@ -188,7 +209,7 @@ static void
 pyxCommentHandler(void *ctx ATTRIBUTE_UNUSED, const xmlChar *value)
 {
     fprintf(stdout,"C");
-    SanitizeData((const char *) value, xmlStrlen(value));
+    SanitizeData(value, xmlStrlen(value));
     fprintf(stdout,"\n");
 }
 
@@ -196,7 +217,7 @@ static void
 pyxCdataBlockHandler(void *ctx ATTRIBUTE_UNUSED, const xmlChar *value, int len)
 {
     fprintf(stdout,"[");
-    SanitizeData((const char *) value, len);
+    SanitizeData(value, len);
     fprintf(stdout,"\n");
 }
 
@@ -219,13 +240,15 @@ pyx_process_file(const char *filename)
 
     /* Establish Event Handlers */
     static xmlSAXHandler xmlSAX_handler;
+    xmlParserCtxtPtr ctxt;
 
     xmlInitParser();
 
     memset(&xmlSAX_handler, 0, sizeof(xmlSAX_handler));
 
-    xmlSAX_handler.startElement = pyxStartElement;
-    xmlSAX_handler.endElement = pyxEndElement;
+    xmlSAX_handler.initialized = XML_SAX2_MAGIC;
+    xmlSAX_handler.startElementNs = pyxStartElement;
+    xmlSAX_handler.endElementNs = pyxEndElement;
     xmlSAX_handler.processingInstruction = pyxProcessingInstruction;
     xmlSAX_handler.characters = pyxCharacterData;
     xmlSAX_handler.notationDecl = pyxNotationDeclHandler;
@@ -235,7 +258,9 @@ pyx_process_file(const char *filename)
     xmlSAX_handler.comment = pyxCommentHandler;
     xmlSAX_handler.cdataBlock = pyxCdataBlockHandler;
 
-    ret = xmlSAXUserParseFile(&xmlSAX_handler, NULL, filename);
+    ctxt = xmlCreatePushParserCtxt(&xmlSAX_handler, NULL, NULL, 0, filename);
+    ret = xmlParseDocument(ctxt);
+    xmlFreeParserCtxt(ctxt);
     xmlCleanupParser();
 
     return ret;

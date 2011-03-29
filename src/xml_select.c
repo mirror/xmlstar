@@ -786,7 +786,7 @@ selMain(int argc, char **argv)
         params[1] = (char *) value;
 
         {
-            xmlDocPtr doc = xmlParseFile(argv[n]);
+            xmlDocPtr doc = xmlReadFile(argv[n], NULL, 0);
             if (doc != NULL) {
                 xsltProcess(&xsltOps, doc, params, style, argv[n]);
             } else {
@@ -803,7 +803,7 @@ selMain(int argc, char **argv)
         params[0] = "inputFile";
         params[1] = "'-'";
 
-        doc = xmlParseFile("-");
+        doc = xmlReadFile("-", NULL, 0);
         if (doc != NULL) {
             xsltProcess(&xsltOps, doc, params, style, "-");
         } else {
