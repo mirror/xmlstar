@@ -1,0 +1,2 @@
+#!/bin/sh
+./xmlstarlet pyx xml/structure.xml | ./xmlstarlet depyx | ./xmlstarlet c14n

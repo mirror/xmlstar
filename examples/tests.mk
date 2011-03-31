@@ -36,6 +36,7 @@ examples/look1\
 examples/move1\
 examples/noindent1\
 examples/ns1\
+examples/pyx\
 examples/recover1\
 examples/rename-attr1\
 examples/rename-elem1\

@@ -17,6 +17,7 @@
 #include <string.h>
 
 #include <libxml/parser.h>
+#include <libxml/parserInternals.h>
 
 #include "xmlstar.h"
 
@@ -99,6 +100,7 @@ pyxStartElement (void * ctx,
     int i;
     fprintf(stdout,"(");
     print_qname(prefix, localname);
+    fprintf(stdout, "\n");
 
 
     if (nb_attributes > 1)
@@ -237,28 +239,26 @@ int
 pyx_process_file(const char *filename)
 {
     int ret;
-
-    /* Establish Event Handlers */
-    static xmlSAXHandler xmlSAX_handler;
     xmlParserCtxtPtr ctxt;
 
     xmlInitParser();
+    ctxt = xmlCreateFileParserCtxt(filename);
 
-    memset(&xmlSAX_handler, 0, sizeof(xmlSAX_handler));
+    memset(ctxt->sax, 0, sizeof(*ctxt->sax));
 
-    xmlSAX_handler.initialized = XML_SAX2_MAGIC;
-    xmlSAX_handler.startElementNs = pyxStartElement;
-    xmlSAX_handler.endElementNs = pyxEndElement;
-    xmlSAX_handler.processingInstruction = pyxProcessingInstruction;
-    xmlSAX_handler.characters = pyxCharacterData;
-    xmlSAX_handler.notationDecl = pyxNotationDeclHandler;
-    xmlSAX_handler.reference = pyxExternalEntityReferenceHandler;
-    xmlSAX_handler.unparsedEntityDecl = pyxUnparsedEntityDeclHandler;
-    xmlSAX_handler.externalSubset = pyxExternalSubsetHandler;
-    xmlSAX_handler.comment = pyxCommentHandler;
-    xmlSAX_handler.cdataBlock = pyxCdataBlockHandler;
+    /* Establish Event Handlers */
+    ctxt->sax->initialized = XML_SAX2_MAGIC;
+    ctxt->sax->startElementNs = pyxStartElement;
+    ctxt->sax->endElementNs = pyxEndElement;
+    ctxt->sax->processingInstruction = pyxProcessingInstruction;
+    ctxt->sax->characters = pyxCharacterData;
+    ctxt->sax->notationDecl = pyxNotationDeclHandler;
+    ctxt->sax->reference = pyxExternalEntityReferenceHandler;
+    ctxt->sax->unparsedEntityDecl = pyxUnparsedEntityDeclHandler;
+    ctxt->sax->externalSubset = pyxExternalSubsetHandler;
+    ctxt->sax->comment = pyxCommentHandler;
+    ctxt->sax->cdataBlock = pyxCdataBlockHandler;
 
-    ctxt = xmlCreatePushParserCtxt(&xmlSAX_handler, NULL, NULL, 0, filename);
     ret = xmlParseDocument(ctxt);
     xmlFreeParserCtxt(ctxt);
     xmlCleanupParser();
