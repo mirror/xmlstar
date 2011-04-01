@@ -33,6 +33,9 @@ THE SOFTWARE.
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <libxslt/xslt.h>
+#include <libxslt/xsltconfig.h>
+
 #include "xmlstar.h"
 
 extern int edMain(int argc, char **argv);
@@ -221,7 +224,12 @@ main(int argc, char **argv)
     }
     else if (!strcmp(argv[1], "--version"))
     {
-        fprintf(stdout, "%s\n", VERSION);
+        fprintf(stdout, "%s\n"
+            "compiled against libxml2 %s, linked with %s\n"
+            "compiled against libxslt %s, linked with %s\n",
+            VERSION,
+            LIBXML_DOTTED_VERSION, xmlParserVersion,
+            LIBXSLT_DOTTED_VERSION, xsltEngineVersion);
         ret = EXIT_SUCCESS;
     }
     else
