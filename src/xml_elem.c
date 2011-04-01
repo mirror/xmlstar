@@ -163,7 +163,9 @@ void elStartElement(void *user_data, const xmlChar *name, const xmlChar **attrs)
  */
 void elEndElement(void *user_data, const xmlChar *name)
 {
-    *(curXPath + xmlStrlen(curXPath) - xmlStrlen(name) - 1) = '\0';
+    int xlen = xmlStrlen(curXPath);
+    int nlen = xmlStrlen(name);
+    *(curXPath + xlen - nlen - (xlen == nlen?0:1)) = '\0';
     depth--;
 }
 
@@ -184,6 +186,7 @@ parse_xml_file(const char *filename)
 
     ret = xmlSAXUserParseFile(&xmlSAX_handler, NULL, filename);
     xmlCleanupParser();
+    xmlFree(curXPath);
     return ret;
 }
 
