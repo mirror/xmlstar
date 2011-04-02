@@ -17,10 +17,10 @@ XSTAR_LIB_ARGS_WITH([LIBXSLT], [with-src])
 XSTAR_LIB_ARGS_WITH([LIBICONV])
 
 AC_ARG_ENABLE([static-libs],
-        [AS_HELP_STRING([--disable-static-libs],
-                [link statically with libxml2 and lib(e)xslt @<:@default=yes@:>@])],
+        [AS_HELP_STRING([--enable-static-libs],
+                [link statically with libxml2 and lib(e)xslt @<:@default=no@:>@])],
         [STATIC_LIBS=$enableval],
-        [STATIC_LIBS=yes])
+        [STATIC_LIBS=no])
 
 dnl
 dnl Check the environment
