@@ -154,7 +154,7 @@ xrealloc(void *ptr, size_t size)
 char*
 xstrdup(const char *str)
 {
-    char *ret = strdup(str);
+    char *ret = (char*) xmlStrdup(BAD_CAST str);
     CHECK_MEM(ret);
     return ret;
 }
