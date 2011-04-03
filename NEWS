@@ -1,3 +1,22 @@
+1.1.0: Apr 3, 2011
+
+    - bug fix for BSD/OSX: check that O_BINARY is declared before
+      #including io.h (Bug 3211822)
+    - select improvements
+      - add --elif and --else options
+      - sorting on multiple fields
+      - correct (for English) lexical sorting instead of ASCIIbetical
+      - only outputs namespaces that are actually used
+      - only outputs xsl:param inputFile if it's used
+      - don't make separate templates if there is only 1
+    - link to shared libxml and libxslt libraries by default
+    - add library version info to --version output
+    - add directory argument for ls; exit status indicates
+      failure/success instead of file count
+    - stop using old SAX1 interface, xmlstarlet will now link with a
+      libxml configured --without-sax1 and --without-legacy
+
+
 1.0.6: Mar 13 2011:
 
     - Bug fixes:
