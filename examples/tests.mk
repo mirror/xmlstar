@@ -19,6 +19,7 @@ examples/dtd1\
 examples/dtd2\
 examples/dtd3\
 examples/dtd4\
+examples/ed-2op\
 examples/ed-append\
 examples/ed-insert\
 examples/ed-literal\
