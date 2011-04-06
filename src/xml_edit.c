@@ -49,9 +49,6 @@ THE SOFTWARE.
    TODO:
           1. Should this be allowed ?
              ./xml ed -m /xml /xml/table/rec/object ../examples/xml/tab-obj.xml 
-
-          3. Code clean-up is needed. (Too much code replication to find nodeset
-             by xpath expression).
 */
 
 typedef struct _edOptions {   /* Global 'edit' options */
@@ -229,316 +226,168 @@ nsarr_xpath_register(xmlXPathContextPtr ctxt)
  *  'update' operation
  */
 void
-edUpdate(xmlDocPtr doc, const char *loc, const char *val, XmlNodeType type)
+edUpdate(xmlDocPtr doc, xmlNodeSetPtr nodes, const char *val, XmlNodeType type)
 {
-    xmlXPathObjectPtr res = NULL;
-    xmlXPathContextPtr ctxt;
-
-    ctxt = xmlXPathNewContext(doc);
-    nsarr_xpath_register(ctxt);
-    ctxt->node = xmlDocGetRootElement(doc);
-
-    res = xmlXPathEvalExpression(BAD_CAST loc, ctxt);
-    if (res == NULL) return;
-
-    /* Found loc */
-    switch(res->type)
+    int i;
+    for (i = 0; i < nodes->nodeNr; i++)
     {
-    case XPATH_NODESET:
-        {
-            int i;
-            xmlNodeSetPtr cur = res->nodesetval;
-            if (cur)
-            {
-                for (i = 0; i < cur->nodeNr; i++)
-                {
-                    /* update node */
+        /* update node */
 
-                    /* TODO: do we need xmlEncodeEntitiesReentrant() too/instead? */
-                    xmlChar *content = xmlEncodeSpecialChars(NULL, (const xmlChar*) val);
+        /* TODO: do we need xmlEncodeEntitiesReentrant() too/instead? */
+        xmlChar *content = xmlEncodeSpecialChars(NULL, (const xmlChar*) val);
 
-                    xmlNodeSetContent(cur->nodeTab[i], content);
-                    xmlFree(content);
-                }
-            }
-            break;
-        }
-    default:
-        break;
+        xmlNodeSetContent(nodes->nodeTab[i], content);
+        xmlFree(content);
     }
-    xmlXPathFreeObject(res);
-    xmlXPathFreeContext(ctxt);
 }
 
 /**
  *  'insert' operation
  */
 void
-edInsert(xmlDocPtr doc, const char *loc, const char *val, const char *name,
+edInsert(xmlDocPtr doc, xmlNodeSetPtr nodes, const char *val, const char *name,
          XmlNodeType type, int mode)
 {
-    xmlXPathObjectPtr res = NULL;
-    xmlXPathContextPtr ctxt;
-
-    ctxt = xmlXPathNewContext(doc);
-    nsarr_xpath_register(ctxt);
-    ctxt->node = xmlDocGetRootElement(doc);
-
-    res = xmlXPathEvalExpression(BAD_CAST loc, ctxt);
-    if (res == NULL) return;
-
-    /* Found loc */
-    switch(res->type)
+    int i;
+    for (i = 0; i < nodes->nodeNr; i++)
     {
-    case XPATH_NODESET:
+        /* update node */
+        if (type == XML_ATTR)
         {
-            int i;
-            xmlNodeSetPtr cur = res->nodesetval;
-            if (cur)
-            {
-                for (i = 0; i < cur->nodeNr; i++)
-                {
-                    /* update node */
-                    if (type == XML_ATTR)
-                    {
-                        xmlNewProp(cur->nodeTab[i], BAD_CAST name, BAD_CAST val);
-                    }
-                    else if (type == XML_ELEM)
-                    {
-                        xmlNodePtr node = xmlNewDocNode(doc, NULL /* TODO: NS */, BAD_CAST name, BAD_CAST val);
-                        if (mode > 0)
-                            xmlAddNextSibling(cur->nodeTab[i], node);
-                        else if (mode < 0)
-                            xmlAddPrevSibling(cur->nodeTab[i], node);
-                        else
-                            xmlAddChild(cur->nodeTab[i], node);
-                    }
-                    else if (type == XML_TEXT)
-                    {
-                        xmlNodePtr node = xmlNewDocText(doc, BAD_CAST val);
-                        if (mode > 0)
-                            xmlAddNextSibling(cur->nodeTab[i], node);
-                        else if (mode < 0)
-                            xmlAddPrevSibling(cur->nodeTab[i], node);
-                        else
-                            xmlAddChild(cur->nodeTab[i], node);                    
-                    }
-                }
-            }
-            break;
+            xmlNewProp(nodes->nodeTab[i], BAD_CAST name, BAD_CAST val);
         }
-    default:
-        break;
+        else if (type == XML_ELEM)
+        {
+            xmlNodePtr node = xmlNewDocNode(doc, NULL /* TODO: NS */, BAD_CAST name, BAD_CAST val);
+            if (mode > 0)
+                xmlAddNextSibling(nodes->nodeTab[i], node);
+            else if (mode < 0)
+                xmlAddPrevSibling(nodes->nodeTab[i], node);
+            else
+                xmlAddChild(nodes->nodeTab[i], node);
+        }
+        else if (type == XML_TEXT)
+        {
+            xmlNodePtr node = xmlNewDocText(doc, BAD_CAST val);
+            if (mode > 0)
+                xmlAddNextSibling(nodes->nodeTab[i], node);
+            else if (mode < 0)
+                xmlAddPrevSibling(nodes->nodeTab[i], node);
+            else
+                xmlAddChild(nodes->nodeTab[i], node);
+        }
     }
-    xmlXPathFreeObject(res);
-    xmlXPathFreeContext(ctxt);
 }
 
 /**
  *  'rename' operation
  */
 void
-edRename(xmlDocPtr doc, char *loc, char *val, XmlNodeType type)
+edRename(xmlDocPtr doc, xmlNodeSetPtr nodes, char *val, XmlNodeType type)
 {
-    xmlXPathObjectPtr res = NULL;
-    xmlXPathContextPtr ctxt;
-
-    ctxt = xmlXPathNewContext(doc);
-    nsarr_xpath_register(ctxt);
-    ctxt->node = xmlDocGetRootElement(doc);
-
-    res = xmlXPathEvalExpression(BAD_CAST loc, ctxt);
-    if (res == NULL) return;
-
-    /* Found loc */    
-    switch(res->type)
+    int i;
+    for (i = 0; i < nodes->nodeNr; i++)
     {
-    case XPATH_NODESET:
-        {
-            int i;
-            xmlNodeSetPtr cur = res->nodesetval;
-            if (cur)
-            {
-                for (i = 0; i < cur->nodeNr; i++)
-                {
-                    xmlNodeSetName(cur->nodeTab[i], BAD_CAST val);
-                }
-            }
-            break;
-        }
-    default:
-        break;
+        xmlNodeSetName(nodes->nodeTab[i], BAD_CAST val);
     }
-    xmlXPathFreeObject(res);
-    xmlXPathFreeContext(ctxt);
 }
 
 /**
  *  'delete' operation
  */
 void
-edDelete(xmlDocPtr doc, char *str)
+edDelete(xmlDocPtr doc, xmlNodeSetPtr nodes)
 {
-    xmlXPathObjectPtr res = NULL;
-    xmlXPathContextPtr ctxt;
-
-    ctxt = xmlXPathNewContext(doc);
-    nsarr_xpath_register(ctxt);
-    ctxt->node = xmlDocGetRootElement(doc);
-
-    res = xmlXPathEvalExpression(BAD_CAST str, ctxt);
-    if (res == NULL) return;
-
-    switch(res->type)
+    int i;
+    for (i = nodes->nodeNr - 1; i >= 0; i--)
     {
-    case XPATH_NODESET:
-        {
-            int i;
-            xmlNodeSetPtr cur = res->nodesetval;
-            if (cur)
-            {
-                for (i = cur->nodeNr - 1; i >= 0; i--)
-                {
-                    if (cur->nodeTab[i]->type == XML_NAMESPACE_DECL) {
-                        fprintf(stderr, "FIXME: can't delete namespace nodes\n");
-                        exit(EXIT_INTERNAL_ERROR);
-                    }
-                    /* delete node */
-                    xmlUnlinkNode(cur->nodeTab[i]);
-
-                    /* Free node and children */
-                    xmlFreeNode(cur->nodeTab[i]);
-                    cur->nodeTab[i] = NULL;
-                }
-            }
-
-            break;
+        if (nodes->nodeTab[i]->type == XML_NAMESPACE_DECL) {
+            fprintf(stderr, "FIXME: can't delete namespace nodes\n");
+            exit(EXIT_INTERNAL_ERROR);
         }
-    default:
-        break;
+        /* delete node */
+        xmlUnlinkNode(nodes->nodeTab[i]);
+
+        /* Free node and children */
+        xmlFreeNode(nodes->nodeTab[i]);
+        nodes->nodeTab[i] = NULL;
     }
-    xmlXPathFreeObject(res);
-    xmlXPathFreeContext(ctxt);
 }
 
 /**
  *  'move' operation
  */
 void
-edMove(xmlDocPtr doc, char *from, char *to)
+edMove(xmlDocPtr doc, xmlNodeSetPtr nodes, xmlNodePtr to)
 {
-    xmlXPathObjectPtr res = NULL, res_to = NULL;
-    xmlXPathContextPtr ctxt;
-
-    /*
-     *  Find 'from' node set
-     */
-    ctxt = xmlXPathNewContext(doc);
-    nsarr_xpath_register(ctxt);
-    ctxt->node = xmlDocGetRootElement(doc);
-
-    res = xmlXPathEvalExpression(BAD_CAST from, ctxt);
-
-    xmlXPathFreeContext(ctxt);
-    if (res == NULL) return;
-
-    /********************************************************/
-    
-    /*
-     *  Find 'to' node set
-     */
-    ctxt = xmlXPathNewContext(doc);
-    nsarr_xpath_register(ctxt);
-    ctxt->node = xmlDocGetRootElement(doc);
-
-    res_to = xmlXPathEvalExpression(BAD_CAST to, ctxt);
-    if (res_to == NULL) return;
-
-    switch(res_to->type)
+    int i;
+    for (i = 0; i < nodes->nodeNr; i++)
     {
-    case XPATH_NODESET:
-        {
-            xmlNodeSetPtr cur = res_to->nodesetval;
-            if (cur)
-            {
-                if (cur->nodeNr != 1)
-                {
-                    fprintf(stderr, "destination nodeset does not contain one node (node count is %d)\n", cur->nodeNr);
-                    break;
-                }
-            }
-        }
-    default:
-        break;
+        /* move node */
+        xmlUnlinkNode(nodes->nodeTab[i]);
+        xmlAddChild(to, nodes->nodeTab[i]);
     }
-
-    switch(res->type)
-    {
-    case XPATH_NODESET:
-        {
-            int i;
-            xmlNodeSetPtr cur = res->nodesetval;
-            xmlNodeSetPtr cur_to = res_to->nodesetval;
-            if (cur && cur_to && (cur_to->nodeNr == 1))
-            {
-                for (i = 0; i < cur->nodeNr; i++)
-                {
-                    /* move node */
-                    xmlUnlinkNode(cur->nodeTab[i]);
-                    xmlAddChild(res_to->nodesetval->nodeTab[0], cur->nodeTab[i]);
-                }
-            }
-            break;
-        }
-    default:
-        break;
-    }
-
-    xmlXPathFreeObject(res);
-    xmlXPathFreeObject(res_to);
-    xmlXPathFreeContext(ctxt);
 }
 
 /**
  *  Loop through array of operations and perform them
  */
-int
+void
 edProcess(xmlDocPtr doc, XmlEdAction* ops, int ops_count)
 {
-    int res = 0;
     int k;
-    
+    xmlXPathContextPtr ctxt = xmlXPathNewContext(doc);
+    nsarr_xpath_register(ctxt);
+    ctxt->node = xmlDocGetRootElement(doc);
+
     for (k = 0; k < ops_count; k++)
     {
+        xmlXPathObjectPtr res;
+        xmlNodeSetPtr nodes;
+
+        res = xmlXPathEvalExpression(BAD_CAST ops[k].arg1, ctxt);
+        if (!res || res->type != XPATH_NODESET) continue;
+        nodes = res->nodesetval;
+
         switch (ops[k].op)
         {
             case XML_ED_DELETE:
-                edDelete(doc, ops[k].arg1);
+                edDelete(doc, nodes);
                 break;
-            case XML_ED_MOVE:
-                edMove(doc, ops[k].arg1, ops[k].arg2);
+            case XML_ED_MOVE: {
+                xmlXPathObjectPtr res_to =
+                    xmlXPathEvalExpression(BAD_CAST ops[k].arg2, ctxt);
+                if (!res_to
+                    || res_to->type != XPATH_NODESET
+                    || res_to->nodesetval->nodeNr != 1) {
+                    fprintf(stderr, "move destination is not a single node\n");
+                    continue;
+                }
+                edMove(doc, nodes, res_to->nodesetval->nodeTab[0]);
+                xmlXPathFreeObject(res_to);
                 break;
+            }
             case XML_ED_UPDATE:
-                edUpdate(doc, ops[k].arg1, ops[k].arg2, ops[k].type);
+                edUpdate(doc, nodes, ops[k].arg2, ops[k].type);
                 break;
             case XML_ED_RENAME:
-                edRename(doc, ops[k].arg1, ops[k].arg2, ops[k].type);
+                edRename(doc, nodes, ops[k].arg2, ops[k].type);
                 break;
             case XML_ED_INSERT:
-                edInsert(doc, ops[k].arg1, ops[k].arg2, ops[k].arg3, ops[k].type, -1);
+                edInsert(doc, nodes, ops[k].arg2, ops[k].arg3, ops[k].type, -1);
                 break;
             case XML_ED_APPEND:
-                edInsert(doc, ops[k].arg1, ops[k].arg2, ops[k].arg3, ops[k].type, 1);
+                edInsert(doc, nodes, ops[k].arg2, ops[k].arg3, ops[k].type, 1);
                 break;
             case XML_ED_SUBNODE:
-                edInsert(doc, ops[k].arg1, ops[k].arg2, ops[k].arg3, ops[k].type, 0);
+                edInsert(doc, nodes, ops[k].arg2, ops[k].arg3, ops[k].type, 0);
                 break;
             default:
                 break;
         }
+        xmlXPathFreeObject(res);
     }
-
-    return res;
+    xmlXPathFreeContext(ctxt);
 }
 
 /**
