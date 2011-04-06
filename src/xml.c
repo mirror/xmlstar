@@ -240,3 +240,75 @@ main(int argc, char **argv)
     
     exit(ret);
 }
+
+static void bad_ns_opt(const char *msg)
+{
+    fprintf(stderr, "Bad namespace option: %s\n", msg);
+    exit(EXIT_BAD_ARGS);
+}
+
+#define MAX_NS_ARGS    256
+xmlChar *ns_arr[2 * MAX_NS_ARGS + 1];
+
+/**
+ *  Parse command line for -N <prefix>=<namespace> arguments
+ */
+int
+parseNSArr(xmlChar** ns_arr, int* plen, int argc, char **argv)
+{
+    int i = 0;
+    *plen = 0;
+    ns_arr[0] = 0;
+
+    for (i=0; i<argc; i++)
+    {
+        int prefix_len;
+        xmlChar *name, *value;
+        const xmlChar *equal_sign;
+
+        /* check for end of -N arguments */
+        if (argv[i] == 0 || argv[i][0] != '-' || strcmp(argv[i], "-N") != 0)
+            break;
+
+        i++;
+        if (i >= argc) bad_ns_opt("-N without argument");
+
+        equal_sign = xmlStrchr((const xmlChar*) argv[i], '=');
+        if (!equal_sign)
+            bad_ns_opt("namespace should have the form <prefix>=<url>");
+        prefix_len = equal_sign - (const xmlChar*) argv[i];
+
+        name = xmlStrndup((const xmlChar*) argv[i], prefix_len);
+        value = xmlStrdup((const xmlChar*) argv[i]+prefix_len+1);
+
+        if (*plen >= MAX_NS_ARGS)
+        {
+            fprintf(stderr, "too many namespaces increase MAX_NS_ARGS\n");
+            exit(EXIT_BAD_ARGS);
+        }
+
+        ns_arr[*plen] = name;
+        (*plen)++;
+        ns_arr[*plen] = value;
+        (*plen)++;
+        ns_arr[*plen] = 0;
+
+    }
+
+    return i;
+}
+
+/**
+ *  Cleanup memory allocated by namespaces arguments
+ */
+void
+cleanupNSArr(xmlChar **ns_arr)
+{
+    xmlChar **p = ns_arr;
+
+    while (*p)
+    {
+        xmlFree(*p);
+        p++;
+    }
+}

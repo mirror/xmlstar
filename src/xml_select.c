@@ -41,7 +41,6 @@ THE SOFTWARE.
 #include "xmlstar.h"
 #include "trans.h"
 
-#define MAX_NS_ARGS    256
 /* max length of xmlstarlet supplied (ie not from command line) namespaces
  * currently xalanredirect is longest, at 13 characters*/
 #define MAX_NS_PREFIX_LEN 20
@@ -271,73 +270,6 @@ selInitOptions(selOptionsPtr ops)
     ops->no_omit_decl = 0;
     ops->nonet = 1;
     ops->encoding = NULL;
-}
-
-/**
- *  Parse command line for additional namespaces
- */
-int
-selParseNSArr(xmlChar** ns_arr, int* plen,
-              int count, char **argv)
-{
-    int i = 0;
-    *plen = 0;
-    ns_arr[0] = 0;
-
-    for (i=0; i<count; i++)
-    {
-        if (argv[i] == 0) break;
-        if (argv[i][0] == '-')
-        {
-            if (!strcmp(argv[i], "-N"))
-            {
-                int j;
-                xmlChar *name, *value;
-
-                i++;
-                if (i >= count) selUsage(argv[0], EXIT_BAD_ARGS);
-
-                for(j=0; argv[i][j] && (argv[i][j] != '='); j++);
-                if (argv[i][j] != '=') selUsage(argv[0], EXIT_BAD_ARGS);
-
-                name = xmlStrndup((const xmlChar *) argv[i], j);
-                value = xmlStrdup((const xmlChar *) argv[i]+j+1);
-
-                if (*plen >= MAX_NS_ARGS)
-                {
-                    fprintf(stderr, "too many namespaces increase MAX_NS_ARGS\n");
-                    exit(EXIT_BAD_ARGS);
-                }
-
-                ns_arr[*plen] = name;
-                (*plen)++;
-                ns_arr[*plen] = value;
-                (*plen)++;
-                ns_arr[*plen] = 0;
-
-                /*printf("xmlns:%s=\"%s\"\n", name, value);*/
-            }
-        }
-        else
-            break;
-    }
-
-    return i;
-}
-
-/**
- *  Cleanup memory allocated by namespaces arguments
- */
-void
-selCleanupNSArr(xmlChar **ns_arr)
-{
-    xmlChar **p = ns_arr;
-
-    while (*p)
-    {
-        xmlFree(*p);
-        p++;
-    }
 }
 
 /**
@@ -633,7 +565,7 @@ selPrepareXslt(xmlDocPtr style, selOptionsPtr ops, xmlChar *ns_arr[],
         xmlNewNs(root, ns_arr[ns+1], xmlStrlen(ns_arr[ns])?ns_arr[ns] : NULL);
         ns += 2;
     }
-    selCleanupNSArr(ns_arr);
+    cleanupNSArr(ns_arr);
 
     {
         xmlNodePtr output;
@@ -736,7 +668,6 @@ selMain(int argc, char **argv)
     static xsltOptions xsltOps;
     static selOptions ops;
     static const char *params[2 * MAX_PARAMETERS + 1];
-    static xmlChar *ns_arr[2 * MAX_NS_ARGS + 1];
     int start, i, n, status = 0;
     int nCount = 0;
     int nbparams;
@@ -754,7 +685,7 @@ selMain(int argc, char **argv)
     xsltSetSortFunc(caseSortFunction);
 
     /* set parameters */
-    selParseNSArr(ns_arr, &nCount, start, argv+2);
+    parseNSArr(ns_arr, &nCount, start, argv+2);
 
     style_tree = xmlNewDoc(NULL);
     i = selPrepareXslt(style_tree, &ops, ns_arr, start, argc, argv);

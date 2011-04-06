@@ -20,4 +20,8 @@ typedef struct _errorInfo {
 
 void reportError(void *ptr, xmlErrorPtr error);
 
+int parseNSArr(xmlChar** ns_arr, int* plen, int argc, char **argv);
+void cleanupNSArr(xmlChar **ns_arr);
+extern xmlChar *ns_arr[];
+
 #endif  /* XMLSTAR_H */

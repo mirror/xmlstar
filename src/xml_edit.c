@@ -54,8 +54,6 @@ THE SOFTWARE.
              by xpath expression).
 */
 
-#define MAX_NS_ARGS    256
-
 typedef struct _edOptions {   /* Global 'edit' options */
     int noblanks;             /* Remove insignificant spaces from XML tree */
     int preserveFormat;       /* Preserve original XML formatting */
@@ -97,9 +95,6 @@ typedef struct _XmlEdAction {
 } XmlEdAction;
 
 #define MAX_XML_ED_OPS 128
-
-static const char *ns_arr[2 * MAX_NS_ARGS + 1];
-int nCount = 0;
 
 int ops_count = 0;
 static XmlEdAction ops[MAX_XML_ED_OPS];
@@ -219,70 +214,14 @@ edParseOptions(edOptionsPtr ops, int argc, char **argv)
 }
 
 /**
- *  Parse command line for additional namespaces
- */
-int
-edParseNSArr(const char** ns_arr, int* plen,
-              int count, char **argv)
-{
-    int i = 0;
-    *plen = 0;
-    ns_arr[0] = 0;
-
-    i = 0;
-    while(i < count)
-    {
-        if (argv[i] == 0) break;
-
-        if (argv[i][0] == '-')
-        {
-            if (!strcmp(argv[i], "-N"))
-            {
-                int j;
-                xmlChar *name, *value;
-
-                i++;
-                if (i >= count) edUsage(argv[0], EXIT_BAD_ARGS);
-
-                for(j=0; argv[i][j] && (argv[i][j] != '='); j++);
-                if (argv[i][j] != '=') edUsage(argv[0], EXIT_BAD_ARGS);
-
-                name = xmlStrndup((const xmlChar *) argv[i], j);
-                value = xmlStrdup((const xmlChar *) argv[i]+j+1);
-
-                if (*plen >= MAX_NS_ARGS)
-                {
-                    fprintf(stderr, "too many namespaces increase MAX_NS_ARGS\n");
-                    exit(EXIT_BAD_ARGS);
-                }
-
-                ns_arr[*plen] = (char *)name;
-                (*plen)++;
-                ns_arr[*plen] = (char *)value;
-                (*plen)++;
-                ns_arr[*plen] = 0;
-            }
-        }
-        else
-            break;
-        i++;
-    }
-
-    return i;
-}
-
-/**
- *  Cleanup memory allocated by namespaces arguments
+ *  register the namespace from @ns_arr to @ctxt
  */
 void
-edCleanupNSArr(const char **ns_arr)
+nsarr_xpath_register(xmlXPathContextPtr ctxt)
 {
-    const char **p = ns_arr;
-
-    while (*p)
-    {
-        xmlFree((char *)*p);
-        p++;
+    int ns;
+    for (ns = 0; ns_arr[ns]; ns++) {
+        xmlXPathRegisterNs(ctxt, ns_arr[ns], ns_arr[ns+1]);
     }
 }
 
@@ -295,14 +234,8 @@ edUpdate(xmlDocPtr doc, const char *loc, const char *val, XmlNodeType type)
     xmlXPathObjectPtr res = NULL;
     xmlXPathContextPtr ctxt;
 
-    int ns = 0;
     ctxt = xmlXPathNewContext(doc);
-    while(ns_arr[ns])
-    {
-        xmlXPathRegisterNs(ctxt, (const xmlChar *) ns_arr[ns], (const xmlChar *) ns_arr[ns+1]);
-        ns += 2;
-    }
-
+    nsarr_xpath_register(ctxt);
     ctxt->node = xmlDocGetRootElement(doc);
 
     res = xmlXPathEvalExpression(BAD_CAST loc, ctxt);
@@ -347,14 +280,8 @@ edInsert(xmlDocPtr doc, const char *loc, const char *val, const char *name,
     xmlXPathObjectPtr res = NULL;
     xmlXPathContextPtr ctxt;
 
-    int ns = 0;
     ctxt = xmlXPathNewContext(doc);
-    while(ns_arr[ns])
-    {
-        xmlXPathRegisterNs(ctxt, (const xmlChar *) ns_arr[ns], (const xmlChar *) ns_arr[ns+1]);
-        ns += 2;
-    }
-
+    nsarr_xpath_register(ctxt);
     ctxt->node = xmlDocGetRootElement(doc);
 
     res = xmlXPathEvalExpression(BAD_CAST loc, ctxt);
@@ -416,15 +343,10 @@ edRename(xmlDocPtr doc, char *loc, char *val, XmlNodeType type)
     xmlXPathObjectPtr res = NULL;
     xmlXPathContextPtr ctxt;
 
-    int ns = 0;
     ctxt = xmlXPathNewContext(doc);
-    while(ns_arr[ns])
-    {
-        xmlXPathRegisterNs(ctxt, (const xmlChar *) ns_arr[ns], (const xmlChar *) ns_arr[ns+1]);
-        ns += 2;
-    }
-
+    nsarr_xpath_register(ctxt);
     ctxt->node = xmlDocGetRootElement(doc);
+
     res = xmlXPathEvalExpression(BAD_CAST loc, ctxt);
     if (res == NULL) return;
 
@@ -460,15 +382,10 @@ edDelete(xmlDocPtr doc, char *str)
     xmlXPathObjectPtr res = NULL;
     xmlXPathContextPtr ctxt;
 
-    int ns = 0;
     ctxt = xmlXPathNewContext(doc);
-    while(ns_arr[ns])
-    {
-        xmlXPathRegisterNs(ctxt, (const xmlChar *) ns_arr[ns], (const xmlChar *) ns_arr[ns+1]);
-        ns += 2;
-    }
-
+    nsarr_xpath_register(ctxt);
     ctxt->node = xmlDocGetRootElement(doc);
+
     res = xmlXPathEvalExpression(BAD_CAST str, ctxt);
     if (res == NULL) return;
 
@@ -512,21 +429,17 @@ edMove(xmlDocPtr doc, char *from, char *to)
 {
     xmlXPathObjectPtr res = NULL, res_to = NULL;
     xmlXPathContextPtr ctxt;
-    int ns;
 
     /*
      *  Find 'from' node set
      */
     ctxt = xmlXPathNewContext(doc);
-    for (ns = 0; ns_arr[ns]; ns += 2)
-    {
-        xmlXPathRegisterNs(ctxt, (const xmlChar *) ns_arr[ns], (const xmlChar *) ns_arr[ns+1]);
-    }
-
+    nsarr_xpath_register(ctxt);
     ctxt->node = xmlDocGetRootElement(doc);
+
     res = xmlXPathEvalExpression(BAD_CAST from, ctxt);
 
-    if (ctxt) xmlXPathFreeContext(ctxt);
+    xmlXPathFreeContext(ctxt);
     if (res == NULL) return;
 
     /********************************************************/
@@ -535,12 +448,9 @@ edMove(xmlDocPtr doc, char *from, char *to)
      *  Find 'to' node set
      */
     ctxt = xmlXPathNewContext(doc);
-    for (ns = 0; ns_arr[ns]; ns += 2)
-    {
-        xmlXPathRegisterNs(ctxt, (const xmlChar *) ns_arr[ns], (const xmlChar *) ns_arr[ns+1]);
-    }
-
+    nsarr_xpath_register(ctxt);
     ctxt->node = xmlDocGetRootElement(doc);
+
     res_to = xmlXPathEvalExpression(BAD_CAST to, ctxt);
     if (res_to == NULL) return;
 
@@ -642,7 +552,7 @@ edOutput(const char* filename, edOptions g_ops)
 
     if (!doc)
     {
-        edCleanupNSArr(ns_arr);
+        cleanupNSArr(ns_arr);
         xmlCleanupParser();
         xmlCleanupGlobals();
         exit(EXIT_BAD_FILE);
@@ -687,13 +597,14 @@ edMain(int argc, char **argv)
 {
     int i, j, n, start = 0;
     static edOptions g_ops;
+    int nCount = 0;
 
     if (argc < 3) edUsage(argv[0], EXIT_BAD_ARGS);
 
     edInitOptions(&g_ops);
     start = edParseOptions(&g_ops, argc, argv);
 
-    edParseNSArr(ns_arr, &nCount, argc-start, argv+start);
+    parseNSArr(ns_arr, &nCount, argc-start, argv+start);
         
     /*
      *  Parse command line and fill array of operations
@@ -906,7 +817,7 @@ edMain(int argc, char **argv)
         edOutput(argv[n], g_ops);
     }
 
-    edCleanupNSArr(ns_arr);
+    cleanupNSArr(ns_arr);
     xmlCleanupParser();
     xmlCleanupGlobals();
     return 0;
