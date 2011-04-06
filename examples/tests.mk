@@ -19,8 +19,12 @@ examples/dtd1\
 examples/dtd2\
 examples/dtd3\
 examples/dtd4\
+examples/ed-append\
+examples/ed-insert\
 examples/ed-literal\
+examples/ed-move\
 examples/ed-namespace\
+examples/ed-subnode\
 examples/elem1\
 examples/elem2\
 examples/elem3\

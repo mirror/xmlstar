@@ -1,0 +1,2 @@
+#!/bin/sh
+./xmlstarlet ed -i '/xml/table/rec[@id=1]' -t attr -n first -v yes xml/table.xml
