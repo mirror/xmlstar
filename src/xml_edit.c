@@ -34,7 +34,7 @@ THE SOFTWARE.
 
 #include <libxml/xmlmemory.h>
 #include <libxml/debugXML.h>
-#include <libxml/xmlIO.h>
+#include <libxml/xmlsave.h>
 #include <libxml/HTMLtree.h>
 #include <libxml/xinclude.h>
 #include <libxml/xpath.h>
@@ -396,9 +396,14 @@ edProcess(xmlDocPtr doc, XmlEdAction* ops, int ops_count)
 void
 edOutput(const char* filename, edOptions g_ops)
 {
-    xmlDocPtr doc = xmlReadFile(filename, NULL, 0);
-    int format = (g_ops.noblanks && !g_ops.preserveFormat);
+    xmlDocPtr doc;
+    int options =
+        (g_ops.noblanks? 0 : XML_SAVE_WSNONSIG) |
+        (g_ops.preserveFormat? 0 : XML_SAVE_FORMAT) |
+        (g_ops.omit_decl? XML_SAVE_NO_DECL : 0);
+    xmlSaveCtxtPtr save;
 
+    doc = xmlReadFile(filename, NULL, 0);
     if (!doc)
     {
         cleanupNSArr(ns_arr);
@@ -409,32 +414,10 @@ edOutput(const char* filename, edOptions g_ops)
 
     edProcess(doc, ops, ops_count);
 
-    /* Print out result */
-    if (!g_ops.omit_decl)
-    {
-        xmlSaveFormatFile(g_ops.inplace ? filename : "-", doc, format);
-    }
-    else
-    {
-        int ret = 0;
-        char *encoding = NULL;
-        xmlOutputBufferPtr buf = NULL;
-        xmlCharEncodingHandlerPtr handler = NULL;
-        buf = xmlOutputBufferCreateFilename(g_ops.inplace ? filename : "-", handler, 0);
+    save = xmlSaveToFilename(g_ops.inplace? filename : "-", NULL, options);
+    xmlSaveDoc(save, doc);
+    xmlSaveClose(save);
 
-        if (doc->children != NULL)
-        {
-            xmlNodePtr child = doc->children;
-            while (child != NULL)
-            {
-                xmlNodeDumpOutput(buf, doc, child, 0, format, encoding);
-                xmlOutputBufferWriteString(buf, "\n");
-                child = child->next;
-            }
-        }
-        ret = xmlOutputBufferClose(buf);
-    }
-    
     xmlFreeDoc(doc);
 }
 
