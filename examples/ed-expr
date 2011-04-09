@@ -1,0 +1,2 @@
+#!/bin/sh
+./xmlstarlet ed -u /xml/table/rec/@id -x .+1 xml/table.xml

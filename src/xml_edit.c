@@ -130,15 +130,7 @@ static const char edit_usage_str_4[] =
 "  -m or --move <xpath1> <xpath2>\n"
 "  -r or --rename <xpath1> -v <new-name>\n"
 "  -u or --update <xpath> -v (--value) <value>\n"
-                  "\t\t\t -x (--expr) <xpath> (-x is not implemented yet)\n\n";
-
-/*
-   How to increment value of every attribute @weight?
-   How in --update refer to current value?
-   How to insert from a file?
-
-   xml ed --update "//elem/@weight" -x "./@weight+1"?
-*/
+"                         -x (--expr) <xpath>\n\n";
 
 /**
  *  display short help message
@@ -226,19 +218,37 @@ nsarr_xpath_register(xmlXPathContextPtr ctxt)
  *  'update' operation
  */
 void
-edUpdate(xmlDocPtr doc, xmlNodeSetPtr nodes, const char *val, XmlNodeType type)
+edUpdate(xmlDocPtr doc, xmlNodeSetPtr nodes, const char *val,
+    XmlNodeType type, xmlXPathContextPtr ctxt)
 {
     int i;
+    xmlXPathCompExprPtr xpath = NULL;
+    xmlNodePtr ctxt_node = ctxt->node;
+
+    if (type == XML_EXPR) {
+        xpath = xmlXPathCompile((const xmlChar*) val);
+        if (!xpath) return;
+    }
+
     for (i = 0; i < nodes->nodeNr; i++)
     {
         /* update node */
-
-        /* TODO: do we need xmlEncodeEntitiesReentrant() too/instead? */
-        xmlChar *content = xmlEncodeSpecialChars(NULL, (const xmlChar*) val);
-
-        xmlNodeSetContent(nodes->nodeTab[i], content);
-        xmlFree(content);
+        if (type == XML_EXPR) {
+            xmlXPathObjectPtr res;
+            ctxt->node = nodes->nodeTab[i];
+            res = xmlXPathConvertString(xmlXPathCompiledEval(xpath, ctxt));
+            xmlNodeSetContent(nodes->nodeTab[i], res->stringval);
+            xmlXPathFreeObject(res);
+        } else {
+            /* TODO: do we need xmlEncodeEntitiesReentrant() too/instead? */
+            xmlChar *content = xmlEncodeSpecialChars(NULL, (const xmlChar*) val);
+            xmlNodeSetContent(nodes->nodeTab[i], content);
+            xmlFree(content);
+        }
     }
+
+    xmlXPathFreeCompExpr(xpath);
+    ctxt->node = ctxt_node;
 }
 
 /**
@@ -368,7 +378,7 @@ edProcess(xmlDocPtr doc, XmlEdAction* ops, int ops_count)
                 break;
             }
             case XML_ED_UPDATE:
-                edUpdate(doc, nodes, ops[k].arg2, ops[k].type);
+                edUpdate(doc, nodes, ops[k].arg2, ops[k].type, ctxt);
                 break;
             case XML_ED_RENAME:
                 edRename(doc, nodes, ops[k].arg2, ops[k].type);

@@ -21,6 +21,7 @@ examples/dtd3\
 examples/dtd4\
 examples/ed-2op\
 examples/ed-append\
+examples/ed-expr\
 examples/ed-insert\
 examples/ed-literal\
 examples/ed-move\
