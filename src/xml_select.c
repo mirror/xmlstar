@@ -143,11 +143,13 @@ static const char select_usage_str_4[] =
 "  -v or --value-of <xpath>  - print value of XPATH expression\n"
 "  -o or --output <string>   - output string literal\n"
 "  -n or --nl                - print new line\n"
-"  -f or --inp-name          - print input file name (or URL)\n";
+"  -f or --inp-name          - print input file name (or URL)\n"
+"  -m or --match <xpath>     - match XPATH expression\n";
 
 static const char select_usage_str_5[] =
-"  -m or --match <xpath>     - match XPATH expression\n"
 "  -i or --if <test-xpath>   - check condition <xsl:if test=\"test-xpath\">\n"
+"  --elif <test-xpath>       - check condition if previous conditions failed\n"
+"  --else                    - check if previous conditions failed\n"
 "  -e or --elem <name>       - print out element <xsl:element name=\"name\">\n"
 "  -a or --attr <name>       - add attribute <xsl:attribute name=\"name\">\n"
 "  -b or --break             - break nesting\n"
