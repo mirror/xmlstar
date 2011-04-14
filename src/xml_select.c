@@ -675,12 +675,14 @@ selMain(int argc, char **argv)
     int nbparams;
     xmlDocPtr style_tree;
     xsltStylesheetPtr style;
+    int xml_options = 0;
 
     if (argc <= 2) selUsage(argv[0], EXIT_BAD_ARGS);
 
     selInitOptions(&ops);
     xsltInitOptions(&xsltOps);
     start = selParseOptions(&ops, argc, argv);
+    xml_options |= ops.nonet? XML_PARSE_NONET : 0;
     xsltOps.nonet = ops.nonet;
     xsltOps.noblanks = ops.noblanks;
     xsltInitLibXml(&xsltOps);
@@ -719,7 +721,7 @@ selMain(int argc, char **argv)
         params[1] = (char *) value;
 
         {
-            xmlDocPtr doc = xmlReadFile(argv[n], NULL, 0);
+            xmlDocPtr doc = xmlReadFile(argv[n], NULL, xml_options);
             if (doc != NULL) {
                 xsltProcess(&xsltOps, doc, params, style, argv[n]);
             } else {
@@ -736,7 +738,7 @@ selMain(int argc, char **argv)
         params[0] = "inputFile";
         params[1] = "'-'";
 
-        doc = xmlReadFile("-", NULL, 0);
+        doc = xmlReadFile("-", NULL, xml_options);
         if (doc != NULL) {
             xsltProcess(&xsltOps, doc, params, style, "-");
         } else {

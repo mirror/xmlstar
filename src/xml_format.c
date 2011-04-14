@@ -76,7 +76,8 @@ static const char format_usage_str_1[] =
 "  -n or --noindent            - do not indent\n"
 "  -t or --indent-tab          - indent output with tabulation\n"
 "  -s or --indent-spaces <num> - indent output with <num> spaces\n"
-"  -o or --omit-decl           - omit xml declaration <?xml version=\"1.0\"?>\n";
+"  -o or --omit-decl           - omit xml declaration <?xml version=\"1.0\"?>\n"
+"  --net                       - allow network access\n";
 
 static const char format_usage_str_2[] =
 "  -R or --recover             - try to recover what is parsable\n"
@@ -119,7 +120,7 @@ foInitOptions(foOptionsPtr ops)
     ops->omit_decl = 0;
     ops->recovery = 0;
     ops->dropdtd = 0;
-    ops->options = 0;
+    ops->options = XML_PARSE_NONET;
 #ifdef LIBXML_HTML_ENABLED
     ops->html = 0;
 #endif
@@ -253,6 +254,11 @@ foParseOptions(foOptionsPtr ops, int argc, char **argv)
             i++;
         }
 #endif
+        else if (!strcmp(argv[i], "--net"))
+        {
+            ops->options &= ~XML_PARSE_NONET;
+            i++;
+        }
         else if (!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h"))
         {
             foUsage(argc, argv, EXIT_SUCCESS);

@@ -62,6 +62,7 @@ typedef struct _valOptions {
     int   wellFormed;         /* Check if well formed only */
     int   listGood;           /* >0 list good, <0 list bad */
     int   show_val_res;       /* display file names and valid/invalid message */
+    int   nonet;              /* disallow network access */
 } valOptions;
 
 typedef valOptions *valOptionsPtr;
@@ -74,7 +75,8 @@ static const char validate_usage_str_1[] =
 "Usage: %s val <options> [ <xml-file-or-uri> ... ]\n"
 "where <options>\n"
 "  -w or --well-formed        - validate well-formedness only (default)\n"
-"  -d or --dtd <dtd-file>     - validate against DTD\n";
+"  -d or --dtd <dtd-file>     - validate against DTD\n"
+"  --net                      - allow network access\n";
 
 
 static const char validate_usage_str_2[] =
@@ -127,6 +129,7 @@ valInitOptions(valOptionsPtr ops)
     ops->schema = NULL;
     ops->relaxng = NULL;
     ops->show_val_res = 1;
+    ops->nonet = 1;
 }
 
 /**
@@ -192,6 +195,11 @@ valParseOptions(valOptionsPtr ops, int argc, char **argv)
             i++;
             if (i >= argc) valUsage(argc, argv, EXIT_BAD_ARGS);
             ops->relaxng = argv[i];
+            i++;
+        }
+        else if (!strcmp(argv[i], "--net"))
+        {
+            ops->nonet = 0;
             i++;
         }
         else if (!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h"))
@@ -302,10 +310,12 @@ valMain(int argc, char **argv)
     static valOptions ops;
     static ErrorInfo errorInfo;
     int invalidFound = 0;
+    int options = 0;
 
     if (argc <= 2) valUsage(argc, argv, EXIT_BAD_ARGS);
     valInitOptions(&ops);
     start = valParseOptions(&ops, argc, argv);
+    if (ops.nonet) options |= XML_PARSE_NONET;
 
     errorInfo.verbose = ops.err;
     xmlSetStructuredErrorFunc(&errorInfo, reportError);
@@ -321,7 +331,6 @@ valMain(int argc, char **argv)
         {
             xmlDocPtr doc;
             int ret;
-            int options = 0;
 
             ret = 0;
             doc = NULL;
@@ -416,7 +425,7 @@ valMain(int argc, char **argv)
         for (i=start; i<argc; i++)
         {
             int ret = 0;
-            int options = ops.embed? XML_PARSE_DTDVALID : 0;
+            if (ops.embed) options |= XML_PARSE_DTDVALID;
 
             if (!reader)
             {

@@ -38,7 +38,7 @@
 
 static const char c14n_usage_str_1[] =
 "XMLStarlet Toolkit: XML canonicalization\n"
-"Usage: %s c14n <mode> <xml-file> [<xpath-file>] [<inclusive-ns-list>]\n"
+"Usage: %s c14n [--net] <mode> <xml-file> [<xpath-file>] [<inclusive-ns-list>]\n"
 "where\n"
 "  <xml-file>   - input XML document file name (stdin is used if '-')\n"
 "  <xpath-file> - XML file containing XPath expression for\n"
@@ -86,27 +86,20 @@ static void print_xpath_nodes(xmlNodeSetPtr nodes);
 
 static int 
 run_c14n(const char* xml_filename, int with_comments, int exclusive,
-         const char* xpath_filename, xmlChar **inclusive_namespaces) {
+         const char* xpath_filename, xmlChar **inclusive_namespaces,
+         int nonet) {
     xmlDocPtr doc;
     xmlXPathObjectPtr xpath = NULL; 
     int ret;
-    xmlExternalEntityLoader defaultEntityLoader = NULL;
 
     /*
      * build an XML tree from a the file; we need to add default
      * attributes and resolve all character and entities references
      */
-    xmlLoadExtDtdDefaultValue = XML_DETECT_IDS | XML_COMPLETE_ATTRS;
-    xmlSubstituteEntitiesDefault(1);
 
-    /*
-     * Do not fetch DTD over network
-     */
-    defaultEntityLoader = xmlNoNetExternalEntityLoader;
-    xmlSetExternalEntityLoader(xmlNoNetExternalEntityLoader);
-    xmlLoadExtDtdDefaultValue = 0;
-       
-    doc = xmlReadFile(xml_filename, NULL, XML_PARSE_DTDATTR);
+    doc = xmlReadFile(xml_filename, NULL,
+        XML_PARSE_NOENT | XML_PARSE_DTDLOAD |
+        XML_PARSE_DTDATTR | (nonet? XML_PARSE_NONET:0));
     if (doc == NULL) {
         fprintf(stderr, "Error: unable to parse file \"%s\"\n", xml_filename);
         return(EXIT_BAD_FILE);
@@ -158,7 +151,7 @@ run_c14n(const char* xml_filename, int with_comments, int exclusive,
 }
 
 int c14nMain(int argc, char **argv) {
-    int ret = -1;
+    int ret = -1, nonet = 1;
     
     /*
      * Init libxml
@@ -169,30 +162,38 @@ int c14nMain(int argc, char **argv) {
     /*
      * Parse command line and process file
      */
+
+    if (argc > 2 && strcmp(argv[2], "--net") == 0) {
+        nonet = 0;
+        /* TODO: parse options properly */
+        argc--;
+        argv++;
+    }
+
     if (argc < 4) {
         if (argc >= 3)
         {
             if (strcmp(argv[2], "--help") == 0 || strcmp(argv[2], "-h") == 0)
                 c14nUsage(argv[0], EXIT_SUCCESS);
         }
-        ret = run_c14n((argc > 2)? argv[2] : "-", 1, 0, NULL, NULL);
+        ret = run_c14n((argc > 2)? argv[2] : "-", 1, 0, NULL, NULL, nonet);
     } else if(strcmp(argv[2], "--with-comments") == 0) {
-        ret = run_c14n(argv[3], 1, 0, (argc > 4) ? argv[4] : NULL, NULL);
+        ret = run_c14n(argv[3], 1, 0, (argc > 4) ? argv[4] : NULL, NULL, nonet);
     } else if(strcmp(argv[2], "--without-comments") == 0) {
-        ret = run_c14n(argv[3], 0, 0, (argc > 4) ? argv[4] : NULL, NULL);
+        ret = run_c14n(argv[3], 0, 0, (argc > 4) ? argv[4] : NULL, NULL, nonet);
     } else if(strcmp(argv[2], "--exc-with-comments") == 0) {
         xmlChar **list;
         
         /* load exclusive namespace from command line */
         list = (argc > 5) ? parse_list((xmlChar *)argv[5]) : NULL;
-        ret = run_c14n(argv[3], 1, 1, (argc > 4) ? argv[4] : NULL, list);
+        ret = run_c14n(argv[3], 1, 1, (argc > 4) ? argv[4] : NULL, list, nonet);
         if(list != NULL) xmlFree(list);
     } else if(strcmp(argv[2], "--exc-without-comments") == 0) {
         xmlChar **list;
         
         /* load exclusive namespace from command line */
         list = (argc > 5) ? parse_list((xmlChar *)argv[5]) : NULL;
-        ret = run_c14n(argv[3], 0, 1, (argc > 4) ? argv[4] : NULL, list);
+        ret = run_c14n(argv[3], 0, 1, (argc > 4) ? argv[4] : NULL, list, nonet);
         if(list != NULL) xmlFree(list);
     } else {
         fprintf(stderr, "error: bad arguments.\n");

@@ -56,6 +56,7 @@ typedef struct _edOptions {   /* Global 'edit' options */
     int preserveFormat;       /* Preserve original XML formatting */
     int omit_decl;            /* Omit XML declaration line <?xml version="1.0"?> */
     int inplace;              /* Edit file inplace (no output on stdout) */
+    int nonet;                /* Disallow network access */
 } edOptions;
 
 typedef edOptions *edOptionsPtr;
@@ -119,6 +120,7 @@ static const char edit_usage_str_2[] =
 "                        -N options must be last global options.\n";
 
 static const char edit_usage_str_3[] =
+"  --net               - allow network access"
 "  --help or -h        - display help\n\n"
 "where <action>\n"
 "  -d or --delete <xpath>\n"
@@ -158,6 +160,7 @@ edInitOptions(edOptionsPtr ops)
     ops->omit_decl = 0;
     ops->preserveFormat = 0;
     ops->inplace = 0;
+    ops->nonet = 1;
 }
 
 /**
@@ -186,6 +189,10 @@ edParseOptions(edOptionsPtr ops, int argc, char **argv)
         else if (!strcmp(argv[i], "-L") || !strcmp(argv[i], "--inplace"))
         {
             ops->inplace = 1;
+        }
+        else if (!strcmp(argv[i], "--net"))
+        {
+            ops->nonet = 0;
         }
         else if (!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h") ||
                  !strcmp(argv[i], "-?") || !strcmp(argv[i], "-Z"))
@@ -407,13 +414,15 @@ void
 edOutput(const char* filename, edOptions g_ops)
 {
     xmlDocPtr doc;
-    int options =
+    int save_options =
         (g_ops.noblanks? 0 : XML_SAVE_WSNONSIG) |
         (g_ops.preserveFormat? 0 : XML_SAVE_FORMAT) |
         (g_ops.omit_decl? XML_SAVE_NO_DECL : 0);
+    int read_options =
+        (g_ops.nonet? XML_PARSE_NONET : 0);
     xmlSaveCtxtPtr save;
 
-    doc = xmlReadFile(filename, NULL, 0);
+    doc = xmlReadFile(filename, NULL, read_options);
     if (!doc)
     {
         cleanupNSArr(ns_arr);
@@ -424,7 +433,7 @@ edOutput(const char* filename, edOptions g_ops)
 
     edProcess(doc, ops, ops_count);
 
-    save = xmlSaveToFilename(g_ops.inplace? filename : "-", NULL, options);
+    save = xmlSaveToFilename(g_ops.inplace? filename : "-", NULL, save_options);
     xmlSaveDoc(save, doc);
     xmlSaveClose(save);
 
