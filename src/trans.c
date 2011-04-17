@@ -2,6 +2,7 @@
 
 #include <config.h>
 #include "trans.h"
+#include "xmlstar.h"
 
 /*
  *  This code is based on xsltproc by Daniel Veillard (daniel@veillard.com)
@@ -227,23 +228,9 @@ xsltProcess(xsltOptionsPtr ops, xmlDocPtr doc, const char** params,
         return;
     }
 
-    if (cur->methodURI == NULL)
+    if (xsltSaveResultToFile(stdout, res, cur) < 0)
     {
-        xsltSaveResultToFile(stdout, res, cur);
-    }
-    else
-    {
-        if (xmlStrEqual(cur->method, (const xmlChar *) "xhtml"))
-        {
-            fprintf(stderr, "non standard output xhtml\n");
-            xsltSaveResultToFile(stdout, res, cur);
-        }
-        else
-        {
-            fprintf(stderr, "unsupported non standard output %s\n",
-                cur->method);
-            errorno = 7;
-        }
+        errorno = EXIT_LIB_ERROR;
     }
 
     xmlFreeDoc(res);
