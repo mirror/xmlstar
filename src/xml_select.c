@@ -725,7 +725,7 @@ selMain(int argc, char **argv)
             if (doc != NULL) {
                 xsltProcess(&xsltOps, doc, params, style, argv[n]);
             } else {
-                status = 2;
+                status = EXIT_BAD_FILE;
             }
         }
         xmlFree(value);
@@ -742,7 +742,7 @@ selMain(int argc, char **argv)
         if (doc != NULL) {
             xsltProcess(&xsltOps, doc, params, style, "-");
         } else {
-            status = 2;
+            status = EXIT_BAD_FILE;
         }
     }
 
