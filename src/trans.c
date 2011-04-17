@@ -12,7 +12,6 @@
 xmlChar *paths[MAX_PATHS + 1];
 int nbpaths = 0;
 
-const char *output = NULL;          /* file name to save output */
 int errorno = 0;
 
 xmlExternalEntityLoader defaultEntityLoader = NULL;
@@ -210,60 +209,44 @@ xsltProcess(xsltOptionsPtr ops, xmlDocPtr doc, const char** params,
 #ifdef LIBXML_XINCLUDE_ENABLED
     if (ops->xinclude) xmlXIncludeProcess(doc);
 #endif
-    if (output == NULL)
-    {
-        ctxt = xsltNewTransformContext(cur, doc);
-        if (ctxt == NULL) return;
 
-        res = xsltApplyStylesheetUser(cur, doc, params, NULL, NULL, ctxt);
+    ctxt = xsltNewTransformContext(cur, doc);
+    if (ctxt == NULL) return;
+
+    res = xsltApplyStylesheetUser(cur, doc, params, NULL, NULL, ctxt);
         
-        if (ctxt->state == XSLT_STATE_ERROR)
-            errorno = 9;
-        if (ctxt->state == XSLT_STATE_STOPPED)
-            errorno = 10;
-        xsltFreeTransformContext(ctxt);
-        xmlFreeDoc(doc);
-        if (res == NULL)
-        {
-            fprintf(stderr, "no result for %s\n", filename);
-            return;
-        }
+    if (ctxt->state == XSLT_STATE_ERROR)
+        errorno = 9;
+    if (ctxt->state == XSLT_STATE_STOPPED)
+        errorno = 10;
+    xsltFreeTransformContext(ctxt);
+    xmlFreeDoc(doc);
+    if (res == NULL)
+    {
+        fprintf(stderr, "no result for %s\n", filename);
+        return;
+    }
 
-        if (cur->methodURI == NULL)
+    if (cur->methodURI == NULL)
+    {
+        xsltSaveResultToFile(stdout, res, cur);
+    }
+    else
+    {
+        if (xmlStrEqual(cur->method, (const xmlChar *) "xhtml"))
         {
+            fprintf(stderr, "non standard output xhtml\n");
             xsltSaveResultToFile(stdout, res, cur);
         }
         else
         {
-            if (xmlStrEqual(cur->method, (const xmlChar *) "xhtml"))
-            {
-                fprintf(stderr, "non standard output xhtml\n");
-                xsltSaveResultToFile(stdout, res, cur);
-            }
-            else
-            {
-                fprintf(stderr, "unsupported non standard output %s\n",
-                        cur->method);
-                errorno = 7;
-            }
+            fprintf(stderr, "unsupported non standard output %s\n",
+                cur->method);
+            errorno = 7;
         }
-
-        xmlFreeDoc(res);
     }
-    else
-    {
-        int ret;
 
-        ctxt = xsltNewTransformContext(cur, doc);
-        if (ctxt == NULL) return;
-
-        ret = xsltRunStylesheet(cur, doc, params, output, NULL, NULL);
-
-        if (ctxt->state == XSLT_STATE_ERROR) errorno = 9;
-
-        xsltFreeTransformContext(ctxt);
-        xmlFreeDoc(doc);
-    }
+    xmlFreeDoc(res);
 }
 
 /**
