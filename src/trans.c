@@ -192,15 +192,13 @@ xsltExternalEntityLoader(const char *URL, const char *ID, xmlParserCtxtPtr ctxt)
     return(NULL);
 }
 
-/**
- *  Run stylesheet on XML document
- */
-void
-xsltProcess(xsltOptionsPtr ops, xmlDocPtr doc, const char** params,
+/* get result of XSL transformation */
+xmlDocPtr
+xsltTransform(xsltOptionsPtr ops, xmlDocPtr doc, const char** params,
             xsltStylesheetPtr cur, const char *filename)
 {
-    xmlDocPtr res;
     xsltTransformContextPtr ctxt;
+    xmlDocPtr res;
 
     if (ops->omit_decl)
     {
@@ -212,7 +210,7 @@ xsltProcess(xsltOptionsPtr ops, xmlDocPtr doc, const char** params,
 #endif
 
     ctxt = xsltNewTransformContext(cur, doc);
-    if (ctxt == NULL) return;
+    if (ctxt == NULL) return NULL;
 
     res = xsltApplyStylesheetUser(cur, doc, params, NULL, NULL, ctxt);
         
@@ -225,10 +223,20 @@ xsltProcess(xsltOptionsPtr ops, xmlDocPtr doc, const char** params,
     if (res == NULL)
     {
         fprintf(stderr, "no result for %s\n", filename);
-        return;
     }
+    return res;
+}
 
-    if (xsltSaveResultToFile(stdout, res, cur) < 0)
+/**
+ *  Run stylesheet on XML document
+ */
+void
+xsltProcess(xsltOptionsPtr ops, xmlDocPtr doc, const char** params,
+            xsltStylesheetPtr cur, const char *filename)
+{
+    xmlDocPtr res = xsltTransform(ops, doc, params, cur, filename);
+
+    if (res && xsltSaveResultToFile(stdout, res, cur) < 0)
     {
         errorno = EXIT_LIB_ERROR;
     }

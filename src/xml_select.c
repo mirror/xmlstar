@@ -670,7 +670,7 @@ selMain(int argc, char **argv)
     static xsltOptions xsltOps;
     static selOptions ops;
     static const char *params[2 * MAX_PARAMETERS + 1];
-    int start, i, n, status = 0;
+    int start, i, n, status = EXIT_FAILURE;
     int nCount = 0;
     int nbparams;
     xmlDocPtr style_tree;
@@ -723,7 +723,15 @@ selMain(int argc, char **argv)
         {
             xmlDocPtr doc = xmlReadFile(argv[n], NULL, xml_options);
             if (doc != NULL) {
-                xsltProcess(&xsltOps, doc, params, style, argv[n]);
+                xmlDocPtr res = xsltTransform(&xsltOps, doc, params, style, argv[n]);
+                if (res && xsltSaveResultToFile(stdout, res, style) < 0)
+                {
+                    status = EXIT_LIB_ERROR;
+                }
+                else if (status == EXIT_FAILURE && res->children)
+                {
+                    status = EXIT_SUCCESS;
+                }
             } else {
                 status = EXIT_BAD_FILE;
             }
@@ -740,7 +748,15 @@ selMain(int argc, char **argv)
 
         doc = xmlReadFile("-", NULL, xml_options);
         if (doc != NULL) {
-            xsltProcess(&xsltOps, doc, params, style, "-");
+            xmlDocPtr res = xsltTransform(&xsltOps, doc, params, style, argv[n]);
+            if (res && xsltSaveResultToFile(stdout, res, style) < 0)
+            {
+                status = EXIT_LIB_ERROR;
+            }
+            else if (status == EXIT_FAILURE && res->children)
+            {
+                status = EXIT_SUCCESS;
+            }
         } else {
             status = EXIT_BAD_FILE;
         }
