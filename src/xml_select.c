@@ -77,6 +77,7 @@ lookup_ns_entry(const char *prefix, int len) {
 
 
 typedef struct _selOptions {
+    int quiet;            /* No output */
     int printXSLT;        /* Display prepared XSLT */
     int printRoot;        /* Print root element in output (if XML) */
     int outText;          /* Output is text */
@@ -121,15 +122,16 @@ static const char select_usage_str_1[] =
 
 static const char select_usage_str_2[] =
 "<global-options> are:\n"
+"  -Q or --quiet             - do not write anything to standard output.\n"
 "  -C or --comp              - display generated XSLT\n"
 "  -R or --root              - print root element <xsl-select>\n"
 "  -T or --text              - output is text (default is XML)\n"
 "  -I or --indent            - indent output\n"
 "  -D or --xml-decl          - do not omit xml declaration line\n"
-"  -B or --noblanks          - remove insignificant spaces from XML tree\n"
-"  -E or --encode <encoding> - output in the given encoding (utf-8, unicode...)\n";
+"  -B or --noblanks          - remove insignificant spaces from XML tree\n";
 
 static const char select_usage_str_3[] =
+"  -E or --encode <encoding> - output in the given encoding (utf-8, unicode...)\n"
 "  -N <name>=<value>         - predefine namespaces (name without \'xmlns:\')\n"
 "                              ex: xsql=urn:oracle-xsql\n"
 "                              Multiple -N options are allowed.\n"
@@ -264,6 +266,7 @@ selUsage(const char *argv0, exit_status status)
 void
 selInitOptions(selOptionsPtr ops)
 {
+    ops->quiet = 0;
     ops->printXSLT = 0;
     ops->printRoot = 0;
     ops->outText = 0;
@@ -288,6 +291,10 @@ selParseOptions(selOptionsPtr ops, int argc, char **argv)
         if (!strcmp(argv[i], "-C"))
         {
             ops->printXSLT = 1;
+        }
+        else if (!strcmp(argv[i], "-Q") || !strcmp(argv[i], "--quiet"))
+        {
+            ops->quiet = 1;
         }
         else if (!strcmp(argv[i], "-B") || !strcmp(argv[i], "--noblanks"))
         {
@@ -724,13 +731,14 @@ selMain(int argc, char **argv)
             xmlDocPtr doc = xmlReadFile(argv[n], NULL, xml_options);
             if (doc != NULL) {
                 xmlDocPtr res = xsltTransform(&xsltOps, doc, params, style, argv[n]);
-                if (res && xsltSaveResultToFile(stdout, res, style) < 0)
+                if (!ops.quiet && res && xsltSaveResultToFile(stdout, res, style) < 0)
                 {
                     status = EXIT_LIB_ERROR;
                 }
-                else if (status == EXIT_FAILURE && res->children)
+                else if ((ops.quiet || status == EXIT_FAILURE) && res->children)
                 {
                     status = EXIT_SUCCESS;
+                    if (ops.quiet) exit(EXIT_SUCCESS);
                 }
             } else {
                 status = EXIT_BAD_FILE;
@@ -749,13 +757,14 @@ selMain(int argc, char **argv)
         doc = xmlReadFile("-", NULL, xml_options);
         if (doc != NULL) {
             xmlDocPtr res = xsltTransform(&xsltOps, doc, params, style, argv[n]);
-            if (res && xsltSaveResultToFile(stdout, res, style) < 0)
+            if (!ops.quiet && res && xsltSaveResultToFile(stdout, res, style) < 0)
             {
                 status = EXIT_LIB_ERROR;
             }
-            else if (status == EXIT_FAILURE && res->children)
+            else if ((ops.quiet || status == EXIT_FAILURE) && res->children)
             {
                 status = EXIT_SUCCESS;
+                if (ops.quiet) exit(EXIT_SUCCESS);
             }
         } else {
             status = EXIT_BAD_FILE;
