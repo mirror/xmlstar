@@ -310,7 +310,7 @@ valMain(int argc, char **argv)
     static valOptions ops;
     static ErrorInfo errorInfo;
     int invalidFound = 0;
-    int options = 0;
+    int options = XML_PARSE_DTDLOAD | XML_PARSE_DTDATTR;
 
     if (argc <= 2) valUsage(argc, argv, EXIT_BAD_ARGS);
     valInitOptions(&ops);
