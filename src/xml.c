@@ -122,15 +122,28 @@ void reportError(void *ptr, xmlErrorPtr error)
             (errorInfo->xmlReader)?
             xmlTextReaderGetParserLineNumber(errorInfo->xmlReader) :
             error->line;
+        int column = (!errorInfo->filename)? 0 :
+            (errorInfo->xmlReader)?
+            xmlTextReaderGetParserColumnNumber(errorInfo->xmlReader) :
+            error->int2;
         if (line)
         {
-            fprintf(stderr, "%s:%d: ", errorInfo->filename, line);
+            fprintf(stderr, "%s:%d.%d: ", errorInfo->filename, line, column);
         }
     }
 
     if (!errorInfo || errorInfo->verbose)
     {
+        int domain = error->domain;
+
         fprintf(stderr, "%s", error->message);
+
+        if ((domain == XML_FROM_PARSER) || (domain == XML_FROM_HTML) ||
+            (domain == XML_FROM_DTD) || (domain == XML_FROM_NAMESPACE) ||
+            (domain == XML_FROM_IO) || (domain == XML_FROM_VALID)) {
+            xmlParserCtxtPtr ctxt = error->ctxt;
+            xmlParserPrintFileContext(ctxt->input);
+        }
     }
 }
 
