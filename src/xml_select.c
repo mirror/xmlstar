@@ -668,6 +668,41 @@ selPrepareXslt(xmlDocPtr style, selOptionsPtr ops, xmlChar *ns_arr[],
     return i;
 }
 
+static void
+do_file(const char *filename, xsltStylesheetPtr style,
+    int xml_options, const selOptions *ops, xsltOptions *xsltOps,
+    int *status)
+{
+    xmlChar *value;
+    xmlDocPtr doc;
+
+    /* Pass input file name as predefined parameter 'inputFile' */
+    const char *params[2+1] = { "inputFile" };
+    value = xmlStrdup((const xmlChar *)"'");
+    value = xmlStrcat(value, (const xmlChar *)filename);
+    value = xmlStrcat(value, (const xmlChar *)"'");
+    params[1] = (char *) value;
+
+
+    doc = xmlReadFile(filename, NULL, xml_options);
+    if (doc != NULL) {
+        xmlDocPtr res = xsltTransform(xsltOps, doc, params, style, filename);
+        if (!ops->quiet && res && xsltSaveResultToFile(stdout, res, style) < 0)
+        {
+            *status = EXIT_LIB_ERROR;
+        }
+        else if ((ops->quiet || *status == EXIT_FAILURE) && res->children)
+        {
+            *status = EXIT_SUCCESS;
+            if (ops->quiet) exit(EXIT_SUCCESS);
+        }
+    } else {
+        *status = EXIT_BAD_FILE;
+    }
+
+    xmlFree(value);
+}
+
 /**
  *  This is the main function for 'select' option
  */
@@ -676,10 +711,8 @@ selMain(int argc, char **argv)
 {
     static xsltOptions xsltOps;
     static selOptions ops;
-    static const char *params[2 * MAX_PARAMETERS + 1];
     int start, i, n, status = EXIT_FAILURE;
     int nCount = 0;
-    int nbparams;
     xmlDocPtr style_tree;
     xsltStylesheetPtr style;
     int xml_options = 0;
@@ -714,62 +747,10 @@ selMain(int argc, char **argv)
     if (!style) exit(EXIT_LIB_ERROR);
 
     for (n=i; n<argc; n++)
-    {
-        xmlChar *value;
-
-        /*
-         *  Pass input file name as predefined parameter 'inputFile'
-         */
-        nbparams = 2;
-        params[0] = "inputFile";
-        value = xmlStrdup((const xmlChar *)"'");
-        value = xmlStrcat((xmlChar *)value, (const xmlChar *)argv[n]);
-        value = xmlStrcat((xmlChar *)value, (const xmlChar *)"'");
-        params[1] = (char *) value;
-
-        {
-            xmlDocPtr doc = xmlReadFile(argv[n], NULL, xml_options);
-            if (doc != NULL) {
-                xmlDocPtr res = xsltTransform(&xsltOps, doc, params, style, argv[n]);
-                if (!ops.quiet && res && xsltSaveResultToFile(stdout, res, style) < 0)
-                {
-                    status = EXIT_LIB_ERROR;
-                }
-                else if ((ops.quiet || status == EXIT_FAILURE) && res->children)
-                {
-                    status = EXIT_SUCCESS;
-                    if (ops.quiet) exit(EXIT_SUCCESS);
-                }
-            } else {
-                status = EXIT_BAD_FILE;
-            }
-        }
-        xmlFree(value);
-    }
+        do_file(argv[n], style, xml_options, &ops, &xsltOps, &status);
 
     if (i == argc)
-    {
-        xmlDocPtr doc;
-        nbparams = 2;
-        params[0] = "inputFile";
-        params[1] = "'-'";
-
-        doc = xmlReadFile("-", NULL, xml_options);
-        if (doc != NULL) {
-            xmlDocPtr res = xsltTransform(&xsltOps, doc, params, style, argv[n]);
-            if (!ops.quiet && res && xsltSaveResultToFile(stdout, res, style) < 0)
-            {
-                status = EXIT_LIB_ERROR;
-            }
-            else if ((ops.quiet || status == EXIT_FAILURE) && res->children)
-            {
-                status = EXIT_SUCCESS;
-                if (ops.quiet) exit(EXIT_SUCCESS);
-            }
-        } else {
-            status = EXIT_BAD_FILE;
-        }
-    }
+        do_file("-", style, xml_options, &ops, &xsltOps, &status);
 
     /* 
      * Shutdown libxml
