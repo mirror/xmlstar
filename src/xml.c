@@ -142,7 +142,7 @@ void reportError(void *ptr, xmlErrorPtr error)
             (domain == XML_FROM_DTD) || (domain == XML_FROM_NAMESPACE) ||
             (domain == XML_FROM_IO) || (domain == XML_FROM_VALID)) {
             xmlParserCtxtPtr ctxt = error->ctxt;
-            xmlParserPrintFileContext(ctxt->input);
+            if (ctxt) xmlParserPrintFileContext(ctxt->input);
         }
     }
 }

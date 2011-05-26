@@ -1,7 +1,7 @@
 #!/bin/sh
 # check error messages on lines past 2^16
 
-SEDLINUM_PROG='s/^\([^:]\+:[0-9]\{4\}\)[0-9]:.*$/\1x/p'
+SEDLINUM_PROG='s/^\([^:]\+:[0-9]\{4\}\)[0-9]\.[0-9]\+:.*$/\1x/p'
 
 xmldoc()
 {
