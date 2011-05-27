@@ -668,8 +668,24 @@ selPrepareXslt(xmlDocPtr style, selOptionsPtr ops, xmlChar *ns_arr[],
     return i;
 }
 
+/**
+ * copy top-level namespace definitions from @doc to @style_tree
+ */
 static void
-do_file(const char *filename, xsltStylesheetPtr style,
+extract_ns_defs(xmlDocPtr doc, xmlDocPtr style_tree)
+{
+    xmlNsPtr nsDef;
+    xmlNodePtr style_root = xmlDocGetRootElement(style_tree);
+    xmlNodePtr root = xmlDocGetRootElement(doc);
+    if (!root) return;
+
+    for (nsDef = root->nsDef; nsDef; nsDef = nsDef->next) {
+        xmlNewNs(style_root, nsDef->href, nsDef->prefix);
+    }
+}
+
+static void
+do_file(const char *filename, xmlDocPtr style_tree,
     int xml_options, const selOptions *ops, xsltOptions *xsltOps,
     int *status)
 {
@@ -686,7 +702,17 @@ do_file(const char *filename, xsltStylesheetPtr style,
 
     doc = xmlReadFile(filename, NULL, xml_options);
     if (doc != NULL) {
-        xmlDocPtr res = xsltTransform(xsltOps, doc, params, style, filename);
+        xmlDocPtr res;
+
+        static xsltStylesheetPtr style = NULL;
+        if (!style) {
+            extract_ns_defs(doc, style_tree);
+            /* Parse XSLT stylesheet */
+            style = xsltParseStylesheetDoc(style_tree);
+            if (!style) exit(EXIT_LIB_ERROR);
+        }
+
+        res = xsltTransform(xsltOps, doc, params, style, filename);
         if (!ops->quiet && res && xsltSaveResultToFile(stdout, res, style) < 0)
         {
             *status = EXIT_LIB_ERROR;
@@ -714,7 +740,6 @@ selMain(int argc, char **argv)
     int start, i, n, status = EXIT_FAILURE;
     int nCount = 0;
     xmlDocPtr style_tree;
-    xsltStylesheetPtr style;
     int xml_options = 0;
 
     if (argc <= 2) selUsage(argv[0], EXIT_BAD_ARGS);
@@ -740,22 +765,15 @@ selMain(int argc, char **argv)
         exit(EXIT_SUCCESS);
     }
 
-    /*
-     *  Parse XSLT stylesheet
-     */
-    style = xsltParseStylesheetDoc(style_tree);
-    if (!style) exit(EXIT_LIB_ERROR);
-
     for (n=i; n<argc; n++)
-        do_file(argv[n], style, xml_options, &ops, &xsltOps, &status);
+        do_file(argv[n], style_tree, xml_options, &ops, &xsltOps, &status);
 
     if (i == argc)
-        do_file("-", style, xml_options, &ops, &xsltOps, &status);
+        do_file("-", style_tree, xml_options, &ops, &xsltOps, &status);
 
     /* 
      * Shutdown libxml
      */
-    xsltFreeStylesheet(style);
     xsltCleanupGlobals();
     xmlCleanupParser();
     

@@ -222,6 +222,21 @@ nsarr_xpath_register(xmlXPathContextPtr ctxt)
 }
 
 /**
+ * register top-level namespace definitions from @doc to @ctxt
+ */
+static void
+extract_ns_defs(xmlDocPtr doc, xmlXPathContextPtr ctxt)
+{
+    xmlNsPtr nsDef;
+    xmlNodePtr root = xmlDocGetRootElement(doc);
+    if (!root) return;
+
+    for (nsDef = root->nsDef; nsDef; nsDef = nsDef->next) {
+        xmlXPathRegisterNs(ctxt, nsDef->prefix, nsDef->href);
+    }
+}
+
+/**
  *  'update' operation
  */
 void
@@ -354,6 +369,7 @@ edProcess(xmlDocPtr doc, XmlEdAction* ops, int ops_count)
 {
     int k;
     xmlXPathContextPtr ctxt = xmlXPathNewContext(doc);
+    extract_ns_defs(doc, ctxt);
     nsarr_xpath_register(ctxt);
     ctxt->node = xmlDocGetRootElement(doc);
 
