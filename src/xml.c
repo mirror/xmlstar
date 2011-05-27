@@ -116,25 +116,25 @@ void reportError(void *ptr, xmlErrorPtr error)
 {
     ErrorInfo *errorInfo = (ErrorInfo*) ptr;
 
-    if (errorInfo && errorInfo->verbose)
-    {
-        int line = (!errorInfo->filename)? 0 :
-            (errorInfo->xmlReader)?
-            xmlTextReaderGetParserLineNumber(errorInfo->xmlReader) :
-            error->line;
-        int column = (!errorInfo->filename)? 0 :
-            (errorInfo->xmlReader)?
-            xmlTextReaderGetParserColumnNumber(errorInfo->xmlReader) :
-            error->int2;
-        if (line)
-        {
-            fprintf(stderr, "%s:%d.%d: ", errorInfo->filename, line, column);
-        }
-    }
-
     if (!errorInfo || errorInfo->verbose)
     {
         int domain = error->domain;
+        const char *filename =
+            error->file? error->file :
+            errorInfo? errorInfo->filename :
+            NULL;
+        xmlTextReaderPtr reader = errorInfo? errorInfo->xmlReader : NULL;
+
+        int line = (!filename)? 0 :
+            (reader)? xmlTextReaderGetParserLineNumber(reader) :
+            error->line;
+        int column = (!filename)? 0 :
+            (reader)? xmlTextReaderGetParserColumnNumber(reader) :
+            error->int2;
+        if (line)
+        {
+            fprintf(stderr, "%s:%d.%d: ", filename, line, column);
+        }
 
         fprintf(stderr, "%s", error->message);
 
