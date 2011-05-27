@@ -118,6 +118,7 @@ void reportError(void *ptr, xmlErrorPtr error)
 
     if (!errorInfo || errorInfo->verbose)
     {
+        int msglen;
         int domain = error->domain;
         const char *filename =
             error->file? error->file :
@@ -136,7 +137,23 @@ void reportError(void *ptr, xmlErrorPtr error)
             fprintf(stderr, "%s:%d.%d: ", filename, line, column);
         }
 
+        msglen = strlen(error->message);
+        if (error->message[msglen-1] == '\n')
+            error->message[msglen-1] = '\0';
         fprintf(stderr, "%s", error->message);
+
+        /* only print extra info if it's not in message */
+        if (error->str1 && strstr(error->message, error->str1) == NULL) {
+            fprintf(stderr, ": %s", error->str1);
+            if (error->str2 && strstr(error->message, error->str2) == NULL) {
+                fprintf(stderr, ", %s", error->str2);
+            }
+            if (error->str3 && strstr(error->message, error->str3) == NULL) {
+                fprintf(stderr, ", %s", error->str3);
+            }
+        }
+        fprintf(stderr, "\n");
+
 
         if ((domain == XML_FROM_PARSER) || (domain == XML_FROM_HTML) ||
             (domain == XML_FROM_DTD) || (domain == XML_FROM_NAMESPACE) ||
