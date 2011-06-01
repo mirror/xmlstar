@@ -99,6 +99,11 @@ parse_xml_file(const char *filename)
         const xmlChar *name;
         xmlReaderTypes type;
 
+        if (!reader) {
+            fprintf(stderr, "couldn't read file '%s'\n", filename);
+            exit(EXIT_BAD_FILE);
+        }
+
         ret = xmlTextReaderRead(reader);
         if (ret <= 0) break;
         type = xmlTextReaderNodeType(reader);

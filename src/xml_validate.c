@@ -466,6 +466,8 @@ valMain(int argc, char **argv)
             }
             else
             {
+                if (ops.err)
+                    fprintf(stderr, "couldn't read file '%s'\n", errorInfo.filename);
                 ret = 1; /* could not open file */
             }
             if (ret) invalidFound = 1;
