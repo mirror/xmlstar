@@ -1,3 +1,21 @@
+1.2.0: June 1, 2011
+
+    - implement ed --update --expr
+    - use top-level namespace definitions from first input file, this
+      should remove the need to define namespaces on the command line
+      with -N in most cases.
+    - select exits with 0 only if result is non-empty (Req #3155702)
+    - add -Q to select, like grep's -q
+    - add column number to error messages
+    - restore input context (lost in version 1.0.3) to error messages
+      (Bug #3305659)
+    - print extra string information in error messages
+    - use entity definitions from dtd (Bug #3305659)
+    - add --net option to c14n, ed, fo, and val (Req #1071398)
+    - remove --catalog from tr --help message since it isn't actually supported
+    - add --elif and --else to sel --help message
+
+
 1.1.0: Apr 3, 2011
 
     - bug fix for BSD/OSX: check that O_BINARY is declared before
