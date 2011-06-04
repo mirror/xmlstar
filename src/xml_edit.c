@@ -431,7 +431,9 @@ edOutput(const char* filename, edOptions g_ops)
 {
     xmlDocPtr doc;
     int save_options =
+#if LIBXML_VERSION >= 20708
         (g_ops.noblanks? 0 : XML_SAVE_WSNONSIG) |
+#endif
         (g_ops.preserveFormat? 0 : XML_SAVE_FORMAT) |
         (g_ops.omit_decl? XML_SAVE_NO_DECL : 0);
     int read_options =
