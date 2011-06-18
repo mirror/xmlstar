@@ -182,6 +182,7 @@ static const template_option
     OPT_ATTR     = { 'a', "attr", BAD_CAST "attribute", {{BAD_CAST "name", TARG_ATTR_STRING}}, 1 },
     OPT_BREAK    = { 'b', "break", NULL, {{NULL}}, -1 },
     OPT_SORT     = { 's', "sort", BAD_CAST "sort", {{NULL, TARG_SORT_OP}, {BAD_CAST "select", TARG_XPATH}}, 0 },
+    OPT_VAR      = { 0,   "var", BAD_CAST "variable", {{BAD_CAST "name", TARG_ATTR_STRING}}, 1},
 
     *TEMPLATE_OPTIONS[] = {
         &OPT_TEMPLATE,
@@ -197,7 +198,8 @@ static const template_option
         &OPT_ELEM,
         &OPT_ATTR,
         &OPT_BREAK,
-        &OPT_SORT
+        &OPT_SORT,
+        &OPT_VAR
     };
 
 void
