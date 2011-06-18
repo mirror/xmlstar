@@ -90,7 +90,8 @@ typedef struct _selOptions {
 
 typedef selOptions *selOptionsPtr;
 
-typedef enum { TARG_NONE = 0, TARG_SORT_OP, TARG_XPATH, TARG_STRING,
+typedef enum { TARG_NONE = 0, TARG_SORT_OP, TARG_XPATH,
+               TARG_ATTR_STRING, TARG_STRING,
                TARG_NEWLINE, TARG_NO_CMDLINE = TARG_NEWLINE, TARG_INP_NAME
 } template_argument_type;
 typedef struct {
@@ -177,8 +178,8 @@ static const template_option
     OPT_IF       = { 'i', "if", BAD_CAST"when", {{BAD_CAST "test", TARG_XPATH}}, 1 },
     OPT_ELIF     = { 0,   "elif", BAD_CAST "when", {{BAD_CAST "test", TARG_XPATH}}, 1 },
     OPT_ELSE     = { 0,   "else", BAD_CAST "otherwise", {{NULL}}, 1 },
-    OPT_ELEM     = { 'e', "elem", BAD_CAST "element", {{BAD_CAST "name", TARG_XPATH}}, 1 },
-    OPT_ATTR     = { 'a', "attr", BAD_CAST "attribute", {{BAD_CAST "name", TARG_XPATH}}, 1 },
+    OPT_ELEM     = { 'e', "elem", BAD_CAST "element", {{BAD_CAST "name", TARG_ATTR_STRING}}, 1 },
+    OPT_ATTR     = { 'a', "attr", BAD_CAST "attribute", {{BAD_CAST "name", TARG_ATTR_STRING}}, 1 },
     OPT_BREAK    = { 'b', "break", NULL, {{NULL}}, -1 },
     OPT_SORT     = { 's', "sort", BAD_CAST "sort", {{NULL, TARG_SORT_OP}, {BAD_CAST "select", TARG_XPATH}}, 0 },
 
@@ -472,11 +473,11 @@ selGenTemplate(xmlNodePtr root, xmlNodePtr template_node,
                 selUsage(argv[0], EXIT_BAD_ARGS);
             switch (newtarg->arguments[j].type)
             {
-            case TARG_XPATH: {
+            case TARG_XPATH:
                 checkNsRefs(root, argv[i]);
+            case TARG_ATTR_STRING:
                 xmlNewProp(newnode, newtarg->arguments[j].attrname, BAD_CAST argv[i]);
                 break;
-            }
 
             case TARG_STRING:
                 xmlNodeAddContent(newnode, BAD_CAST argv[i]);
