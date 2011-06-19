@@ -91,7 +91,7 @@ typedef struct _selOptions {
 typedef selOptions *selOptionsPtr;
 
 typedef enum { TARG_NONE = 0, TARG_SORT_OP, TARG_XPATH,
-               TARG_ATTR_STRING, TARG_STRING,
+               TARG_ATTR_STRING, TARG_STRING, TARG_VAR,
                TARG_NEWLINE, TARG_NO_CMDLINE = TARG_NEWLINE, TARG_INP_NAME
 } template_argument_type;
 typedef struct {
@@ -182,7 +182,7 @@ static const template_option
     OPT_ATTR     = { 'a', "attr", BAD_CAST "attribute", {{BAD_CAST "name", TARG_ATTR_STRING}}, 1 },
     OPT_BREAK    = { 'b', "break", NULL, {{NULL}}, -1 },
     OPT_SORT     = { 's', "sort", BAD_CAST "sort", {{NULL, TARG_SORT_OP}, {BAD_CAST "select", TARG_XPATH}}, 0 },
-    OPT_VAR      = { 0,   "var", BAD_CAST "variable", {{BAD_CAST "name", TARG_ATTR_STRING}}, 1},
+    OPT_VAR      = { 0,   "var", BAD_CAST "variable", {{BAD_CAST "name", TARG_VAR}}, 1},
 
     *TEMPLATE_OPTIONS[] = {
         &OPT_TEMPLATE,
@@ -418,6 +418,7 @@ selGenTemplate(xmlNodePtr root, xmlNodePtr template_node,
         xmlNodePtr newnode = NULL;
         const template_option *newtarg = NULL;
         int j;
+        int nesting;
 
         if (argv[i][0] == '-' && argv[i][1] != '\0')
         {
@@ -465,6 +466,7 @@ selGenTemplate(xmlNodePtr root, xmlNodePtr template_node,
 
         i++;
         templateEmpty = 0;
+        nesting = newtarg->nest;
 
         if (newtarg->xslname)
             newnode = xmlNewChild(node, xslns, newtarg->xslname, NULL);
@@ -475,6 +477,17 @@ selGenTemplate(xmlNodePtr root, xmlNodePtr template_node,
                 selUsage(argv[0], EXIT_BAD_ARGS);
             switch (newtarg->arguments[j].type)
             {
+            case TARG_VAR: {
+                char *equals = strchr(argv[i], '=');
+                if (equals) {
+                    *equals = '\0';
+                    xmlNewProp(newnode, BAD_CAST "select", BAD_CAST (&equals[1]));
+                    nesting = 0;
+                }
+                xmlNewProp(newnode, newtarg->arguments[j].attrname, BAD_CAST argv[i]);
+                break;
+            }
+
             case TARG_XPATH:
                 checkNsRefs(root, argv[i]);
             case TARG_ATTR_STRING:
@@ -517,7 +530,7 @@ selGenTemplate(xmlNodePtr root, xmlNodePtr template_node,
             if (newtarg->arguments[j].type < TARG_NO_CMDLINE) i++;
         }
 
-        switch (newtarg->nest) {
+        switch (nesting) {
         case -1:
             do { node = node->parent; } while(node->_private);
             break;
