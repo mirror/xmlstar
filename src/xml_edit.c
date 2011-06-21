@@ -355,6 +355,10 @@ edMove(xmlDocPtr doc, xmlNodeSetPtr nodes, xmlNodePtr to)
     int i;
     for (i = 0; i < nodes->nodeNr; i++)
     {
+        if (nodes->nodeTab[i]->type == XML_NAMESPACE_DECL) {
+            fprintf(stderr, "FIXME: can't move namespace nodes\n");
+            exit(EXIT_INTERNAL_ERROR);
+        }
         /* move node */
         xmlUnlinkNode(nodes->nodeTab[i]);
         xmlAddChild(to, nodes->nodeTab[i]);
