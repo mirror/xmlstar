@@ -120,7 +120,7 @@ static const char edit_usage_str_2[] =
 "                        -N options must be last global options.\n";
 
 static const char edit_usage_str_3[] =
-"  --net               - allow network access"
+"  --net               - allow network access\n"
 "  --help or -h        - display help\n\n"
 "where <action>\n"
 "  -d or --delete <xpath>\n"
