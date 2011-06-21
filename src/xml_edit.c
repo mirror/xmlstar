@@ -379,7 +379,7 @@ edProcess(xmlDocPtr doc, XmlEdAction* ops, int ops_count)
         xmlNodeSetPtr nodes;
 
         res = xmlXPathEvalExpression(BAD_CAST ops[k].arg1, ctxt);
-        if (!res || res->type != XPATH_NODESET) continue;
+        if (!res || res->type != XPATH_NODESET || !res->nodesetval) continue;
         nodes = res->nodesetval;
 
         switch (ops[k].op)

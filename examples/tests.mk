@@ -26,6 +26,7 @@ examples/ed-insert\
 examples/ed-literal\
 examples/ed-move\
 examples/ed-namespace\
+examples/ed-nop\
 examples/ed-subnode\
 examples/elem1\
 examples/elem2\
