@@ -216,7 +216,7 @@ void
 nsarr_xpath_register(xmlXPathContextPtr ctxt)
 {
     int ns;
-    for (ns = 0; ns_arr[ns]; ns++) {
+    for (ns = 0; ns_arr[ns]; ns += 2) {
         xmlXPathRegisterNs(ctxt, ns_arr[ns], ns_arr[ns+1]);
     }
 }
