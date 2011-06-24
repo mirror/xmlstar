@@ -41,6 +41,7 @@ examples/hello1\
 examples/localname1\
 examples/look1\
 examples/move1\
+examples/N-order\
 examples/noindent1\
 examples/ns1\
 examples/pyx\

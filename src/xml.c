@@ -296,9 +296,11 @@ parseNSArr(xmlChar** ns_arr, int* plen, int argc, char **argv)
         xmlChar *name, *value;
         const xmlChar *equal_sign;
 
-        /* check for end of -N arguments */
-        if (argv[i] == 0 || argv[i][0] != '-' || strcmp(argv[i], "-N") != 0)
+        /* check for end of arguments */
+        if (argv[i] == 0 || argv[i][0] != '-')
             break;
+        if (strcmp(argv[i], "-N") != 0)
+            continue;
 
         i++;
         if (i >= argc) bad_ns_opt("-N without argument");
