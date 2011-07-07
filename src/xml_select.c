@@ -417,7 +417,7 @@ selGenTemplate(xmlNodePtr root, xmlNodePtr template_node,
         const template_option *newtarg = NULL;
         int j;
 
-        if (argv[i][0] == '-')
+        if (argv[i][0] == '-' && argv[i][1] != '\0')
         {
             for (j = 0; j < sizeof(TEMPLATE_OPTIONS)/sizeof(*TEMPLATE_OPTIONS); j++)
             {
