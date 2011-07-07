@@ -360,7 +360,6 @@ foProcess(foOptionsPtr ops, int start, int argc, char **argv)
     else
     {
         int format = 1;
-        int ret = 0;
         xmlOutputBufferPtr buf = NULL;
         xmlCharEncodingHandlerPtr handler = NULL;
         buf = xmlOutputBufferCreateFile(stdout, handler);

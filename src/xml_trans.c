@@ -213,7 +213,7 @@ trParseParams(const char** params, int* plen,
             }
             else if (!strcmp(argv[i], "-s"))
             {
-                int j, len;
+                int j;
                 const xmlChar *string;
                 xmlChar *name, *value;
 
@@ -226,7 +226,6 @@ trParseParams(const char** params, int* plen,
                 name = xmlStrndup((const xmlChar *)argv[i], j);
                 string = (const xmlChar *)(argv[i]+j+1);
 
-                len = xmlStrlen(string);
                 if (xmlStrchr(string, '"'))
                 {
                     if (xmlStrchr(string, '\''))
