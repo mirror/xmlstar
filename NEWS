@@ -1,3 +1,19 @@
+1.2.1: July 07, 2011
+
+    - check for NULL nodeset result (Bugs #3323189, #3323196)
+    - "-" was being confused with --elif
+    - generated XSLT should also have automatic namespaces
+    - allow -N after other option (Bug #3325166)
+    - namespace values were being registered as prefixes
+    - avoid segfault when asked to move namespace nodes
+    - missing newline in ed --help message
+    - test scripts portability
+      - no bashisms allowed in NetBSD sh
+      - make BRE portable: '+' is not allowed
+      - deal with msys path conversion properly (Bug #3178657)
+    - don't use XML_SAVE_WSNONSIG #if libxml < 2.7.8 (Bug #3310475)
+
+
 1.2.0: June 1, 2011
 
     - implement ed --update --expr
