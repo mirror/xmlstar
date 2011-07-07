@@ -670,14 +670,13 @@ selPrepareXslt(xmlDocPtr style, selOptionsPtr ops, xmlChar *ns_arr[],
 }
 
 /**
- * copy top-level namespace definitions from @doc to @style_tree
+ * copy namespace definitions from @root to @style_tree
  */
 static void
-extract_ns_defs(xmlDocPtr doc, xmlDocPtr style_tree)
+extract_ns_defs(xmlNodePtr root, xmlDocPtr style_tree)
 {
     xmlNsPtr nsDef;
     xmlNodePtr style_root = xmlDocGetRootElement(style_tree);
-    xmlNodePtr root = xmlDocGetRootElement(doc);
     if (!root) return;
 
     for (nsDef = root->nsDef; nsDef; nsDef = nsDef->next) {
@@ -707,7 +706,7 @@ do_file(const char *filename, xmlDocPtr style_tree,
 
         static xsltStylesheetPtr style = NULL;
         if (!style) {
-            extract_ns_defs(doc, style_tree);
+            extract_ns_defs(xmlDocGetRootElement(doc), style_tree);
             /* Parse XSLT stylesheet */
             style = xsltParseStylesheetDoc(style_tree);
             if (!style) exit(EXIT_LIB_ERROR);
@@ -762,6 +761,12 @@ selMain(int argc, char **argv)
 
     if (ops.printXSLT)
     {
+        if (i < argc) {
+            xmlTextReaderPtr reader = xmlReaderForFile(argv[i], NULL, xml_options);
+            xmlTextReaderRead(reader);
+            extract_ns_defs(xmlTextReaderCurrentNode(reader), style_tree);
+            xmlTextReaderClose(reader);
+        }
         xmlDocFormatDump(stdout, style_tree, 1);
         exit(EXIT_SUCCESS);
     }
