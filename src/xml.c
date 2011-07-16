@@ -196,9 +196,10 @@ int
 main(int argc, char **argv)
 {
     int ret = 0;
+    static ErrorInfo errorInfo = { NULL, NULL, 1 };
 
     xmlMemSetup(free, xmalloc, xrealloc, xstrdup);
-    xmlSetStructuredErrorFunc(NULL, reportError);
+    xmlSetStructuredErrorFunc(&errorInfo, reportError);
 
     if (argc <= 1)
     {
