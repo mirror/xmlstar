@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include <config.h>
 #include <version.h>
 
+#include <assert.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -115,8 +116,9 @@ usage(int argc, char **argv, exit_status status)
 void reportError(void *ptr, xmlErrorPtr error)
 {
     ErrorInfo *errorInfo = (ErrorInfo*) ptr;
+    assert(errorInfo);
 
-    if (!errorInfo || errorInfo->verbose)
+    if (errorInfo->verbose)
     {
         int msglen;
         int domain = error->domain;
@@ -124,7 +126,7 @@ void reportError(void *ptr, xmlErrorPtr error)
             error->file? error->file :
             errorInfo? errorInfo->filename :
             NULL;
-        xmlTextReaderPtr reader = errorInfo? errorInfo->xmlReader : NULL;
+        xmlTextReaderPtr reader = errorInfo->xmlReader;
 
         int line = (!filename)? 0 :
             (reader)? xmlTextReaderGetParserLineNumber(reader) :
@@ -196,7 +198,8 @@ int
 main(int argc, char **argv)
 {
     int ret = 0;
-    static ErrorInfo errorInfo = { NULL, NULL, 1 };
+    /* by default errors are reported */
+    static ErrorInfo errorInfo = { NULL, NULL, VERBOSE };
 
     xmlMemSetup(free, xmalloc, xrealloc, xstrdup);
     xmlSetStructuredErrorFunc(&errorInfo, reportError);

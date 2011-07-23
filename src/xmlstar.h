@@ -12,10 +12,12 @@ typedef enum { /* EXIT_SUCCESS = 0, EXIT_FAILURE = 1, */
 
 #define COUNT_OF(array) (sizeof(array)/sizeof(*array))
 
+typedef enum { QUIET, VERBOSE } Verbosity;
+
 typedef struct _errorInfo {
     const char *filename; /* file error occured in, if any, else NULL */
     xmlTextReaderPtr xmlReader;
-    int verbose;
+    Verbosity verbose;
 } ErrorInfo;
 
 void reportError(void *ptr, xmlErrorPtr error);
