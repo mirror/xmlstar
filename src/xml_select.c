@@ -713,11 +713,11 @@ do_file(const char *filename, xmlDocPtr style_tree,
         }
 
         res = xsltTransform(xsltOps, doc, params, style, filename);
-        if (!ops->quiet && res && xsltSaveResultToFile(stdout, res, style) < 0)
+        if (!ops->quiet && (!res || xsltSaveResultToFile(stdout, res, style) < 0))
         {
             *status = EXIT_LIB_ERROR;
         }
-        else if ((ops->quiet || *status == EXIT_FAILURE) && res->children)
+        else if ((ops->quiet || *status == EXIT_FAILURE) && res && res->children)
         {
             *status = EXIT_SUCCESS;
             if (ops->quiet) exit(EXIT_SUCCESS);
