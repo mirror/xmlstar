@@ -42,6 +42,7 @@ THE SOFTWARE.
 #include <libxml/xpointer.h>
 #include <libxml/parserInternals.h>
 #include <libxml/uri.h>
+#include <libexslt/exslt.h>
 
 #include "xmlstar.h"
 
@@ -373,7 +374,15 @@ edProcess(xmlDocPtr doc, XmlEdAction* ops, int ops_count)
 {
     int k;
     xmlXPathContextPtr ctxt = xmlXPathNewContext(doc);
+    /* NOTE: later registrations override earlier ones */
+    /* register extension functions */
+    exsltDateXpathCtxtRegister(ctxt, BAD_CAST "date");
+    exsltMathXpathCtxtRegister(ctxt, BAD_CAST "math");
+    exsltSetsXpathCtxtRegister(ctxt, BAD_CAST "set");
+    exsltStrXpathCtxtRegister(ctxt, BAD_CAST "str");
+    /* namespaces from doc */
     extract_ns_defs(doc, ctxt);
+    /* namespaces from command line */
     nsarr_xpath_register(ctxt);
     ctxt->node = xmlDocGetRootElement(doc);
 
