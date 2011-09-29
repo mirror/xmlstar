@@ -258,10 +258,15 @@ edUpdate(xmlDocPtr doc, xmlNodeSetPtr nodes, const char *val,
         /* update node */
         if (type == XML_EXPR) {
             xmlXPathObjectPtr res;
+            xmlChar *string;
+
             ctxt->node = nodes->nodeTab[i];
             res = xmlXPathConvertString(xmlXPathCompiledEval(xpath, ctxt));
-            xmlNodeSetContent(nodes->nodeTab[i], res->stringval);
+            /* TODO: do we need xmlEncodeEntitiesReentrant() too/instead? */
+            string = xmlEncodeSpecialChars(doc, res->stringval);
             xmlXPathFreeObject(res);
+            xmlNodeSetContent(nodes->nodeTab[i], string);
+            xmlFree(string);
         } else {
             /* TODO: do we need xmlEncodeEntitiesReentrant() too/instead? */
             xmlChar *content = xmlEncodeSpecialChars(NULL, (const xmlChar*) val);
