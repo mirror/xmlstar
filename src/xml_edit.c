@@ -233,7 +233,8 @@ extract_ns_defs(xmlDocPtr doc, xmlXPathContextPtr ctxt)
     if (!root) return;
 
     for (nsDef = root->nsDef; nsDef; nsDef = nsDef->next) {
-        xmlXPathRegisterNs(ctxt, nsDef->prefix, nsDef->href);
+        if (nsDef->prefix != NULL) /* can only register ns with prefix */
+            xmlXPathRegisterNs(ctxt, nsDef->prefix, nsDef->href);
     }
 }
 
