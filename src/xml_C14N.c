@@ -20,13 +20,6 @@
 #include <stdlib.h>
 #endif
 
-#if HAVE_SETMODE && HAVE_DECL_O_BINARY
-# include <io.h>
-# include <fcntl.h>
-#else
-# define setmode(fd, mode)
-#endif
-
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
@@ -129,7 +122,7 @@ run_c14n(const char* xml_filename, int with_comments, int exclusive,
     /*
      * Canonical form
      */
-    setmode(1, O_BINARY);       /* avoid line ending conversion */
+    set_stdout_binary();       /* avoid line ending conversion */
     ret = xmlC14NDocSave(doc,
         (xpath) ? xpath->nodesetval : NULL,
         exclusive, inclusive_namespaces,

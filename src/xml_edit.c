@@ -470,6 +470,18 @@ edOutput(const char* filename, edOptions g_ops)
 
     edProcess(doc, ops, ops_count);
 
+    /* avoid getting ASCII CRs in UTF-16/UCS-(2,4) text */
+    if ((xmlStrcasestr(doc->encoding, BAD_CAST "UTF") == 0
+            && xmlStrcasestr(doc->encoding, BAD_CAST "16") == 0)
+        ||
+        (xmlStrcasestr(doc->encoding, BAD_CAST "UCS") == 0
+            && (xmlStrcasestr(doc->encoding, BAD_CAST "2") == 0
+                ||
+                xmlStrcasestr(doc->encoding, BAD_CAST "4") == 0)))
+    {
+        set_stdout_binary();
+    }
+
     save = xmlSaveToFilename(g_ops.inplace? filename : "-", NULL, save_options);
     xmlSaveDoc(save, doc);
     xmlSaveClose(save);

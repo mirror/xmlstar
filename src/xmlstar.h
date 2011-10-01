@@ -4,6 +4,14 @@
 #include <config.h>
 #include <stdlib.h>
 
+#if HAVE_SETMODE && HAVE_DECL_O_BINARY
+# include <io.h>
+# include <fcntl.h>
+# define set_stdout_binary() setmode(1, O_BINARY)
+#else
+# define set_stdout_binary()
+#endif
+
 #include <libxml/xmlreader.h>
 
 typedef enum { /* EXIT_SUCCESS = 0, EXIT_FAILURE = 1, */
