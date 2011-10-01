@@ -92,7 +92,9 @@ typedef selOptions *selOptionsPtr;
 
 typedef enum { TARG_NONE = 0, TARG_SORT_OP, TARG_XPATH,
                TARG_ATTR_STRING, TARG_STRING, TARG_VAR,
-               TARG_NEWLINE, TARG_NO_CMDLINE = TARG_NEWLINE, TARG_INP_NAME
+               /* template args below don't consume any command line args */
+               TARG_NEWLINE, TARG_NO_CMDLINE = TARG_NEWLINE,
+               TARG_INP_NAME, TARG_STR_NAME_SELECT
 } template_argument_type;
 typedef struct {
     const xmlChar *attrname;
@@ -170,7 +172,8 @@ static const char select_usage_str_6[] =
 static const template_option
     OPT_TEMPLATE = { 't', "template" },
     OPT_COPY_OF  = { 'c', "copy-of", BAD_CAST "copy-of", {{BAD_CAST "select", TARG_XPATH}}, 0 },
-    OPT_VALUE_OF = { 'v', "value-of", BAD_CAST "value-of", {{BAD_CAST "select", TARG_XPATH}}, 0 },
+    OPT_VALUE_OF = { 'v', "value-of", BAD_CAST "with-param", {{BAD_CAST "name", TARG_STR_NAME_SELECT},
+                                                              {BAD_CAST "select", TARG_XPATH}}, -1 },
     OPT_OUTPUT   = { 'o', "output", BAD_CAST "text", {{NULL, TARG_STRING}}, 0 },
     OPT_NL       = { 'n', "nl", BAD_CAST "value-of", {{NULL, TARG_NEWLINE}}, 0 },
     OPT_INP_NAME = { 'f', "inp-name", BAD_CAST "copy-of", {{NULL, TARG_INP_NAME}}, 0 },
@@ -392,8 +395,8 @@ checkNsRefs(xmlNodePtr root, const char *xpath)
  */
 int
 selGenTemplate(xmlNodePtr root, xmlNodePtr template_node,
-    xmlNsPtr xslns, selOptionsPtr ops, int* use_inputfile, int* lastTempl,
-    int start, int argc, char **argv)
+    xmlNsPtr xslns, selOptionsPtr ops, int* use_inputfile, int* use_value_of,
+    int* lastTempl, int start, int argc, char **argv)
 {
     int i;
     int templateEmpty;
@@ -463,6 +466,15 @@ selGenTemplate(xmlNodePtr root, xmlNodePtr template_node,
                 exit(EXIT_BAD_ARGS);
             }
         }
+        else if (newtarg == &OPT_VALUE_OF)
+        {
+            node = xmlNewChild(node, xslns, BAD_CAST "call-template", NULL);
+            xmlNewProp(node, BAD_CAST "name", BAD_CAST "value-of-template");
+            node->_private = (void*) &OPT_VALUE_OF;
+            *use_value_of = 1;
+            /* value-of-template uses exslt:node-set */
+            checkNsRefs(root, "exslt:node-set");
+        }
 
         i++;
         templateEmpty = 0;
@@ -500,6 +512,9 @@ selGenTemplate(xmlNodePtr root, xmlNodePtr template_node,
 
             case TARG_NEWLINE:
                 xmlNewProp(newnode, BAD_CAST "select", BAD_CAST "'\n'");
+                break;
+            case TARG_STR_NAME_SELECT:
+                xmlNewProp(newnode, BAD_CAST "name", BAD_CAST "select");
                 break;
 
             case TARG_INP_NAME:
@@ -573,7 +588,7 @@ int
 selPrepareXslt(xmlDocPtr style, selOptionsPtr ops, xmlChar *ns_arr[],
                int start, int argc, char **argv)
 {
-    int i, t, ns, use_inputfile = 0;
+    int i, t, ns, use_inputfile = 0, use_value_of = 0;
     xmlNodePtr root, root_template = NULL;
     xmlNsPtr xslns;
     xmlBufferPtr attr_buf;
@@ -644,7 +659,8 @@ selPrepareXslt(xmlDocPtr style, selOptionsPtr ops, xmlChar *ns_arr[],
             }
 
             i = selGenTemplate(root, template,
-                xslns, ops, &use_inputfile, &lastTempl, i, argc, argv);
+                xslns, ops, &use_inputfile, &use_value_of,
+                &lastTempl, i, argc, argv);
             if (lastTempl) break;
         }
     }
@@ -679,6 +695,22 @@ selPrepareXslt(xmlDocPtr style, selOptionsPtr ops, xmlChar *ns_arr[],
         xmlNodePtr param;
         param = xmlNewChild(root, xslns, BAD_CAST "param", BAD_CAST "-");
         xmlNewProp(param, BAD_CAST "name", BAD_CAST "inputFile");
+    }
+
+    if (use_value_of) {
+        xmlNodePtr value_of_template, for_each, value_of, param;
+        value_of_template = xmlNewChild(root, xslns, BAD_CAST "template", NULL);
+        xmlNewProp(value_of_template, BAD_CAST "name", BAD_CAST "value-of-template");
+        param = xmlNewChild(value_of_template, xslns, BAD_CAST "param", NULL);
+        value_of = xmlNewChild(value_of_template, xslns, BAD_CAST "value-of", NULL);
+        xmlNewProp(value_of, BAD_CAST "select", BAD_CAST "$select");
+        xmlNewProp(param, BAD_CAST "name", BAD_CAST "select");
+        for_each = xmlNewChild(value_of_template, xslns, BAD_CAST "for-each", NULL);
+        xmlNewProp(for_each, BAD_CAST "select", BAD_CAST "exslt:node-set($select)[position()>1]");
+        value_of = xmlNewChild(for_each, xslns, BAD_CAST "value-of", NULL);
+        xmlNewProp(value_of, BAD_CAST "select", BAD_CAST ".");
+        value_of = xmlNewChild(for_each, xslns, BAD_CAST "value-of", NULL);
+        xmlNewProp(value_of, BAD_CAST "select", BAD_CAST "'\n'");
     }
 
     return i;
