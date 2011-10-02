@@ -1,3 +1,15 @@
+1.3.0: Oct 7, 2011
+
+    - avoid ASCII CRs in UTF-16/32 text (reported by Ming Chen)
+    - --value-of outputs concat values of all nodes (Req #2563866)
+    - encode special chars for ed -u -x
+    - allow use of exslt functions in ed -u -x
+    - add --var to select (allow --var <name>=<value> as well as --var
+      <name> <value> --break)
+    - work around libxml bug that passes bogus data to error handler
+      (Bug #3362217)
+
+
 1.2.1: July 07, 2011
 
     - check for NULL nodeset result (Bugs #3323189, #3323196)
