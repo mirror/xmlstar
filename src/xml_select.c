@@ -149,7 +149,9 @@ static const char select_usage_str_4[] =
 "  -o or --output <string>   - output string literal\n"
 "  -n or --nl                - print new line\n"
 "  -f or --inp-name          - print input file name (or URL)\n"
-"  -m or --match <xpath>     - match XPATH expression\n";
+"  -m or --match <xpath>     - match XPATH expression\n"
+"  --var <name> <value> --break or\n"
+"  --var <name>=<value>      - declare a variable (referenced by $name)\n";
 
 static const char select_usage_str_5[] =
 "  -i or --if <test-xpath>   - check condition <xsl:if test=\"test-xpath\">\n"
