@@ -381,11 +381,13 @@ edProcess(xmlDocPtr doc, XmlEdAction* ops, int ops_count)
     int k;
     xmlXPathContextPtr ctxt = xmlXPathNewContext(doc);
     /* NOTE: later registrations override earlier ones */
+#if HAVE_EXSLT_XPATH_REGISTER
     /* register extension functions */
     exsltDateXpathCtxtRegister(ctxt, BAD_CAST "date");
     exsltMathXpathCtxtRegister(ctxt, BAD_CAST "math");
     exsltSetsXpathCtxtRegister(ctxt, BAD_CAST "set");
     exsltStrXpathCtxtRegister(ctxt, BAD_CAST "str");
+#endif
     /* namespaces from doc */
     extract_ns_defs(doc, ctxt);
     /* namespaces from command line */

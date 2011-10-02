@@ -78,3 +78,7 @@ examples/xsl-sum1
 XFAIL_TESTS =\
 examples/bigxml-dtd\
 examples/ed-namespace
+
+if !HAVE_EXSLT_XPATH_REGISTER
+XFAIL_TESTS += examples/exslt-ed
+endif
