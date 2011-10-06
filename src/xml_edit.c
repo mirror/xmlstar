@@ -45,6 +45,7 @@ THE SOFTWARE.
 #include <libexslt/exslt.h>
 
 #include "xmlstar.h"
+#include "xfun.h"
 
 /*
    TODO:
@@ -381,6 +382,7 @@ edProcess(xmlDocPtr doc, XmlEdAction* ops, int ops_count)
     int k;
     xmlXPathContextPtr ctxt = xmlXPathNewContext(doc);
     /* NOTE: later registrations override earlier ones */
+    register_xstar_funs(ctxt);
 #if HAVE_EXSLT_XPATH_REGISTER
     /* register extension functions */
     exsltDateXpathCtxtRegister(ctxt, BAD_CAST "date");

@@ -1,0 +1,2 @@
+#!/bin/sh
+echo '<x prog="echo" arg2="world"/>' | ./xmlstarlet ed -O -u /x -x 'xstar:exec(@prog, "hello", @arg2)'

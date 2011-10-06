@@ -2,6 +2,10 @@ xml_SOURCES =\
 src/escape.h\
 src/trans.c\
 src/trans.h\
+src/process.h\
+src/process-forkexec.c\
+src/xfun.h\
+src/xfun.c\
 src/xml.c\
 src/xml_C14N.c\
 src/xml_depyx.c\
