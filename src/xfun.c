@@ -6,19 +6,53 @@
 
 #include "process.h"
 
+/* like xmlXPathStackIsNodeSet, but for any XPathObject */
+static int
+isNodeSet(xmlXPathObjectPtr xpath_obj)
+{
+    return xpath_obj != NULL &&
+        (xpath_obj->type == XPATH_NODESET ||
+            xpath_obj->type == XPATH_XSLT_TREE);
+}
+
 static void
 exec(xmlXPathParserContextPtr ctxt, int nargs)
 {
     ProcPtr proc;
     xmlBufferPtr buffer;
-    int nread, i;
+    int nread, i, j, argc, argi;
+    char **argv;
 
-    char **argv = xmlMalloc((nargs+1) * sizeof(char*));
+    /* count the arguments */
     for (i = 0; i < nargs; i++) {
-        xmlChar *arg = xmlXPathPopString(ctxt);
-        argv[nargs-i-1] = (char*) arg;
+        xmlXPathObjectPtr val = ctxt->valueTab[i];
+        if (isNodeSet(val)) {
+            argc += val->nodesetval->nodeNr;
+        } else {
+            argc += 1;
+        }
     }
-    argv[nargs] = NULL;
+
+    /* collect arguments in argv */
+    argv = xmlMalloc((argc+1) * sizeof(char*));
+    /* NOTE: the last argument is on top of the stack, ie backwards */
+    for (i = 0, argi = argc; i < nargs; i++) {
+        if (xmlXPathStackIsNodeSet(ctxt)) {
+            xmlNodeSetPtr args = xmlXPathPopNodeSet(ctxt);
+            argi -= args->nodeNr;
+            /* NOTE: but for node sets the arguments are in order */
+            for (j = 0; j < args->nodeNr; j++) {
+                argv[argi + j] =
+                    (char*) xmlXPathCastNodeToString(args->nodeTab[j]);
+            }
+            xmlXPathFreeNodeSet(args);
+        } else {
+            xmlChar *arg = xmlXPathPopString(ctxt);
+            argi -= 1;
+            argv[argi] = (char*) arg;
+        }
+    }
+    argv[argc] = NULL;
 
     proc = proc_spawn(argv);
 
