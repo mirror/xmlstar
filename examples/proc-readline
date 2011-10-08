@@ -1,0 +1,5 @@
+#!/bin/sh
+./xmlstarlet ed --proc:vowelseq seq 1 4 \; --proc:conseq seq 5 10 \; \
+    -u '/root/elem[@rank=1]' -x 'xstar:readline($xstar:vowelseq)' \
+    -u '/root/elem[@rank=2]' -x 'xstar:readline($xstar:conseq)' \
+    xml/unsorted.xml

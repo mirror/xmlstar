@@ -73,12 +73,50 @@ exec(xmlXPathParserContextPtr ctxt, int nargs)
     xmlBufferFree(buffer);
 }
 
+static void
+readline(xmlXPathParserContextPtr ctxt, int nargs)
+{
+    ProcPtr proc = xmlXPathPopExternal(ctxt);
+    xmlBufferPtr buffer;
+
+    buffer = xmlBufferCreate();
+    for (;;) {
+        /* TODO: probably should be buffered... */
+        xmlChar buf[1];
+        int nread = proc_read(proc, buf, sizeof buf);
+        if (nread <= 0 || buf[0] == '\n') break;
+        xmlBufferAdd(buffer, buf, nread);
+    }
+    xmlXPathReturnString(ctxt, xmlStrdup(xmlBufferContent(buffer)));
+    xmlBufferFree(buffer);
+}
+
+static const xmlChar *XMLSTAR_NS = BAD_CAST "http://xmlstar.sourceforge.net";
+static const xmlChar *XMLSTAR_PREFIX = BAD_CAST "xstar";
+
 void
 register_xstar_funs(xmlXPathContextPtr ctxt)
 {
-    const xmlChar *XMLSTAR_NS = BAD_CAST "http://xmlstar.sourceforge.net";
-    const xmlChar *XMLSTAR_PREFIX = BAD_CAST "xstar";
-
     xmlXPathRegisterNs(ctxt, XMLSTAR_PREFIX, XMLSTAR_NS);
-    xmlXPathRegisterFuncNS(ctxt, BAD_CAST "exec", XMLSTAR_NS, exec);
+    xmlXPathRegisterFuncNS(ctxt, BAD_CAST "exec", XMLSTAR_NS, &exec);
+    xmlXPathRegisterFuncNS(ctxt, BAD_CAST "readline", XMLSTAR_NS, &readline);
+}
+
+void
+register_proc(void *argv_payload, void *ctxt_data, xmlChar *name)
+{
+    char **argv = argv_payload;
+    xmlXPathContextPtr ctxt = ctxt_data;
+    ProcPtr proc = proc_spawn(argv);
+    xmlXPathRegisterVariableNS(ctxt, name, XMLSTAR_NS, xmlXPathWrapExternal(proc));
+}
+
+void
+release_proc(void *payload, void *ctxt_data, xmlChar *name)
+{
+    xmlXPathContextPtr ctxt = ctxt_data;
+    xmlXPathObjectPtr val = xmlXPathVariableLookupNS(ctxt, name, XMLSTAR_NS);
+    ProcPtr proc = val->user;
+    proc_wait(proc);
+    xmlXPathFreeObject(val);
 }

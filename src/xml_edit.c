@@ -96,8 +96,9 @@ typedef struct _XmlEdAction {
 
 #define MAX_XML_ED_OPS 128
 
-int ops_count = 0;
+static int ops_count = 0;
 static XmlEdAction ops[MAX_XML_ED_OPS];
+static xmlHashTablePtr procs = NULL;
 
 /*
  * usage string chunk : 509 char max on ISO C90
@@ -195,6 +196,23 @@ edParseOptions(edOptionsPtr ops, int argc, char **argv)
         else if (!strcmp(argv[i], "--net"))
         {
             ops->nonet = 0;
+        }
+        else if (!strncmp(argv[i], "--proc:", strlen("--proc:")))
+        {
+            int proc_argc;
+            char **proc_argv;
+            const xmlChar *name = xmlStrchr(BAD_CAST argv[i], ':') + 1;
+
+            i += 1;
+            proc_argv = &argv[i];
+            for (proc_argc = 0; i < argc && strcmp(argv[i], ";") != 0; i++, proc_argc++) {
+            }
+            argv[i] = NULL;
+
+            if (!procs) {
+                procs = xmlHashCreate(4);
+            }
+            xmlHashAddEntry(procs, name, proc_argv);
         }
         else if (!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h") ||
                  !strcmp(argv[i], "-?") || !strcmp(argv[i], "-Z"))
@@ -382,6 +400,7 @@ edProcess(xmlDocPtr doc, XmlEdAction* ops, int ops_count)
     int k;
     xmlXPathContextPtr ctxt = xmlXPathNewContext(doc);
     /* NOTE: later registrations override earlier ones */
+    xmlHashScan(procs, &register_proc, ctxt);
     register_xstar_funs(ctxt);
 #if HAVE_EXSLT_XPATH_REGISTER
     /* register extension functions */
@@ -443,7 +462,9 @@ edProcess(xmlDocPtr doc, XmlEdAction* ops, int ops_count)
         }
         xmlXPathFreeObject(res);
     }
+    xmlHashScan(procs, &release_proc, ctxt);
     xmlXPathFreeContext(ctxt);
+    xmlHashFree(procs, NULL);
 }
 
 /**
