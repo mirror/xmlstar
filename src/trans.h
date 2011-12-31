@@ -74,11 +74,6 @@ typedef struct _xsltOptions {
 
 typedef xsltOptions *xsltOptionsPtr;
 
-extern xmlExternalEntityLoader defaultEntityLoader;
-
-/* TODO */
-extern xmlChar *paths[MAX_PATHS + 1];
-extern int nbpaths;
 
 extern int errorno;
 
@@ -97,9 +92,5 @@ xmlDocPtr xsltTransform(xsltOptionsPtr ops, xmlDocPtr doc,
 int xsltRun(xsltOptionsPtr ops, char* xsl,
             const char **params,
             int count, char **docs);
-
-xmlParserInputPtr xsltExternalEntityLoader(const char *URL,
-                                           const char *ID,
-                                           xmlParserCtxtPtr ctxt);
 
 #endif /* __TRANS_H */

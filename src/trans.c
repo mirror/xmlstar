@@ -9,13 +9,7 @@
  *  (see also http://xmlsoft.org/)
  */
 
-/* TODO: 1. preloading entities */
-xmlChar *paths[MAX_PATHS + 1];
-int nbpaths = 0;
-
 int errorno = 0;
-
-xmlExternalEntityLoader defaultEntityLoader = NULL;
 
 /**
  *  Initialize global command line options
@@ -73,21 +67,7 @@ xsltInitLibXml(xsltOptionsPtr ops)
         xsltDebugDumpExtensions(stderr);
         exit(EXIT_SUCCESS);
     }
-    
-    /*
-     * Replace entities with their content.
-     */
-    xmlSubstituteEntitiesDefault(1);
 
-    /*
-     * Register entity loader
-     */
-    defaultEntityLoader = xmlGetExternalEntityLoader();
-    xmlSetExternalEntityLoader(xsltExternalEntityLoader);
-    if (ops->nonet) {
-        defaultEntityLoader = xmlNoNetExternalEntityLoader;
-    }
-    
     xmlKeepBlanksDefault(1);
     if (ops->noblanks)  xmlKeepBlanksDefault(0);
     xmlPedanticParserDefault(0);
@@ -129,67 +109,6 @@ xsltInitLibXml(xsltOptionsPtr ops)
             xmlLoadCatalogs(catalogs);
     }
 #endif
-}
-
-/**
- *  Entity loader
- */
-xmlParserInputPtr
-xsltExternalEntityLoader(const char *URL, const char *ID, xmlParserCtxtPtr ctxt)
-{
-    xmlParserInputPtr ret;
-    warningSAXFunc warning = NULL;
-
-    int i;
-
-    if ((ctxt != NULL) && (ctxt->sax != NULL))
-    {
-        warning = ctxt->sax->warning;
-        ctxt->sax->warning = NULL;
-    }
-
-    if (defaultEntityLoader != NULL)
-    {
-        ret = defaultEntityLoader(URL, ID, ctxt);
-        if (ret != NULL)
-        {
-            if (warning != NULL) ctxt->sax->warning = warning;
-            return(ret);
-        }
-    }
-
-    /* preload resources */
-    /* TODO 1. preloading entities */
-    for (i = 0; i < nbpaths; i++)
-    {
-        xmlChar *newURL;
-        int len;
-
-        len = xmlStrlen(paths[i]) + xmlStrlen(BAD_CAST URL) + 5;
-        newURL = xmlMalloc(len);
-        if (newURL != NULL)
-        {
-            sprintf((char *) newURL, "%s/%s", paths[i], URL);
-            ret = defaultEntityLoader((const char *)newURL, ID, ctxt);
-            xmlFree(newURL);
-            if (ret != NULL)
-            {
-                if (warning != NULL) ctxt->sax->warning = warning;
-                return(ret);
-            }
-        }
-    }
-
-    if (warning != NULL)
-    {
-        ctxt->sax->warning = warning;
-        if (URL != NULL)
-            warning(ctxt, "failed to load external entity \"%s\"\n", URL);
-        else if (ID != NULL)
-            warning(ctxt, "failed to load external entity \"%s\"\n", ID);
-    }
-
-    return(NULL);
 }
 
 /* get result of XSL transformation */
