@@ -1,0 +1,3 @@
+#!/bin/sh
+./xmlstarlet sel -t -c //foo xml/external-pe.xml
+./xmlstarlet sel -t -v //foo xml/external-pe.xml
