@@ -710,9 +710,9 @@ selPrepareXslt(xmlDocPtr style, selOptionsPtr ops, xmlChar *ns_arr[],
         for_each = xmlNewChild(value_of_template, xslns, BAD_CAST "for-each", NULL);
         xmlNewProp(for_each, BAD_CAST "select", BAD_CAST "exslt:node-set($select)[position()>1]");
         value_of = xmlNewChild(for_each, xslns, BAD_CAST "value-of", NULL);
-        xmlNewProp(value_of, BAD_CAST "select", BAD_CAST ".");
-        value_of = xmlNewChild(for_each, xslns, BAD_CAST "value-of", NULL);
         xmlNewProp(value_of, BAD_CAST "select", BAD_CAST "'\n'");
+        value_of = xmlNewChild(for_each, xslns, BAD_CAST "value-of", NULL);
+        xmlNewProp(value_of, BAD_CAST "select", BAD_CAST ".");
     }
 
     return i;
