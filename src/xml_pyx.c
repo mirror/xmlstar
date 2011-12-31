@@ -120,8 +120,9 @@ pyxStartElement (void * ctx,
         int valueLen = valueEnd - valueBegin;
 
         /* Attribute Name */
-        fprintf(stdout, "A");
+        putchar('A');
         print_qname(prefix, localname);
+        putchar(' ');
         /* value - can contain literal "\n" so escape */
         SanitizeData(valueBegin, valueLen);
         putchar('\n');
