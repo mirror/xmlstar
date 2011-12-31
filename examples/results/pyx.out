@@ -1,14 +1,14 @@
-<a1>
-  <a11>
-    <a111>
-      <a1111></a1111>
-    </a111>
-    <a112>
-      <a1121></a1121>
-    </a112>
-  </a11>
-  <a12></a12>
-  <a13>
-    <a131></a131>
-  </a13>
-</a1>
+<books>
+<begin></begin>
+<book type="hardback">
+<title>Atlas Shrugged</title>
+<author>Ayn Rand</author>
+<isbn id="1">0525934189<br></br></isbn>
+</book>
+Next Book
+<book type="paperback">
+<title>A Burnt-Out Case</title>
+<author>Graham Greene</author>
+<isbn id="2">0140185399<br></br></isbn>
+</book>
+</books>
