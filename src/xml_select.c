@@ -796,6 +796,7 @@ selMain(int argc, char **argv)
     selInitOptions(&ops);
     xsltInitOptions(&xsltOps);
     start = selParseOptions(&ops, argc, argv);
+    xml_options |= XML_PARSE_NOENT; /* substitute entities */
     xml_options |= ops.nonet? XML_PARSE_NONET : 0;
     xsltOps.nonet = ops.nonet;
     xsltOps.noblanks = ops.noblanks;
