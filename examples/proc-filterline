@@ -1,0 +1,4 @@
+#!/bin/sh
+./xmlstarlet ed -P --proc:upcase awk -W interactive '{print toupper($0)}' \; \
+    -u /doc/foo -x 'xstar:filterline($xstar:upcase, .)' \
+    xml/foo.xml

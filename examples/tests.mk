@@ -46,6 +46,7 @@ examples/move1\
 examples/N-order\
 examples/noindent1\
 examples/ns1\
+examples/proc-filterline\
 examples/proc-readline\
 examples/pyx\
 examples/recover1\

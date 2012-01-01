@@ -91,6 +91,24 @@ readline(xmlXPathParserContextPtr ctxt, int nargs)
     xmlBufferFree(buffer);
 }
 
+static void
+filterline(xmlXPathParserContextPtr ctxt, int nargs)
+{
+    xmlChar *str = xmlXPathPopString(ctxt);
+    ProcPtr proc = xmlXPathPopExternal(ctxt);
+    int len = xmlStrlen(str);
+
+    proc_write(proc, str, len);
+    if (str[len-1] != '\n') {
+        str[0] = '\n';
+        proc_write(proc, str, 1);
+    }
+    xmlFree(str);
+
+    valuePush(ctxt, xmlXPathWrapExternal(proc));
+    readline(ctxt, 1);
+}
+
 static const xmlChar *XMLSTAR_NS = BAD_CAST "http://xmlstar.sourceforge.net";
 static const xmlChar *XMLSTAR_PREFIX = BAD_CAST "xstar";
 
@@ -100,6 +118,7 @@ register_xstar_funs(xmlXPathContextPtr ctxt)
     xmlXPathRegisterNs(ctxt, XMLSTAR_PREFIX, XMLSTAR_NS);
     xmlXPathRegisterFuncNS(ctxt, BAD_CAST "exec", XMLSTAR_NS, &exec);
     xmlXPathRegisterFuncNS(ctxt, BAD_CAST "readline", XMLSTAR_NS, &readline);
+    xmlXPathRegisterFuncNS(ctxt, BAD_CAST "filterline", XMLSTAR_NS, &filterline);
 }
 
 void
