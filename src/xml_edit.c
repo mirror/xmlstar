@@ -444,17 +444,17 @@ edProcess(xmlDocPtr doc, const XmlEdAction* ops, int ops_count)
  */
 static void
 edOutput(const char* filename, const XmlEdAction* ops, int ops_count,
-    edOptions g_ops)
+    const edOptions* g_ops)
 {
     xmlDocPtr doc;
     int save_options =
 #if LIBXML_VERSION >= 20708
-        (g_ops.noblanks? 0 : XML_SAVE_WSNONSIG) |
+        (g_ops->noblanks? 0 : XML_SAVE_WSNONSIG) |
 #endif
-        (g_ops.preserveFormat? 0 : XML_SAVE_FORMAT) |
-        (g_ops.omit_decl? XML_SAVE_NO_DECL : 0);
+        (g_ops->preserveFormat? 0 : XML_SAVE_FORMAT) |
+        (g_ops->omit_decl? XML_SAVE_NO_DECL : 0);
     int read_options =
-        (g_ops.nonet? XML_PARSE_NONET : 0);
+        (g_ops->nonet? XML_PARSE_NONET : 0);
     xmlSaveCtxtPtr save;
 
     doc = xmlReadFile(filename, NULL, read_options);
@@ -480,7 +480,7 @@ edOutput(const char* filename, const XmlEdAction* ops, int ops_count,
         set_stdout_binary();
     }
 
-    save = xmlSaveToFilename(g_ops.inplace? filename : "-", NULL, save_options);
+    save = xmlSaveToFilename(g_ops->inplace? filename : "-", NULL, save_options);
     xmlSaveDoc(save, doc);
     xmlSaveClose(save);
 
@@ -708,12 +708,12 @@ edMain(int argc, char **argv)
 
     if (i >= argc)
     {
-        edOutput("-", ops, ops_count, g_ops);
+        edOutput("-", ops, ops_count, &g_ops);
     }
     
     for (n=i; n<argc; n++)
     {
-        edOutput(argv[n], ops, ops_count, g_ops);
+        edOutput(argv[n], ops, ops_count, &g_ops);
     }
 
     xmlFree(ops);
