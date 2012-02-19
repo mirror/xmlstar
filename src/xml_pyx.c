@@ -110,6 +110,22 @@ pyxStartElement (void * ctx,
             sizeof(xmlChar *)*5,
             CompareAttributes);
 
+    for (i = 0; i < nb_namespaces; i++) {
+        int aidx = i * 2;
+        const xmlChar
+            *prefix = namespaces[aidx],
+            *uri = namespaces[aidx+1];
+        /* namespace definitions take the form xmlns:prefix=uri*/
+        putchar('A');
+        if (xmlStrlen(prefix) > 0)
+            print_qname(BAD_CAST "xmlns", prefix);
+        else
+            fputs("xmlns", stdout);
+        putchar(' ');
+        SanitizeData(uri, xmlStrlen(uri));
+        putchar('\n');
+    }
+
     for (i = 0; i < nb_attributes; i++) {
         int aidx = i * 5;
         const xmlChar *localname = attributes[aidx],
