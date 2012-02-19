@@ -133,7 +133,7 @@ static const char edit_usage_str_4[] =
 /**
  *  display short help message
  */
-void
+static void
 edUsage(const char *argv0, exit_status status)
 {
     extern const char more_info[];
@@ -149,7 +149,7 @@ edUsage(const char *argv0, exit_status status)
 /**
  *  Initialize global command line options
  */
-void
+static void
 edInitOptions(edOptionsPtr ops)
 {
     ops->noblanks = 1;
@@ -162,7 +162,7 @@ edInitOptions(edOptionsPtr ops)
 /**
  *  Parse global command line options
  */
-int
+static int
 edParseOptions(edOptionsPtr ops, int argc, char **argv)
 {
     int i;
@@ -208,7 +208,7 @@ edParseOptions(edOptionsPtr ops, int argc, char **argv)
 /**
  *  register the namespace from @ns_arr to @ctxt
  */
-void
+static void
 nsarr_xpath_register(xmlXPathContextPtr ctxt)
 {
     int ns;
@@ -236,7 +236,7 @@ extract_ns_defs(xmlDocPtr doc, xmlXPathContextPtr ctxt)
 /**
  *  'update' operation
  */
-void
+static void
 edUpdate(xmlDocPtr doc, xmlNodeSetPtr nodes, const char *val,
     XmlNodeType type, xmlXPathContextPtr ctxt)
 {
@@ -278,7 +278,7 @@ edUpdate(xmlDocPtr doc, xmlNodeSetPtr nodes, const char *val,
 /**
  *  'insert' operation
  */
-void
+static void
 edInsert(xmlDocPtr doc, xmlNodeSetPtr nodes, const char *val, const char *name,
          XmlNodeType type, int mode)
 {
@@ -316,7 +316,7 @@ edInsert(xmlDocPtr doc, xmlNodeSetPtr nodes, const char *val, const char *name,
 /**
  *  'rename' operation
  */
-void
+static void
 edRename(xmlDocPtr doc, xmlNodeSetPtr nodes, char *val, XmlNodeType type)
 {
     int i;
@@ -329,7 +329,7 @@ edRename(xmlDocPtr doc, xmlNodeSetPtr nodes, char *val, XmlNodeType type)
 /**
  *  'delete' operation
  */
-void
+static void
 edDelete(xmlDocPtr doc, xmlNodeSetPtr nodes)
 {
     int i;
@@ -351,7 +351,7 @@ edDelete(xmlDocPtr doc, xmlNodeSetPtr nodes)
 /**
  *  'move' operation
  */
-void
+static void
 edMove(xmlDocPtr doc, xmlNodeSetPtr nodes, xmlNodePtr to)
 {
     int i;
@@ -370,7 +370,7 @@ edMove(xmlDocPtr doc, xmlNodeSetPtr nodes, xmlNodePtr to)
 /**
  *  Loop through array of operations and perform them
  */
-void
+static void
 edProcess(xmlDocPtr doc, const XmlEdAction* ops, int ops_count)
 {
     int k;
