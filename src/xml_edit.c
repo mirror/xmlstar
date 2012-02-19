@@ -83,7 +83,34 @@ typedef enum _XmlNodeType {
    XML_EXPR
 } XmlNodeType;
 
-typedef char* XmlEdArg;
+typedef struct {
+    char shortOpt;
+    const char* longOpt;        /* include "--" */
+    XmlNodeType type;
+} OptionSpec;
+
+static const OptionSpec
+    OPT_VAL_OR_EXP[] = {
+        {'x', "--expr", XML_EXPR},
+        {'v', "--value", XML_TEXT}
+    },
+    OPT_JUST_VAL[] = {
+        {'v', "--value", XML_TEXT}
+    },
+    OPT_JUST_TYPE[] = {
+        {'t', "--type"}
+    },
+    OPT_NODE_TYPE[] = {
+        {0, "elem", XML_ELEM},
+        {0, "attr", XML_ATTR},
+        {0, "text", XML_TEXT}
+    },
+    OPT_JUST_NAME[] = {
+        {'n', "--name"}
+    };
+
+
+typedef const char* XmlEdArg;
 
 typedef struct _XmlEdAction {
   XmlEdOp       op;
@@ -317,7 +344,7 @@ edInsert(xmlDocPtr doc, xmlNodeSetPtr nodes, const char *val, const char *name,
  *  'rename' operation
  */
 static void
-edRename(xmlDocPtr doc, xmlNodeSetPtr nodes, char *val, XmlNodeType type)
+edRename(xmlDocPtr doc, xmlNodeSetPtr nodes, const char *val, XmlNodeType type)
 {
     int i;
     for (i = 0; i < nodes->nodeNr; i++)
@@ -488,6 +515,59 @@ edOutput(const char* filename, const XmlEdAction* ops, int ops_count,
 }
 
 /**
+ * get next command line arg, or print error exit and exit if there isn't one
+ * @returns pointer to the arg
+ * @argi is incremented
+ */
+static const char*
+nextArg(char *const*const argv, int *argi)
+{
+    const char *arg = argv[*argi];
+    if (arg == NULL)
+    {
+        edUsage(argv[0], EXIT_BAD_ARGS);
+    }
+    *argi += 1;
+    return arg;
+}
+
+/**
+ * like nextArg(), but additionally look for next arg in @choices
+ */
+static XmlNodeType
+parseNextArg(char *const*const argv, int *argi,
+    const OptionSpec choices[], int choices_count)
+{
+    const char* arg = nextArg(argv, argi);
+    int i;
+    for (i = 0; i < choices_count; i++) {
+        if ((arg[0] == '-' && arg[1] == choices[i].shortOpt) ||
+            (strcmp(arg, choices[i].longOpt) == 0))
+            return choices[i].type;
+    }
+    edUsage(argv[0], EXIT_BAD_ARGS);
+    return 0;                   /* never reach here */
+}
+#define parseNextArg(argv, argi, choices) \
+    parseNextArg(argv, argi, choices, COUNT_OF(choices))
+
+
+/** --insert, --append, and --subnode all take the same arguments */
+static void
+parseInsertionArgs(XmlEdOp op_type, XmlEdAction* op,
+    char *const*const argv, int *argi)
+{
+    op->op = op_type;
+    op->arg1 = nextArg(argv, argi);
+    parseNextArg(argv, argi, OPT_JUST_TYPE);
+    op->type = parseNextArg(argv, argi, OPT_NODE_TYPE);
+    parseNextArg(argv, argi, OPT_JUST_NAME);
+    op->arg3 = nextArg(argv, argi);
+    parseNextArg(argv, argi, OPT_JUST_VAL);
+    op->arg2 = nextArg(argv, argi);
+}
+
+/**
  *  This is the main function for 'edit' option
  */
 int
@@ -513,193 +593,65 @@ edMain(int argc, char **argv)
 
     while (i < argc)
     {
-        if (argv[i][0] == '-')
+        const char *arg = nextArg(argv, &i);
+        if (arg[0] == '-')
         {
             if (ops_count >= max_ops_count)
             {
                 max_ops_count *= 2;
                 ops = xmlRealloc(ops, sizeof(XmlEdAction) * max_ops_count);
             }
-            if (!strcmp(argv[i], "-d") || !strcmp(argv[i], "--delete"))
-            {
-                i++;
-                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
-                ops[ops_count].op = XML_ED_DELETE;
-                ops[ops_count].arg1 = argv[i];
-                ops[ops_count].arg2 = 0;
-                ops[ops_count].type = XML_UNDEFINED;
-            }
-            else if (!strcmp(argv[i], "-m") || !strcmp(argv[i], "--move"))
-            {
-                i++;
-                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
-                ops[ops_count].op = XML_ED_MOVE;
-                ops[ops_count].arg1 = argv[i];
-                i++;
-                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
-                ops[ops_count].arg2 = argv[i];
-                ops[ops_count].type = XML_UNDEFINED;
-            }
-            else if (!strcmp(argv[i], "-u") || !strcmp(argv[i], "--update"))
-            {
-                i++;
-                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
-                ops[ops_count].type = XML_UNDEFINED;
-                ops[ops_count].op = XML_ED_UPDATE;
-                ops[ops_count].arg1 = argv[i];
-                i++;
-                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
-                if (strcmp(argv[i], "-v") && strcmp(argv[i], "--value") &&
-                    strcmp(argv[i], "-x") && strcmp(argv[i], "--expr"))
-                    edUsage(argv[0], EXIT_BAD_ARGS);
+            ops[ops_count].type = XML_UNDEFINED;
 
-                if (!strcmp(argv[i], "-x") || !strcmp(argv[i], "--expr"))
-                    ops[ops_count].type = XML_EXPR;
-                i++;
-                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
-                ops[ops_count].arg2 = argv[i];
-            }
-            else if (!strcmp(argv[i], "-r") || !strcmp(argv[i], "--rename"))
+            if (!strcmp(arg, "-d") || !strcmp(arg, "--delete"))
             {
-                i++;
-                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
-                ops[ops_count].type = XML_UNDEFINED;
+                ops[ops_count].op = XML_ED_DELETE;
+                ops[ops_count].arg1 = nextArg(argv, &i);
+                ops[ops_count].arg2 = 0;
+            }
+            else if (!strcmp(arg, "-m") || !strcmp(arg, "--move"))
+            {
+                ops[ops_count].op = XML_ED_MOVE;
+                ops[ops_count].arg1 = nextArg(argv, &i);
+                ops[ops_count].arg2 = nextArg(argv, &i);
+            }
+            else if (!strcmp(arg, "-u") || !strcmp(arg, "--update"))
+            {
+                ops[ops_count].op = XML_ED_UPDATE;
+                ops[ops_count].arg1 = nextArg(argv, &i);
+                ops[ops_count].type = parseNextArg(argv, &i, OPT_VAL_OR_EXP);
+                ops[ops_count].arg2 = nextArg(argv, &i);
+            }
+            else if (!strcmp(arg, "-r") || !strcmp(arg, "--rename"))
+            {
                 ops[ops_count].op = XML_ED_RENAME;
-                ops[ops_count].arg1 = argv[i];
-                i++;
-                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
-                if (strcmp(argv[i], "-v") && strcmp(argv[i], "--value"))
-                    edUsage(argv[0], EXIT_BAD_ARGS);
-                i++;
-                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
-                ops[ops_count].arg2 = argv[i];
+                ops[ops_count].arg1 = nextArg(argv, &i);
+                ops[ops_count].type = parseNextArg(argv, &i, OPT_JUST_VAL);
+                ops[ops_count].arg2 = nextArg(argv, &i);
             }
-            else if (!strcmp(argv[i], "-i") || !strcmp(argv[i], "--insert"))
+            else if (!strcmp(arg, "-i") || !strcmp(arg, "--insert"))
             {
-                i++;
-                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
-                ops[ops_count].type = XML_UNDEFINED;
-                ops[ops_count].op = XML_ED_INSERT;
-                ops[ops_count].arg1 = argv[i];
-                i++;
-                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-                if (strcmp(argv[i], "-t") && strcmp(argv[i], "--type")) edUsage(argv[0], EXIT_BAD_ARGS);;
-                i++;
-                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-                if (!strcmp(argv[i], "elem"))
-                {
-                    ops[ops_count].type = XML_ELEM;
-                }
-                else if (!strcmp(argv[i], "attr"))
-                {
-                    ops[ops_count].type = XML_ATTR;
-                }
-                else if (!strcmp(argv[i], "text"))
-                {
-                    ops[ops_count].type = XML_TEXT;
-                }
-                else edUsage(argv[0], EXIT_BAD_ARGS);;
-                i++;
-                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-                if (strcmp(argv[i], "-n") && strcmp(argv[i], "--name")) edUsage(argv[0], EXIT_BAD_ARGS);;
-                i++;
-                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-                ops[ops_count].arg3 = argv[i];
-                i++;
-                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-                if (strcmp(argv[i], "-v") && strcmp(argv[i], "--value")) edUsage(argv[0], EXIT_BAD_ARGS);;
-                i++;
-                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-                ops[ops_count].arg2 = argv[i];
+                parseInsertionArgs(XML_ED_INSERT, &ops[ops_count], argv, &i);
             }
-            else if (!strcmp(argv[i], "-a") || !strcmp(argv[i], "--append"))
+            else if (!strcmp(arg, "-a") || !strcmp(arg, "--append"))
             {
-                i++;
-                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-                ops[ops_count].type = XML_UNDEFINED;
-                ops[ops_count].op = XML_ED_APPEND;
-                ops[ops_count].arg1 = argv[i];
-                i++;
-                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-                if (strcmp(argv[i], "-t") && strcmp(argv[i], "--type")) edUsage(argv[0], EXIT_BAD_ARGS);;
-                i++;
-                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-                if (!strcmp(argv[i], "elem"))
-                {
-                    ops[ops_count].type = XML_ELEM;
-                }
-                else if (!strcmp(argv[i], "attr"))
-                {
-                    ops[ops_count].type = XML_ATTR;
-                }
-                else if (!strcmp(argv[i], "text"))
-                {
-                    ops[ops_count].type = XML_TEXT;
-                }
-                else edUsage(argv[0], EXIT_BAD_ARGS);;
-                i++;
-                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-                if (strcmp(argv[i], "-n") && strcmp(argv[i], "--name")) edUsage(argv[0], EXIT_BAD_ARGS);;
-                i++;
-                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-                ops[ops_count].arg3 = argv[i];
-                i++;
-                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-                if (strcmp(argv[i], "-v") && strcmp(argv[i], "--value")) edUsage(argv[0], EXIT_BAD_ARGS);;
-                i++;
-                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-                ops[ops_count].arg2 = argv[i];
+                parseInsertionArgs(XML_ED_APPEND, &ops[ops_count], argv, &i);
             }
-            else if (!strcmp(argv[i], "-s") || !strcmp(argv[i], "--subnode"))
+            else if (!strcmp(arg, "-s") || !strcmp(arg, "--subnode"))
             {
-                i++;
-                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-                ops[ops_count].type = XML_UNDEFINED;
-                ops[ops_count].op = XML_ED_SUBNODE;
-                ops[ops_count].arg1 = argv[i];
-                i++;
-                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-                if (strcmp(argv[i], "-t") && strcmp(argv[i], "--type")) edUsage(argv[0], EXIT_BAD_ARGS);;
-                i++;
-                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-                if (!strcmp(argv[i], "elem"))
-                {
-                    ops[ops_count].type = XML_ELEM;
-                }
-                else if (!strcmp(argv[i], "attr"))
-                {
-                    ops[ops_count].type = XML_ATTR;
-                }
-                else if (!strcmp(argv[i], "text"))
-                {
-                    ops[ops_count].type = XML_TEXT;
-                }
-                else edUsage(argv[0], EXIT_BAD_ARGS);;
-                i++;
-                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-                if (strcmp(argv[i], "-n") && strcmp(argv[i], "--name")) edUsage(argv[0], EXIT_BAD_ARGS);;
-                i++;
-                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-                ops[ops_count].arg3 = argv[i];
-                i++;
-                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-                if (strcmp(argv[i], "-v") && strcmp(argv[i], "--value")) edUsage(argv[0], EXIT_BAD_ARGS);;
-                i++;
-                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-                ops[ops_count].arg2 = argv[i];
+                parseInsertionArgs(XML_ED_SUBNODE, &ops[ops_count], argv, &i);
             }
             else
             {
-                fprintf(stderr, "Warning: unrecognized option '%s'\n", argv[i]);
+                fprintf(stderr, "Warning: unrecognized option '%s'\n", arg);
             }
             ops_count++;
         }
         else
         {
+            i--;                /* it was a filename, we didn't use it */
             break;
         }
-
-        i++;
     }
 
     xmlKeepBlanksDefault(0);
