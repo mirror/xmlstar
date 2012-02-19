@@ -47,6 +47,7 @@ examples/N-order\
 examples/noindent1\
 examples/ns1\
 examples/pyx\
+examples/pyx-ns\
 examples/recover1\
 examples/rename-attr1\
 examples/rename-elem1\
