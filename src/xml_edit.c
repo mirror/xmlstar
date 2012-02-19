@@ -93,8 +93,6 @@ typedef struct _XmlEdAction {
   XmlNodeType   type;
 } XmlEdAction;
 
-#define MAX_XML_ED_OPS 128
-
 /*
  * usage string chunk : 509 char max on ISO C90
  */
@@ -495,8 +493,8 @@ edOutput(const char* filename, const XmlEdAction* ops, int ops_count,
 int
 edMain(int argc, char **argv)
 {
-    int i, ops_count, n, start = 0;
-    static XmlEdAction ops[MAX_XML_ED_OPS];
+    int i, ops_count, max_ops_count = 8, n, start = 0;
+    XmlEdAction* ops = xmlMalloc(sizeof(XmlEdAction) * max_ops_count);
     static edOptions g_ops;
     int nCount = 0;
 
@@ -515,188 +513,190 @@ edMain(int argc, char **argv)
 
     while (i < argc)
     {
-        if (!strcmp(argv[i], "-d") || !strcmp(argv[i], "--delete"))
+        if (argv[i][0] == '-')
         {
-            i++;
-            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
-            ops[ops_count].op = XML_ED_DELETE;
-            ops[ops_count].arg1 = argv[i];
-            ops[ops_count].arg2 = 0;
-            ops[ops_count].type = XML_UNDEFINED;
-            ops_count++;
-        }
-        else if (!strcmp(argv[i], "-m") || !strcmp(argv[i], "--move"))
-        {
-            i++;
-            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
-            ops[ops_count].op = XML_ED_MOVE;
-            ops[ops_count].arg1 = argv[i];
-            i++;
-            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
-            ops[ops_count].arg2 = argv[i];
-            ops[ops_count].type = XML_UNDEFINED;
-            ops_count++;
-        }
-        else if (!strcmp(argv[i], "-u") || !strcmp(argv[i], "--update"))
-        {
-            i++;
-            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
-            ops[ops_count].type = XML_UNDEFINED;
-            ops[ops_count].op = XML_ED_UPDATE;
-            ops[ops_count].arg1 = argv[i];
-            i++;
-            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
-            if (strcmp(argv[i], "-v") && strcmp(argv[i], "--value") &&
-                strcmp(argv[i], "-x") && strcmp(argv[i], "--expr"))
-                edUsage(argv[0], EXIT_BAD_ARGS);
+            if (ops_count >= max_ops_count)
+            {
+                max_ops_count *= 2;
+                ops = xmlRealloc(ops, sizeof(XmlEdAction) * max_ops_count);
+            }
+            if (!strcmp(argv[i], "-d") || !strcmp(argv[i], "--delete"))
+            {
+                i++;
+                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
+                ops[ops_count].op = XML_ED_DELETE;
+                ops[ops_count].arg1 = argv[i];
+                ops[ops_count].arg2 = 0;
+                ops[ops_count].type = XML_UNDEFINED;
+            }
+            else if (!strcmp(argv[i], "-m") || !strcmp(argv[i], "--move"))
+            {
+                i++;
+                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
+                ops[ops_count].op = XML_ED_MOVE;
+                ops[ops_count].arg1 = argv[i];
+                i++;
+                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
+                ops[ops_count].arg2 = argv[i];
+                ops[ops_count].type = XML_UNDEFINED;
+            }
+            else if (!strcmp(argv[i], "-u") || !strcmp(argv[i], "--update"))
+            {
+                i++;
+                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
+                ops[ops_count].type = XML_UNDEFINED;
+                ops[ops_count].op = XML_ED_UPDATE;
+                ops[ops_count].arg1 = argv[i];
+                i++;
+                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
+                if (strcmp(argv[i], "-v") && strcmp(argv[i], "--value") &&
+                    strcmp(argv[i], "-x") && strcmp(argv[i], "--expr"))
+                    edUsage(argv[0], EXIT_BAD_ARGS);
 
-            if (!strcmp(argv[i], "-x") || !strcmp(argv[i], "--expr"))
-                ops[ops_count].type = XML_EXPR;
-            i++;
-            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
-            ops[ops_count].arg2 = argv[i];
-
-            ops_count++;
-        }
-        else if (!strcmp(argv[i], "-r") || !strcmp(argv[i], "--rename"))
-        {
-            i++;
-            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
-            ops[ops_count].type = XML_UNDEFINED;
-            ops[ops_count].op = XML_ED_RENAME;
-            ops[ops_count].arg1 = argv[i];
-            i++;
-            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
-            if (strcmp(argv[i], "-v") && strcmp(argv[i], "--value"))
-                edUsage(argv[0], EXIT_BAD_ARGS);
-            i++;
-            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
-            ops[ops_count].arg2 = argv[i];
-            ops_count++;
-        }
-        else if (!strcmp(argv[i], "-i") || !strcmp(argv[i], "--insert"))
-        {
-            i++;
-            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
-            ops[ops_count].type = XML_UNDEFINED;
-            ops[ops_count].op = XML_ED_INSERT;
-            ops[ops_count].arg1 = argv[i];
-            i++;
-            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-            if (strcmp(argv[i], "-t") && strcmp(argv[i], "--type")) edUsage(argv[0], EXIT_BAD_ARGS);;
-            i++;
-            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-            if (!strcmp(argv[i], "elem"))
-            {
-                ops[ops_count].type = XML_ELEM;
+                if (!strcmp(argv[i], "-x") || !strcmp(argv[i], "--expr"))
+                    ops[ops_count].type = XML_EXPR;
+                i++;
+                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
+                ops[ops_count].arg2 = argv[i];
             }
-            else if (!strcmp(argv[i], "attr"))
+            else if (!strcmp(argv[i], "-r") || !strcmp(argv[i], "--rename"))
             {
-                ops[ops_count].type = XML_ATTR;
+                i++;
+                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
+                ops[ops_count].type = XML_UNDEFINED;
+                ops[ops_count].op = XML_ED_RENAME;
+                ops[ops_count].arg1 = argv[i];
+                i++;
+                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
+                if (strcmp(argv[i], "-v") && strcmp(argv[i], "--value"))
+                    edUsage(argv[0], EXIT_BAD_ARGS);
+                i++;
+                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
+                ops[ops_count].arg2 = argv[i];
             }
-            else if (!strcmp(argv[i], "text"))
+            else if (!strcmp(argv[i], "-i") || !strcmp(argv[i], "--insert"))
             {
-                ops[ops_count].type = XML_TEXT;
+                i++;
+                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);
+                ops[ops_count].type = XML_UNDEFINED;
+                ops[ops_count].op = XML_ED_INSERT;
+                ops[ops_count].arg1 = argv[i];
+                i++;
+                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
+                if (strcmp(argv[i], "-t") && strcmp(argv[i], "--type")) edUsage(argv[0], EXIT_BAD_ARGS);;
+                i++;
+                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
+                if (!strcmp(argv[i], "elem"))
+                {
+                    ops[ops_count].type = XML_ELEM;
+                }
+                else if (!strcmp(argv[i], "attr"))
+                {
+                    ops[ops_count].type = XML_ATTR;
+                }
+                else if (!strcmp(argv[i], "text"))
+                {
+                    ops[ops_count].type = XML_TEXT;
+                }
+                else edUsage(argv[0], EXIT_BAD_ARGS);;
+                i++;
+                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
+                if (strcmp(argv[i], "-n") && strcmp(argv[i], "--name")) edUsage(argv[0], EXIT_BAD_ARGS);;
+                i++;
+                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
+                ops[ops_count].arg3 = argv[i];
+                i++;
+                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
+                if (strcmp(argv[i], "-v") && strcmp(argv[i], "--value")) edUsage(argv[0], EXIT_BAD_ARGS);;
+                i++;
+                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
+                ops[ops_count].arg2 = argv[i];
             }
-            else edUsage(argv[0], EXIT_BAD_ARGS);;
-            i++;
-            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-            if (strcmp(argv[i], "-n") && strcmp(argv[i], "--name")) edUsage(argv[0], EXIT_BAD_ARGS);;
-            i++;
-            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-            ops[ops_count].arg3 = argv[i];
-            i++;
-            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-            if (strcmp(argv[i], "-v") && strcmp(argv[i], "--value")) edUsage(argv[0], EXIT_BAD_ARGS);;
-            i++;
-            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-            ops[ops_count].arg2 = argv[i];
-            ops_count++;
-        }
-        else if (!strcmp(argv[i], "-a") || !strcmp(argv[i], "--append"))
-        {
-            i++;
-            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-            ops[ops_count].type = XML_UNDEFINED;
-            ops[ops_count].op = XML_ED_APPEND;
-            ops[ops_count].arg1 = argv[i];
-            i++;
-            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-            if (strcmp(argv[i], "-t") && strcmp(argv[i], "--type")) edUsage(argv[0], EXIT_BAD_ARGS);;
-            i++;
-            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-            if (!strcmp(argv[i], "elem"))
+            else if (!strcmp(argv[i], "-a") || !strcmp(argv[i], "--append"))
             {
-                ops[ops_count].type = XML_ELEM;
+                i++;
+                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
+                ops[ops_count].type = XML_UNDEFINED;
+                ops[ops_count].op = XML_ED_APPEND;
+                ops[ops_count].arg1 = argv[i];
+                i++;
+                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
+                if (strcmp(argv[i], "-t") && strcmp(argv[i], "--type")) edUsage(argv[0], EXIT_BAD_ARGS);;
+                i++;
+                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
+                if (!strcmp(argv[i], "elem"))
+                {
+                    ops[ops_count].type = XML_ELEM;
+                }
+                else if (!strcmp(argv[i], "attr"))
+                {
+                    ops[ops_count].type = XML_ATTR;
+                }
+                else if (!strcmp(argv[i], "text"))
+                {
+                    ops[ops_count].type = XML_TEXT;
+                }
+                else edUsage(argv[0], EXIT_BAD_ARGS);;
+                i++;
+                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
+                if (strcmp(argv[i], "-n") && strcmp(argv[i], "--name")) edUsage(argv[0], EXIT_BAD_ARGS);;
+                i++;
+                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
+                ops[ops_count].arg3 = argv[i];
+                i++;
+                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
+                if (strcmp(argv[i], "-v") && strcmp(argv[i], "--value")) edUsage(argv[0], EXIT_BAD_ARGS);;
+                i++;
+                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
+                ops[ops_count].arg2 = argv[i];
             }
-            else if (!strcmp(argv[i], "attr"))
+            else if (!strcmp(argv[i], "-s") || !strcmp(argv[i], "--subnode"))
             {
-                ops[ops_count].type = XML_ATTR;
+                i++;
+                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
+                ops[ops_count].type = XML_UNDEFINED;
+                ops[ops_count].op = XML_ED_SUBNODE;
+                ops[ops_count].arg1 = argv[i];
+                i++;
+                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
+                if (strcmp(argv[i], "-t") && strcmp(argv[i], "--type")) edUsage(argv[0], EXIT_BAD_ARGS);;
+                i++;
+                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
+                if (!strcmp(argv[i], "elem"))
+                {
+                    ops[ops_count].type = XML_ELEM;
+                }
+                else if (!strcmp(argv[i], "attr"))
+                {
+                    ops[ops_count].type = XML_ATTR;
+                }
+                else if (!strcmp(argv[i], "text"))
+                {
+                    ops[ops_count].type = XML_TEXT;
+                }
+                else edUsage(argv[0], EXIT_BAD_ARGS);;
+                i++;
+                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
+                if (strcmp(argv[i], "-n") && strcmp(argv[i], "--name")) edUsage(argv[0], EXIT_BAD_ARGS);;
+                i++;
+                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
+                ops[ops_count].arg3 = argv[i];
+                i++;
+                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
+                if (strcmp(argv[i], "-v") && strcmp(argv[i], "--value")) edUsage(argv[0], EXIT_BAD_ARGS);;
+                i++;
+                if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
+                ops[ops_count].arg2 = argv[i];
             }
-            else if (!strcmp(argv[i], "text"))
+            else
             {
-                ops[ops_count].type = XML_TEXT;
+                fprintf(stderr, "Warning: unrecognized option '%s'\n", argv[i]);
             }
-            else edUsage(argv[0], EXIT_BAD_ARGS);;
-            i++;
-            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-            if (strcmp(argv[i], "-n") && strcmp(argv[i], "--name")) edUsage(argv[0], EXIT_BAD_ARGS);;
-            i++;
-            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-            ops[ops_count].arg3 = argv[i];
-            i++;
-            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-            if (strcmp(argv[i], "-v") && strcmp(argv[i], "--value")) edUsage(argv[0], EXIT_BAD_ARGS);;
-            i++;
-            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-            ops[ops_count].arg2 = argv[i];
-            ops_count++;
-        }
-        else if (!strcmp(argv[i], "-s") || !strcmp(argv[i], "--subnode"))
-        {
-            i++;
-            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-            ops[ops_count].type = XML_UNDEFINED;
-            ops[ops_count].op = XML_ED_SUBNODE;
-            ops[ops_count].arg1 = argv[i];
-            i++;
-            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-            if (strcmp(argv[i], "-t") && strcmp(argv[i], "--type")) edUsage(argv[0], EXIT_BAD_ARGS);;
-            i++;
-            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-            if (!strcmp(argv[i], "elem"))
-            {
-                ops[ops_count].type = XML_ELEM;
-            }
-            else if (!strcmp(argv[i], "attr"))
-            {
-                ops[ops_count].type = XML_ATTR;
-            }
-            else if (!strcmp(argv[i], "text"))
-            {
-                ops[ops_count].type = XML_TEXT;
-            }
-            else edUsage(argv[0], EXIT_BAD_ARGS);;
-            i++;
-            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-            if (strcmp(argv[i], "-n") && strcmp(argv[i], "--name")) edUsage(argv[0], EXIT_BAD_ARGS);;
-            i++;
-            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-            ops[ops_count].arg3 = argv[i];
-            i++;
-            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-            if (strcmp(argv[i], "-v") && strcmp(argv[i], "--value")) edUsage(argv[0], EXIT_BAD_ARGS);;
-            i++;
-            if (i >= argc) edUsage(argv[0], EXIT_BAD_ARGS);;
-            ops[ops_count].arg2 = argv[i];
             ops_count++;
         }
         else
         {
-            if (argv[i][0] != '-')
-            {
-                break;
-            }
+            break;
         }
 
         i++;
@@ -716,6 +716,7 @@ edMain(int argc, char **argv)
         edOutput(argv[n], ops, ops_count, g_ops);
     }
 
+    xmlFree(ops);
     cleanupNSArr(ns_arr);
     xmlCleanupParser();
     xmlCleanupGlobals();
