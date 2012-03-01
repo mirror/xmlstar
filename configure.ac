@@ -78,9 +78,7 @@ AS_CASE(["${host}"],
              [CFLAGS="-Ae"])],
   [*mingw*],
       [WIN32_EXTRA_LIBS='-lwsock32'
-       AC_DEFINE([_WINSOCKAPI_],1,[Using the Win32 Socket implementation])
-       AC_DEFINE([snprintf],[_snprintf],[Win32 Std C name mangling work-around])
-       AC_DEFINE([vsnprintf],[_vsnprintf],[Win32 Std C name mangling work-around])])
+       AC_DEFINE([_WINSOCKAPI_],1,[Using the Win32 Socket implementation])])
 
 AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
 AC_FUNC_MALLOC
@@ -143,7 +141,7 @@ AM_SUBST_NOTMAKE(PACKAGE_NAME)
 AM_SUBST_NOTMAKE(PACKAGE_TARNAME)
 AM_SUBST_NOTMAKE(PACKAGE_VERSION)
 
-AC_DEFINE([_XOPEN_SOURCE], [500], [needed to get lstat, snprintf, and strdup declarations in -ansi mode])
+AC_DEFINE([_XOPEN_SOURCE], [500], [needed to get lstat declaration in -ansi mode])
 
 dnl for the spec file
 

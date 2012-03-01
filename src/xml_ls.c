@@ -81,7 +81,7 @@ lsUsage(int argc, char **argv, exit_status status)
 }
 
 
-char *
+const char *
 get_file_type(mode_t mode)
 {
     if (S_ISREG(mode)) return "f";       /* regular file */
@@ -94,29 +94,24 @@ get_file_type(mode_t mode)
     else return "u";                     /* unknown */
 }
 
-char *
+const char *
 get_file_perms(mode_t mode)
 {
    int i;
-   char *p;
    static char perms[10];
 
-   p = perms;
    strcpy(perms, "---------");
 
-   for(i=0; i<3; i++)
+   for(i=0; i < sizeof perms - 1; i+=3)
    {
-       if(mode &(S_IRUSR>>(i*3)))
-           *p='r';
-       ++p;
+       if(mode &(S_IRUSR>>i))
+           perms[i+0] = 'r';
 
-       if(mode &(S_IWUSR>>(i*3)))
-           *p='w';
-       ++p;
+       if(mode &(S_IWUSR>>i))
+           perms[i+1] = 'w';
 
-       if(mode &(S_IXUSR>>(i*3)))
-           *p='x';
-       ++p;
+       if(mode &(S_IXUSR>>i))
+           perms[i+2] = 'x';
    }
 
 #ifdef S_ISUID
@@ -152,15 +147,10 @@ xml_print_dir(const char* dir)
 
    while((d = readdir(dirp)) != NULL)
    {
-      xmlChar *xml_str = NULL;
-      char *type = NULL;
-      char *perm = NULL;
-      char  last_acc[20];
-      char  last_mod[20];
-      char  sz[16];
-      int   sz_len;
-      char  sp[16];
-      int   k;
+      xmlChar *xml_str;
+      char atime[20];
+      char mtime[20];
+      int size_len;
 
       if ((d->d_name == NULL) || !strcmp(d->d_name, ".") || !strcmp(d->d_name, ".."))
           continue;
@@ -170,9 +160,6 @@ xml_print_dir(const char* dir)
         fprintf(stderr, "couldn't stat: %s\n", d->d_name);
       }
 
-      type = get_file_type(stats.st_mode);
-      perm = get_file_perms(stats.st_mode);
-
 #if defined (__MINGW32__)
       /* somehow atime is -1 on Windows XP when the atime is in future */
       if (stats.st_atime < 0) stats.st_atime = 0; 
@@ -181,16 +168,16 @@ xml_print_dir(const char* dir)
 #endif
 
       /* format time as per ISO 8601 */
-      strftime(last_acc, 20, "%Y%m%dT%H%M%SZ", gmtime(&stats.st_atime));
-      strftime(last_mod, 20, "%Y%m%dT%H%M%SZ", gmtime(&stats.st_mtime));
-      sz[15] = '\0';
-      sz_len = snprintf(sz, 15, "%lu", (unsigned long) stats.st_size);
-      for(k=0; k<(16-sz_len); k++) sp[k] = ' ';
-      sp[16-sz_len] = '\0';
+      strftime(atime, sizeof atime, "%Y%m%dT%H%M%SZ", gmtime(&stats.st_atime));
+      strftime(mtime, sizeof mtime, "%Y%m%dT%H%M%SZ", gmtime(&stats.st_mtime));
 
-      xml_str = xml_C11NNormalizeAttr((const xmlChar *) d->d_name);      
-      printf("<%s p=\"%s\" a=\"%s\" m=\"%s\" s=\"%s\"%s n=\"%s\"/>\n",
-              type, perm, last_acc, last_mod, sz, sp, xml_str);
+      xml_str = xml_C11NNormalizeAttr((const xmlChar *) d->d_name);
+      printf("<%s p=\"%s\" a=\"%s\" m=\"%s\" s=\"",
+          get_file_type(stats.st_mode), get_file_perms(stats.st_mode),
+          atime, mtime);
+      size_len = printf("%lu", (unsigned long) stats.st_size);
+      printf("\"%.*s", 16-size_len, "                ");
+      printf(" n=\"%s\"/>\n", xml_str);
       num_files++;
       xmlFree(xml_str);
 
