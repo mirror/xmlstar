@@ -342,6 +342,9 @@ edUpdate(xmlDocPtr doc, xmlNodeSetPtr nodes, const char *val,
     ctxt->node = ctxt_node;
 }
 
+/* holds the node that was last inserted */
+static xmlNodeSetPtr previous_insertion;
+
 /**
  *  'insert' operation
  */
@@ -350,16 +353,20 @@ edInsert(xmlDocPtr doc, xmlNodeSetPtr nodes, const char *val, const char *name,
          XmlNodeType type, int mode)
 {
     int i;
+
+    xmlXPathEmptyNodeSet(previous_insertion);
+
     for (i = 0; i < nodes->nodeNr; i++)
     {
+        xmlNodePtr node;
         /* update node */
         if (type == XML_ATTR)
         {
-            xmlNewProp(nodes->nodeTab[i], BAD_CAST name, BAD_CAST val);
+            node = (xmlNodePtr) xmlNewProp(nodes->nodeTab[i], BAD_CAST name, BAD_CAST val);
         }
         else if (type == XML_ELEM)
         {
-            xmlNodePtr node = xmlNewDocNode(doc, NULL /* TODO: NS */, BAD_CAST name, BAD_CAST val);
+            node = xmlNewDocNode(doc, NULL /* TODO: NS */, BAD_CAST name, BAD_CAST val);
             if (mode > 0)
                 xmlAddNextSibling(nodes->nodeTab[i], node);
             else if (mode < 0)
@@ -369,7 +376,7 @@ edInsert(xmlDocPtr doc, xmlNodeSetPtr nodes, const char *val, const char *name,
         }
         else if (type == XML_TEXT)
         {
-            xmlNodePtr node = xmlNewDocText(doc, BAD_CAST val);
+            node = xmlNewDocText(doc, BAD_CAST val);
             if (mode > 0)
                 xmlAddNextSibling(nodes->nodeTab[i], node);
             else if (mode < 0)
@@ -377,6 +384,7 @@ edInsert(xmlDocPtr doc, xmlNodeSetPtr nodes, const char *val, const char *name,
             else
                 xmlAddChild(nodes->nodeTab[i], node);
         }
+        xmlXPathNodeSetAdd(previous_insertion, node);
     }
 }
 
@@ -454,6 +462,13 @@ edProcess(xmlDocPtr doc, const XmlEdAction* ops, int ops_count)
     extract_ns_defs(doc, ctxt);
     /* namespaces from command line */
     nsarr_xpath_register(ctxt);
+
+    /* variables */
+    previous_insertion = xmlXPathNodeSetCreate(NULL);
+    xmlXPathRegisterVariableNS(ctxt, BAD_CAST "prev", NULL, /* TODO: namespace */
+        xmlXPathWrapNodeSet(previous_insertion));
+
+
     ctxt->node = xmlDocGetRootElement(doc);
 
     for (k = 0; k < ops_count; k++)
