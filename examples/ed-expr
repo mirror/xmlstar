@@ -2,5 +2,5 @@
 ./xmlstarlet ed \
     -u /xml/table/rec/@id -x .+1 \
     -a /xml/table -t elem -n highest-record -v '' \
-    -u '$prev' -x '/xml/table/rec[numField=math:max(../rec/numField)]' \
+    -u '$xstar:prev' -x '/xml/table/rec[numField=math:max(../rec/numField)]' \
     xml/table.xml

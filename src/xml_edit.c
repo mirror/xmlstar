@@ -451,6 +451,13 @@ edProcess(xmlDocPtr doc, const XmlEdAction* ops, int ops_count)
     int k;
     xmlXPathContextPtr ctxt = xmlXPathNewContext(doc);
     /* NOTE: later registrations override earlier ones */
+    registerXstarNs(ctxt);
+
+    /* variables */
+    previous_insertion = xmlXPathNodeSetCreate(NULL);
+    registerXstarVariable(ctxt, "prev",
+        xmlXPathWrapNodeSet(previous_insertion));
+
 #if HAVE_EXSLT_XPATH_REGISTER
     /* register extension functions */
     exsltDateXpathCtxtRegister(ctxt, BAD_CAST "date");
@@ -462,12 +469,6 @@ edProcess(xmlDocPtr doc, const XmlEdAction* ops, int ops_count)
     extract_ns_defs(doc, ctxt);
     /* namespaces from command line */
     nsarr_xpath_register(ctxt);
-
-    /* variables */
-    previous_insertion = xmlXPathNodeSetCreate(NULL);
-    xmlXPathRegisterVariableNS(ctxt, BAD_CAST "prev", NULL, /* TODO: namespace */
-        xmlXPathWrapNodeSet(previous_insertion));
-
 
     ctxt->node = xmlDocGetRootElement(doc);
 

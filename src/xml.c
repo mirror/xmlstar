@@ -39,6 +39,9 @@ THE SOFTWARE.
 
 #include "xmlstar.h"
 
+static const xmlChar* XMLSTAR_NS = BAD_CAST "http://xmlstar.sourceforge.net";
+static const xmlChar* XMLSTAR_NS_PREFIX = BAD_CAST "xstar";
+
 extern int edMain(int argc, char **argv);
 extern int selMain(int argc, char **argv);
 extern int trMain(int argc, char **argv);
@@ -274,6 +277,43 @@ main(int argc, char **argv)
     
     exit(ret);
 }
+
+
+void
+registerXstarVariable(xmlXPathContextPtr ctxt,
+    const char* name, xmlXPathObjectPtr value)
+{
+    xmlXPathRegisterVariableNS(ctxt, BAD_CAST name, XMLSTAR_NS, value);
+}
+
+static xmlXPathObjectPtr varLookupFallbackToXstarNS(void* ctxt_vp,
+    const xmlChar* name, const xmlChar* ns_uri)
+{
+    xmlXPathObjectPtr ret;
+    xmlXPathContextPtr ctxt = ctxt_vp;
+
+    ctxt->varLookupFunc = NULL; /* avoid infinite recursion! */
+
+    /* first get the default lookup value */
+    ret = xmlXPathVariableLookupNS(ctxt, name, ns_uri);
+
+    if (!ret && !ns_uri) {
+        /* if we didn't find anything, and there was no namespace given,
+           try looking in XMLStarlet namespace */
+        ret = xmlXPathVariableLookupNS(ctxt, name, XMLSTAR_NS);
+    }
+
+    ctxt->varLookupFunc = &varLookupFallbackToXstarNS;
+    return ret;
+}
+
+void
+registerXstarNs(xmlXPathContextPtr ctxt)
+{
+    xmlXPathRegisterVariableLookup(ctxt, &varLookupFallbackToXstarNS, ctxt);
+    xmlXPathRegisterNs(ctxt, XMLSTAR_NS_PREFIX, XMLSTAR_NS);
+}
+
 
 static void bad_ns_opt(const char *msg)
 {

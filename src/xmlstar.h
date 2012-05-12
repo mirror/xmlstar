@@ -12,6 +12,8 @@
 # define set_stdout_binary()
 #endif
 
+#include <libxml/xpath.h>
+#include <libxml/xpathInternals.h>
 #include <libxml/xmlreader.h>
 
 typedef enum { /* EXIT_SUCCESS = 0, EXIT_FAILURE = 1, */
@@ -29,6 +31,10 @@ typedef struct _errorInfo {
 } ErrorInfo;
 
 void reportError(void *ptr, xmlErrorPtr error);
+
+void registerXstarVariable(xmlXPathContextPtr ctxt,
+    const char* name, xmlXPathObjectPtr value);
+void registerXstarNs(xmlXPathContextPtr ctxt);
 
 int parseNSArr(xmlChar** ns_arr, int* plen, int argc, char **argv);
 void cleanupNSArr(xmlChar **ns_arr);
