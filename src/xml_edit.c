@@ -292,8 +292,46 @@ edUpdate(xmlDocPtr doc, xmlNodeSetPtr nodes, const char *val,
             xmlXPathObjectPtr res;
 
             ctxt->node = nodes->nodeTab[i];
-            res = xmlXPathConvertString(xmlXPathCompiledEval(xpath, ctxt));
-            update_string(doc, nodes->nodeTab[i], res->stringval);
+            res = xmlXPathCompiledEval(xpath, ctxt);
+            if (res->type == XPATH_NODESET || res->type == XPATH_XSLT_TREE) {
+                int j;
+                xmlNodePtr oldChild;
+                xmlNodeSetPtr oldChildren = xmlXPathNodeSetCreate(NULL);
+                /* NOTE: newChildren can be NULL for empty result set */
+                xmlNodeSetPtr newChildren = res->nodesetval;
+
+                /* NOTE: nodes can be both oldChildren and newChildren */
+
+                /* unlink the old children */
+                for (oldChild = nodes->nodeTab[i]->children; oldChild; oldChild = oldChild->next) {
+                    xmlUnlinkNode(oldChild);
+                    /* we can't free it now because an oldChild can also be
+                       newChild! just put it in the list */
+                    xmlXPathNodeSetAdd(oldChildren, oldChild);
+                }
+
+                /* add the new children */
+                for (j = 0; newChildren && j < newChildren->nodeNr; j++) {
+                    xmlNodePtr node = newChildren->nodeTab[j];
+                    xmlAddChild(nodes->nodeTab[i],
+                        /* if node is linked to this doc we need to copy */
+                        (node->doc == doc)? xmlDocCopyNode(node, doc, 1) : node);
+                    newChildren->nodeTab[j] = NULL;
+                }
+                newChildren->nodeNr = 0;
+
+                /* NOTE: if any oldChildren were newChildren, they've been
+                   copied so we can free them all now */
+                for (j = 0; j < oldChildren->nodeNr; j++) {
+                    xmlFreeNode(oldChildren->nodeTab[j]);
+                    oldChildren->nodeTab[j] = NULL;
+                }
+                oldChildren->nodeNr = 0;
+                xmlXPathFreeNodeSet(oldChildren);
+            } else {
+                res = xmlXPathConvertString(res);
+                update_string(doc, nodes->nodeTab[i], res->stringval);
+            }
             xmlXPathFreeObject(res);
         } else {
             update_string(doc, nodes->nodeTab[i], (const xmlChar*) val);

@@ -14,4 +14,10 @@
       <stringField>stringValue</stringField>
     </rec>
   </table>
+  <highest-record>
+    <rec id="3">
+      <numField>346</numField>
+      <stringField>Text Value</stringField>
+    </rec>
+  </highest-record>
 </xml>
