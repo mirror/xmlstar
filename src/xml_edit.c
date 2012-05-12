@@ -260,6 +260,15 @@ extract_ns_defs(xmlDocPtr doc, xmlXPathContextPtr ctxt)
     }
 }
 
+static void
+update_string(xmlDocPtr doc, xmlNodePtr dest, const xmlChar* newstr)
+{
+    /* TODO: do we need xmlEncodeEntitiesReentrant() too/instead? */
+    xmlChar* string = xmlEncodeSpecialChars(doc, newstr);
+    xmlNodeSetContent(dest, string);
+    xmlFree(string);
+}
+
 /**
  *  'update' operation
  */
@@ -281,20 +290,13 @@ edUpdate(xmlDocPtr doc, xmlNodeSetPtr nodes, const char *val,
         /* update node */
         if (type == XML_EXPR) {
             xmlXPathObjectPtr res;
-            xmlChar *string;
 
             ctxt->node = nodes->nodeTab[i];
             res = xmlXPathConvertString(xmlXPathCompiledEval(xpath, ctxt));
-            /* TODO: do we need xmlEncodeEntitiesReentrant() too/instead? */
-            string = xmlEncodeSpecialChars(doc, res->stringval);
+            update_string(doc, nodes->nodeTab[i], res->stringval);
             xmlXPathFreeObject(res);
-            xmlNodeSetContent(nodes->nodeTab[i], string);
-            xmlFree(string);
         } else {
-            /* TODO: do we need xmlEncodeEntitiesReentrant() too/instead? */
-            xmlChar *content = xmlEncodeSpecialChars(NULL, (const xmlChar*) val);
-            xmlNodeSetContent(nodes->nodeTab[i], content);
-            xmlFree(content);
+            update_string(doc, nodes->nodeTab[i], (const xmlChar*) val);
         }
     }
 
