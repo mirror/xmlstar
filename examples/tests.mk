@@ -1,12 +1,17 @@
 TESTS_ENVIRONMENT = abs_builddir=$(abs_builddir) EXEEXT=$(EXEEXT) SED=$(SED) \
  $(srcdir)/tests/runTest.sh
 
-TESTS = examples/bigxml-dtd\
+# split tests into fast and slow, so we can run just the fast ones
+
+SLOW_TESTS =\
+examples/bigxml-dtd\
 examples/bigxml-embed-ref\
 examples/bigxml-embed\
 examples/bigxml-relaxng\
 examples/bigxml-well-formed\
-examples/bigxml-xsd\
+examples/bigxml-xsd
+
+QUICK_TESTS =\
 examples/c14n-default-attr\
 examples/c14n-newlines\
 examples/c14n1\
@@ -78,6 +83,13 @@ examples/valid1\
 examples/xinclude1\
 examples/xsl-param1\
 examples/xsl-sum1
+
+# default to all the tests
+TESTS = $(SLOW_TESTS) $(QUICK_TESTS)
+
+# qcheck is just tests listed in QUICK_TESTS
+qcheck :
+	@$(MAKE) TESTS="$(QUICK_TESTS)" check
 
 XFAIL_TESTS =\
 examples/bigxml-dtd\
