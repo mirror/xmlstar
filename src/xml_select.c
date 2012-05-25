@@ -598,7 +598,7 @@ selPrepareXslt(xmlDocPtr style, selOptionsPtr ops, xmlChar *ns_arr[],
     root = xmlNewDocRawNode(style, NULL, BAD_CAST "stylesheet", NULL);
     xmlDocSetRootElement(style, root);
     xmlNewProp(root, BAD_CAST "version", BAD_CAST "1.0");
-    xslns = xmlNewNs(root, BAD_CAST "http://www.w3.org/1999/XSL/Transform", BAD_CAST "xsl");
+    xslns = xmlNewNs(root, XSLT_NAMESPACE, BAD_CAST "xsl");
     xmlSetNs(root, xslns);
 
     ns = 0;
