@@ -346,6 +346,16 @@ edUpdate(xmlDocPtr doc, xmlNodeSetPtr nodes, const char *val,
 static xmlNodeSetPtr previous_insertion;
 
 /**
+ * We must not keep free'd nodes in @previous_insertion.
+ * This is a callback from xmlFreeNode()
+ */
+static void
+removeNodeFromPrev(xmlNodePtr node)
+{
+    xmlXPathNodeSetDel(previous_insertion, node);
+}
+
+/**
  *  'insert' operation
  */
 static void
@@ -457,6 +467,7 @@ edProcess(xmlDocPtr doc, const XmlEdAction* ops, int ops_count)
     previous_insertion = xmlXPathNodeSetCreate(NULL);
     registerXstarVariable(ctxt, "prev",
         xmlXPathWrapNodeSet(previous_insertion));
+    xmlDeregisterNodeDefault(&removeNodeFromPrev);
 
 #if HAVE_EXSLT_XPATH_REGISTER
     /* register extension functions */
@@ -519,6 +530,10 @@ edProcess(xmlDocPtr doc, const XmlEdAction* ops, int ops_count)
         }
         xmlXPathFreeObject(res);
     }
+    /* NOTE: free()ing ctxt also free()s previous_insertion */
+    previous_insertion = NULL;
+    xmlDeregisterNodeDefault(NULL);
+
     xmlXPathFreeContext(ctxt);
 }
 
