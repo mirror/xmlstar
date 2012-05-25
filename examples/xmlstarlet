@@ -6,5 +6,9 @@ if [ x"$OSTYPE" = xmsys ] ; then
     exec "$exepath/xmlstarlet.msys" "$xml" "$@"
 fi
 
+if [ x"$VALGRIND" = xyes ] ; then
+    exec valgrind --error-exitcode=99 --quiet ${VALGRIND_OPTS} "$xml" "$@"
+fi
+
 exec "$xml" "$@"
 
