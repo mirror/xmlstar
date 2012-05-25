@@ -278,7 +278,6 @@ edUpdate(xmlDocPtr doc, xmlNodeSetPtr nodes, const char *val,
 {
     int i;
     xmlXPathCompExprPtr xpath = NULL;
-    xmlNodePtr ctxt_node = ctxt->node;
 
     if (type == XML_EXPR) {
         xpath = xmlXPathCompile((const xmlChar*) val);
@@ -339,7 +338,6 @@ edUpdate(xmlDocPtr doc, xmlNodeSetPtr nodes, const char *val,
     }
 
     xmlXPathFreeCompExpr(xpath);
-    ctxt->node = ctxt_node;
 }
 
 /* holds the node that was last inserted */
@@ -499,8 +497,9 @@ edProcess(xmlDocPtr doc, const XmlEdAction* ops, int ops_count)
                 edDelete(doc, nodes);
                 break;
             case XML_ED_MOVE: {
-                xmlXPathObjectPtr res_to =
-                    xmlXPathEvalExpression(BAD_CAST ops[k].arg2, ctxt);
+                xmlXPathObjectPtr res_to;
+                ctxt->node = (xmlNodePtr) doc;
+                res_to = xmlXPathEvalExpression(BAD_CAST ops[k].arg2, ctxt);
                 if (!res_to
                     || res_to->type != XPATH_NODESET
                     || res_to->nodesetval->nodeNr != 1) {
