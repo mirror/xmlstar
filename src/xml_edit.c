@@ -481,13 +481,14 @@ edProcess(xmlDocPtr doc, const XmlEdAction* ops, int ops_count)
     /* namespaces from command line */
     nsarr_xpath_register(ctxt);
 
-    ctxt->node = xmlDocGetRootElement(doc);
-
     for (k = 0; k < ops_count; k++)
     {
         xmlXPathObjectPtr res;
         xmlNodeSetPtr nodes;
 
+        /* NOTE: to make relative paths match as if from "/", set context to
+           document; setting to root would match as if from "/node()/" */
+        ctxt->node = (xmlNodePtr) doc;
         res = xmlXPathEvalExpression(BAD_CAST ops[k].arg1, ctxt);
         if (!res || res->type != XPATH_NODESET || !res->nodesetval) continue;
         nodes = res->nodesetval;
