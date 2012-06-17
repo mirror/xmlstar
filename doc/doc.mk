@@ -1,3 +1,11 @@
+userguide = doc/xmlstarlet-ug.pdf doc/xmlstarlet-ug.ps doc/xmlstarlet-ug.html
+userguide_src = doc/xmlstarlet-ug.xml
+
+txtguide = doc/xmlstarlet.txt
+txtguide_src = doc/gen-doc
+
+manpage = doc/xmlstarlet.1
+manpage_src = doc/xmlstarlet-man.xml
 
 DOCBOOK_PARAMS = \
 --param section.autolabel 1 \
@@ -13,21 +21,14 @@ DOCBOOK_PARAMS = \
 	xsltproc $(DOCBOOK_PARAMS) doc/xmlstar-fodoc-style.xsl $< > $@
 
 .fo.pdf:
-	fop $< $@
+	fop -q $< $@
 .pdf.ps:
 	pdf2ps $< $@
 
-userguide = doc/xmlstarlet-ug.pdf doc/xmlstarlet-ug.ps doc/xmlstarlet-ug.html
-userguide_src = doc/xmlstarlet-ug.xml
+$(manpage): $(manpage_src)
+	xsltproc -o $@ \
+	  http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl \
+	  $<
 
-doc/xmlstarlet.1: doc/xmlstarlet-man.xml
-	cd doc && xsltproc \
-  http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl \
-  xmlstarlet-man.xml
-
-doc/xmlstarlet.txt: doc/gen-doc xml
-	cd doc && ./gen-doc > xmlstarlet.txt
-
-docs_src = $(userguide_src) doc/xmlstarlet-man.xml doc/gen-doc
-docs_noman_gen = $(userguide) doc/xmlstarlet.txt
-docs_gen = $(docs_noman_gen) doc/xmlstarlet.1
+$(txtguide): $(txtguide_src) xml
+	srcdir=$(srcdir) $< ./xml > $@

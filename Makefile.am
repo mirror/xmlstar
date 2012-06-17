@@ -64,13 +64,13 @@ xml_SOURCES += version.h
 include doc/doc.mk
 doc: $(docs_gen)
 
-man_MANS = doc/xmlstarlet.1
-dist_doc_DATA = $(docs_noman_gen)
-EXTRA_DIST += $(docs_src)
+man_MANS = $(manpage)
+dist_doc_DATA = $(userguide) $(txtguide)
+EXTRA_DIST += $(manpage_src) $(userguide_src) $(txtguide_src)
 
 
 
 CLEANFILES = version.h
-MAINTAINERCLEANFILES = $(docs_gen)
+MAINTAINERCLEANFILES = $(manpage) $(userguide) $(txtguide)
 
 .PHONY: cleantar rpm dist-win32 VERSION doc
