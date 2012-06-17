@@ -1,29 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
-"http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
-<refentry>
-  <refentryinfo>
-    <title>xmlstarlet Manual</title>
-
-    <copyright>
-      <year>2004</year>
-    </copyright>
+<refentry xmlns="http://docbook.org/ns/docbook"
+          xmlns:xlink="http://www.w3.org/1999/xlink"
+          version="5.0">
+  <info>
+    <copyright><year>2012</year></copyright>
 
     <author>
-      <firstname>Mikhail</firstname>
-
-      <surname>Grushinskiy</surname>
+      <personname>
+        <firstname>Mikhail</firstname>
+        <surname>Grushinskiy</surname>
+      </personname>
+      <contrib>XMLStarlet creator.</contrib>
     </author>
 
-    <address><email>mgrouch@users.sourceforge.net</email></address>
-
-    <releaseinfo>This is release 0.9.1 of the xmlstarlet Manual.</releaseinfo>
-  </refentryinfo>
+    <releaseinfo>Version 1.3.1-dev</releaseinfo>
+  </info>
 
   <refmeta>
     <refentrytitle>xmlstarlet</refentrytitle>
-
     <manvolnum>1</manvolnum>
+    <refmiscinfo class="manual">XMLStarlet Manual</refmiscinfo>
   </refmeta>
 
   <refnamediv>
@@ -34,17 +30,14 @@
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>xmlstarlet</command>
-
-      <arg><option><replaceable>&lt;options&gt;</replaceable></option></arg>
-
-      <arg><option><replaceable>&lt;command&gt;</replaceable></option></arg>
-
-      <arg><option><replaceable>&lt;cmd-options&gt;</replaceable></option></arg>
+      <command>xml</command>
+      <arg choice="opt" rep="repeat"><replaceable>options</replaceable></arg>
+      <arg choice="req"><replaceable>command</replaceable></arg>
+      <arg choice="opt" rep="repeat"><replaceable>cmd-options</replaceable></arg>
     </cmdsynopsis>
   </refsynopsisdiv>
 
-  <refsect1 id="introduction">
+  <refsect1 xml:id="introduction">
     <title>Introduction</title>
 
     <para>XMLStarlet is a set of command line utilities (tools) which can be
@@ -56,7 +49,7 @@
     processing with shell scripts.</para>
   </refsect1>
 
-  <refsect1 id="options">
+  <refsect1 xml:id="options">
     <title>Options</title>
 
     <variablelist>
@@ -79,11 +72,11 @@
     </variablelist>
   </refsect1>
 
-  <refsect1 id="shell">
+  <refsect1 xml:id="shell">
     <title>Commands</title>
 
-    <para>Type: xml &lt;command&gt; --help &lt;ENTER&gt; for command
-    help</para>
+    <para><command>xml</command> <replaceable>command</replaceable> <option>--help</option>
+    for command specific help</para>
 
     <para>Available commands include:</para>
 
@@ -195,5 +188,13 @@
     <para>XMLStarlet is a command line toolkit to query/edit/check/transform
     XML documents (for more information see
     http://xmlstar.sourceforge.net/).</para>
+  </refsect1>
+
+  <refsect1>
+    <title>Bugs</title>
+    <para> Report bugs to the mailing list,
+    <email>xmlstar-devel@lists.sourceforge.net</email> or the bug tracker: <link
+    xlink:href="http://sourceforge.net/tracker/?group_id=66612&amp;atid=515106"/>.
+    </para>
   </refsect1>
 </refentry>

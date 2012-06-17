@@ -1,26 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
-"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
-<book lang="en">
+<book xmlns="http://docbook.org/ns/docbook"
+      xmlns:xlink="http://www.w3.org/1999/xlink"
+      version="5.0"
+      xml:lang="en">
   <title>XmlStarlet Command Line XML Toolkit User's Guide</title>
 
-  <bookinfo>
-    <date>July 12, 2005</date>
+  <info>
+    <date>June 17, 2012</date>
 
     <author>
-      <firstname>Mikhail</firstname>
-
-      <surname>Grushinskiy</surname>
+      <personname>
+        <firstname>Mikhail</firstname>
+        <surname>Grushinskiy</surname>
+      </personname>
     </author>
-  </bookinfo>
+  </info>
 
   <chapter>
-    <title id="s.1">Introduction</title>
+    <title xml:id="s.1">Introduction</title>
 
     <sect1>
-      <title id="s.1.1">About XmlStarlet</title>
+      <title xml:id="s.1.1">About XmlStarlet</title>
 
-      <para><ulink url="http://xmlstar.sourceforge.net/">XMLStarlet</ulink> is
+      <para><link xlink:href="http://xmlstar.sourceforge.net/">XMLStarlet</link> is
       a set of command line utilities (tools) which can be used to transform,
       query, validate, and edit XML documents and files using simple set of
       shell commands in similar way it is done for plain text files using UNIX
@@ -31,16 +33,16 @@
       automated XML processing with shell scripts.</para>
 
       <para>XMLStarlet command line utility is written in C and uses libxml2
-      and libxslt from <ulink
-      url="http://xmlsoft.org/">http://xmlsoft.org/</ulink>. Implementation of
+      and libxslt from <link
+      xlink:href="http://xmlsoft.org/">http://xmlsoft.org/</link>. Implementation of
       extensive choice of options for XMLStarlet utility was only possible
       because of rich feature set of libxml2 and libxslt (many thanks to the
       developers of those libraries for great work).</para>
 
       <para>'diff' and 'patch' options are not currently implemented. Other
       features need some work too. Please, send an email to the project
-      administrator (see <ulink
-      url="http://sourceforge.net/projects/xmlstar/">http://sourceforge.net/projects/xmlstar/</ulink>)
+      administrator (see <link
+      xlink:href="http://sourceforge.net/projects/xmlstar/">http://sourceforge.net/projects/xmlstar/</link>)
       if you wish to help.</para>
 
       <para>XMLStarlet is linked statically to both libxml2 and libxslt, so
@@ -54,15 +56,15 @@
 
       <para>We welcome any user's feedback on this project which would greatly
       help us to improve its quality. Comments, suggestions, feature requests,
-      bug reports can be done via SourceForge project web site (see <ulink
-      url="http://sourceforge.net/forum/?group_id=66612">XMLStarlet
-      Sourceforge forums</ulink>, or <ulink
-      url="http://lists.sourceforge.net/lists/listinfo/xmlstar-devel/">XMLStarlet
-      mailing list</ulink>)</para>
+      bug reports can be done via SourceForge project web site (see <link
+      xlink:href="http://sourceforge.net/forum/?group_id=66612">XMLStarlet
+      Sourceforge forums</link>, or <link
+      xlink:href="http://lists.sourceforge.net/lists/listinfo/xmlstar-devel/">XMLStarlet
+      mailing list</link>)</para>
     </sect1>
 
     <sect1>
-      <title id="s.1.2">Main Features</title>
+      <title xml:id="s.1.2">Main Features</title>
 
       <para>The toolkit's feature set includes options to:</para>
 
@@ -135,7 +137,7 @@
     </sect1>
 
     <sect1>
-      <title id="s.1.3">Supported Platforms</title>
+      <title xml:id="s.1.3">Supported Platforms</title>
 
       <para>Here is a list of platforms on which XmlStarlet is known to
       work.</para>
@@ -186,122 +188,122 @@
     </sect1>
 
     <sect1>
-      <title id="s.1.4">Finding binary packages</title>
+      <title xml:id="s.1.4">Finding binary packages</title>
 
       <para>Here is a list of sites where you can also find XmlStarlet binary
       packages.</para>
 
       <itemizedlist>
         <listitem>
-          <para><ulink
-          url="http://www.suse.com/us/private/products/suse_linux/prof/packages_professional/xmlstarlet.html">SuSE
-          Packages</ulink></para>
+          <para><link
+          xlink:href="http://www.suse.com/us/private/products/suse_linux/prof/packages_professional/xmlstarlet.html">SuSE
+          Packages</link></para>
         </listitem>
       </itemizedlist>
 
       <itemizedlist>
         <listitem>
-          <para><ulink
-          url="http://linux01.gwdg.de/~pbleser/rpm-navigation.php?cat=%2FUtilities%2Fxmlstarlet/">SuSE
-          Guru's RPM Site</ulink></para>
+          <para><link
+          xlink:href="http://linux01.gwdg.de/~pbleser/rpm-navigation.php?cat=%2FUtilities%2Fxmlstarlet/">SuSE
+          Guru's RPM Site</link></para>
         </listitem>
       </itemizedlist>
 
       <itemizedlist>
         <listitem>
-          <para><ulink
-          url="http://www.freebsd.org/cgi/ports.cgi?query=xmlstarlet&amp;stype=all">FreeBSD
-          Ports</ulink></para>
+          <para><link
+          xlink:href="http://www.freebsd.org/cgi/ports.cgi?query=xmlstarlet&amp;stype=all">FreeBSD
+          Ports</link></para>
         </listitem>
       </itemizedlist>
 
       <itemizedlist>
         <listitem>
-          <para><ulink
-          url="http://www.freshports.org/textproc/xmlstarlet/">FreeBSD Fresh
-          Ports</ulink></para>
+          <para><link
+          xlink:href="http://www.freshports.org/textproc/xmlstarlet/">FreeBSD Fresh
+          Ports</link></para>
         </listitem>
       </itemizedlist>
 
       <itemizedlist>
         <listitem>
-          <para><ulink
-          url="http://fink.sourceforge.net/pdb/package.php/xmlstarlet">Mac OS
-          Fink</ulink></para>
+          <para><link
+          xlink:href="http://fink.sourceforge.net/pdb/package.php/xmlstarlet">Mac OS
+          Fink</link></para>
         </listitem>
       </itemizedlist>
 
       <itemizedlist>
         <listitem>
-          <para><ulink
-          url="http://rpms.mandrakeclub.com/linux/rpm2html/search.php?query=xmlstarlet">Mandrake
-          RPMs</ulink></para>
+          <para><link
+          xlink:href="http://rpms.mandrakeclub.com/linux/rpm2html/search.php?query=xmlstarlet">Mandrake
+          RPMs</link></para>
         </listitem>
       </itemizedlist>
 
       <itemizedlist>
         <listitem>
-          <para><ulink
-          url="http://gentoo-portage.com/app-text/xmlstarlet">Gentoo
-          Portage</ulink></para>
+          <para><link
+          xlink:href="http://gentoo-portage.com/app-text/xmlstarlet">Gentoo
+          Portage</link></para>
         </listitem>
       </itemizedlist>
 
       <itemizedlist>
         <listitem>
-          <para><ulink
-          url="http://packages.debian.org/stable/text/xmlstarlet">Debian</ulink></para>
+          <para><link
+          xlink:href="http://packages.debian.org/stable/text/xmlstarlet">Debian</link></para>
         </listitem>
       </itemizedlist>
     </sect1>
   </chapter>
 
   <chapter>
-    <title id="s.2">Installation</title>
+    <title xml:id="s.2">Installation</title>
 
     <sect1>
-      <title id="s.2.1">Installation on Linux</title>
+      <title xml:id="s.2.1">Installation on Linux</title>
 
       <para>Execute the following command as root<programlisting>rpm -i xmlstarlet-x.x.x-1.i386.rpm</programlisting></para>
 
       <para>where x.x.x indicates package version.</para>
 
-      <para>You can use <ulink
-      url="http://fr2.rpmfind.net/linux/rpm2html/search.php?query=xmlstarlet&amp;system=&amp;arch=">http://rpmfind.net</ulink>
+      <para>You can use <link
+      xlink:href="http://fr2.rpmfind.net/linux/rpm2html/search.php?query=xmlstarlet&amp;system=&amp;arch=">http://rpmfind.net</link>
       to search for RPM appropriate for your distribution.</para>
     </sect1>
 
     <sect1>
-      <title id="s.2.2">Installation on Solaris</title>
+      <title xml:id="s.2.2">Installation on Solaris</title>
 
       <para>Execute the following commands as root<programlisting>gunzip xmlstarlet-x.x.x-sol8-sparc-local.gz
 pkgadd -d xmlstarlet-x.x.x-sol8-sparc-local all</programlisting></para>
     </sect1>
 
     <sect1>
-      <title id="s.2.3">Installation on MacOS X</title>
+      <title xml:id="s.2.3">Installation on MacOS X</title>
 
-      <para>XmlStarlet is available on MacOS in Fink. <ulink
-      url="http://fink.sourceforge.net/pdb/package.php/xmlstarlet">See
-      fink.sourceforge.net</ulink></para>
+      <para>XmlStarlet is available on MacOS in Fink. <link
+      xlink:href="http://fink.sourceforge.net/pdb/package.php/xmlstarlet">See
+      fink.sourceforge.net</link></para>
     </sect1>
 
     <sect1>
-      <title id="s.2.4">Installation on Windows</title>
+      <title xml:id="s.2.4">Installation on Windows</title>
 
       <para>Unzip the file xmlstarlet-x.x.x-win32.zip to some directory. To
       take advantage of UNIX shell scripting you might want to run XmlStarlet
-      from Cygwin. Consider installing <ulink
-      url="http://www.cygwin.com/">Cygwin</ulink> on your Windows
+      from Cygwin. Consider installing <link
+      xlink:href="http://www.cygwin.com/">Cygwin</link> on your Windows
       machine.</para>
     </sect1>
   </chapter>
 
   <chapter>
-    <title id="s.3">Getting Started</title>
+    <title xml:id="s.3">Getting Started</title>
 
     <sect1>
-      <title id="s.3.1">Basic Command-Line Options</title>
+      <title xml:id="s.3.1">Basic Command-Line Options</title>
 
       <para>Basic command line syntax: <programlisting>bash-2.03$ xml
 XMLStarlet Toolkit: Command line utilities for XML
@@ -332,7 +334,7 @@ XML documents (for more information see http://xmlstar.sourceforge.net/)</progra
     </sect1>
 
     <sect1>
-      <title id="s.3.2">Studying Structure of XML Document</title>
+      <title xml:id="s.3.2">Studying Structure of XML Document</title>
 
       <para>Before you do anything with your XML document you probably would
       like to know its structure at first. 'el' option could be used for this
@@ -1466,8 +1468,8 @@ Aid 1
 &lt;/books&gt;</programlisting>
 
       <para>Here is an article which describes how PYX format can be used to
-      grep XML. <ulink
-      url="http://www-106.ibm.com/developerworks/xml/library/x-matters17.html">http://www-106.ibm.com/developerworks/xml/library/x-matters17.html</ulink></para>
+      grep XML. <link
+      xlink:href="http://www-106.ibm.com/developerworks/xml/library/x-matters17.html">http://www-106.ibm.com/developerworks/xml/library/x-matters17.html</link></para>
     </sect1>
 
     <sect1>
@@ -1559,10 +1561,10 @@ XML documents (for more information see http://xmlstar.sourceforge.net/)
   </chapter>
 
   <chapter>
-    <title id="s.5">Common problems</title>
+    <title xml:id="s.5">Common problems</title>
 
     <sect1>
-      <title id="s.5.1">Namespaces and default namespace</title>
+      <title xml:id="s.5.1">Namespaces and default namespace</title>
 
       <para>One of the commonly asked questions about XmlStarlet 'select' or
       'edit' options is: "Why nothing matched for my XPath expression which
@@ -1626,7 +1628,7 @@ XML documents (for more information see http://xmlstar.sourceforge.net/)
     </sect1>
 
     <sect1>
-      <title id="s.5.2">Special characters</title>
+      <title xml:id="s.5.2">Special characters</title>
 
       <para>Sometimes issues appear with handling of special characters, where
       'special' means in XML sence as well as in 'shell' terms. Examples below
@@ -1652,7 +1654,7 @@ XML documents (for more information see http://xmlstar.sourceforge.net/)
     </sect1>
 
     <sect1>
-      <title id="s.5.3">Sorting</title>
+      <title xml:id="s.5.3">Sorting</title>
 
       <para>Let's take a look at XSLT produced by the following 'xml sel'
       command:</para>
@@ -1684,7 +1686,7 @@ xml sel -T -t -m /xml/table/rec -s D:N:- "@id" \
     </sect1>
 
     <sect1>
-      <title id="s.5.4">Validation</title>
+      <title xml:id="s.5.4">Validation</title>
 
       <para>Many questions are asked about XSD (XML schema) validation. Well,
       XmlStarlet relies on libxml2 which has incomplete support for XML
@@ -1704,33 +1706,33 @@ xml sel -T -t -m /xml/table/rec -s D:N:- "@id" \
 
     <itemizedlist>
       <listitem>
-        <para><ulink
-        url="http://www.freesoftwaremagazine.com/free_issues/issue_06/xml_starlet/">XMLStarlet:
-        a Unix toolkit for XML</ulink></para>
+        <para><link
+        xlink:href="http://www.freesoftwaremagazine.com/free_issues/issue_06/xml_starlet/">XMLStarlet:
+        a Unix toolkit for XML</link></para>
       </listitem>
 
       <listitem>
-        <para><ulink
-        url="http://www-128.ibm.com/developerworks/xml/library/x-starlet.html">Start
-        working with XMLStarlet</ulink></para>
+        <para><link
+        xlink:href="http://www-128.ibm.com/developerworks/xml/library/x-starlet.html">Start
+        working with XMLStarlet</link></para>
       </listitem>
 
       <listitem>
-        <para><ulink
-        url="http://blogicblog.blogspot.com/2004/09/xmlstarlet-gentle-introduction-into.html">XMLStarlet:
-        A gentle introduction into XSLT </ulink></para>
+        <para><link
+        xlink:href="http://blogicblog.blogspot.com/2004/09/xmlstarlet-gentle-introduction-into.html">XMLStarlet:
+        A gentle introduction into XSLT </link></para>
       </listitem>
 
       <listitem>
-        <para><ulink
-        url="http://blogs.applibase.net/pramod/index.php/archives/command-line-xml-with-xmlstarlet ">Command
-        line XML with XMLStarlet </ulink></para>
+        <para><link
+        xlink:href="http://blogs.applibase.net/pramod/index.php/archives/command-line-xml-with-xmlstarlet ">Command
+        line XML with XMLStarlet </link></para>
       </listitem>
 
       <listitem>
-        <para><ulink
-        url="http://www.pinkjuice.com/howto/vimxml/moresetup.xml#xmlstarlet">Using
-        vi as XML editor</ulink></para>
+        <para><link
+        xlink:href="http://www.pinkjuice.com/howto/vimxml/moresetup.xml#xmlstarlet">Using
+        vi as XML editor</link></para>
       </listitem>
     </itemizedlist>
   </chapter>

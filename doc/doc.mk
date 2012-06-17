@@ -14,7 +14,7 @@ DOCBOOK_PARAMS = \
 .xml.html:
 	xsltproc $(DOCBOOK_PARAMS) \
   --stringparam html.stylesheet html.css \
-  http://docbook.sourceforge.net/release/xsl/current/html/docbook.xsl \
+  http://docbook.sourceforge.net/release/xsl-ns/current/html/docbook.xsl \
   $< > $@
 
 .xml.fo:
@@ -27,7 +27,7 @@ DOCBOOK_PARAMS = \
 
 $(manpage): $(manpage_src)
 	xsltproc -o $@ \
-	  http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl \
+	  http://docbook.sourceforge.net/release/xsl-ns/current/manpages/docbook.xsl \
 	  $<
 
 $(txtguide): $(txtguide_src) xml
