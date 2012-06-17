@@ -62,15 +62,14 @@ xml_SOURCES += version.h
 
 # doc
 include doc/doc.mk
-doc: $(docs_gen)
 
 man_MANS = $(manpage)
-dist_doc_DATA = $(userguide) $(txtguide)
+dist_doc_DATA = $(userguide_gen) $(txtguide)
 EXTRA_DIST += $(manpage_src) $(userguide_src) $(txtguide_src)
 
 
 
 CLEANFILES = version.h
-MAINTAINERCLEANFILES = $(manpage) $(userguide) $(txtguide)
+MAINTAINERCLEANFILES = $(manpage) $(userguide_gen) $(txtguide)
 
 .PHONY: cleantar rpm dist-win32 VERSION doc

@@ -22,6 +22,12 @@ AC_ARG_ENABLE([static-libs],
         [STATIC_LIBS=$enableval],
         [STATIC_LIBS=no])
 
+AC_ARG_ENABLE([build_docs],
+        [AS_HELP_STRING([--enable-build-docs],
+                [include rules to build documentation files (requires GNU make)])],
+        [], [enable_build_docs=no])
+AM_CONDITIONAL([BUILD_DOCS], [test "$enable_build_docs" = yes])
+
 dnl
 dnl Check the environment
 dnl
@@ -33,7 +39,15 @@ AS_IF([test x$GCC = xyes], [CFLAGS="-ansi $CFLAGS"])
 AM_PROG_CC_C_O
 AC_ARG_PROGRAM          dnl Transforming Program Names When Installing
 AC_PROG_SED
+AC_PATH_PROG(FOP, fop, [none])
+AM_CONDITIONAL([HAVE_FOP], [test "$FOP" != none])
+AC_PATH_PROG(PDF2PS, pdf2ps, [none])
+AM_CONDITIONAL([HAVE_PDF2PS], [test "$PDF2PS" != none])
 
+AS_IF([test x"$enable_build_docs" = xyes -a "$FOP" = none],
+      [AC_MSG_WARN([fop not installed, unable to build pdf documentation])])
+AS_IF([test x"$enable_build_docs" = xyes -a "$PDF2PS" = none],
+      [AC_MSG_WARN([pdf2ps not installed, unable to build postscript documentation])])
 
 XSTAR_LIB_CHECK([LIBXML], [xml2-config])
 
