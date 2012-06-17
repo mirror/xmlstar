@@ -11,14 +11,18 @@ DOCBOOK_PARAMS = \
 --param section.autolabel 1 \
 --stringparam generate.toc 'book toc,title'
 
+EDIT_XML = xml ed -P \
+-u '//db:phrase[@role="VERSION"]' -v '$(VERSION)' \
+-u '//db:phrase[@role="PROG"]' -v "`echo xml | sed '$(program_transform_name)'`"
+
 .xml.html:
-	xsltproc $(DOCBOOK_PARAMS) \
+	$(EDIT_XML) $< | xsltproc $(DOCBOOK_PARAMS) \
   --stringparam html.stylesheet html.css \
   http://docbook.sourceforge.net/release/xsl-ns/current/html/docbook.xsl \
-  $< > $@
+  - > $@
 
 .xml.fo:
-	xsltproc $(DOCBOOK_PARAMS) doc/xmlstar-fodoc-style.xsl $< > $@
+	$(EDIT_XML) $< | xsltproc $(DOCBOOK_PARAMS) doc/xmlstar-fodoc-style.xsl - > $@
 
 .fo.pdf:
 	fop -q $< $@
@@ -26,9 +30,9 @@ DOCBOOK_PARAMS = \
 	pdf2ps $< $@
 
 $(manpage): $(manpage_src)
-	xsltproc -o $@ \
+	 $(EDIT_XML) $< | xsltproc -o $@ \
 	  http://docbook.sourceforge.net/release/xsl-ns/current/manpages/docbook.xsl \
-	  $<
+	  -
 
 $(txtguide): $(txtguide_src) xml
-	srcdir=$(srcdir) $< ./xml > $@
+	srcdir=$(srcdir) transform='$(program_transform_name)' $< ./xml > $@

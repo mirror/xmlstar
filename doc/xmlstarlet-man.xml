@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <refentry xmlns="http://docbook.org/ns/docbook"
+          xmlns:db="http://docbook.org/ns/docbook"
           xmlns:xlink="http://www.w3.org/1999/xlink"
           version="5.0">
   <info>
@@ -13,7 +14,7 @@
       <contrib>XMLStarlet creator.</contrib>
     </author>
 
-    <releaseinfo>Version 1.3.1-dev</releaseinfo>
+    <releaseinfo>Version <phrase role="VERSION"/></releaseinfo>
   </info>
 
   <refmeta>
@@ -30,7 +31,7 @@
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>xml</command>
+      <command><phrase role="PROG"/></command>
       <arg choice="opt" rep="repeat"><replaceable>options</replaceable></arg>
       <arg choice="req"><replaceable>command</replaceable></arg>
       <arg choice="opt" rep="repeat"><replaceable>cmd-options</replaceable></arg>
@@ -75,7 +76,8 @@
   <refsect1 xml:id="shell">
     <title>Commands</title>
 
-    <para><command>xml</command> <replaceable>command</replaceable> <option>--help</option>
+    <para><command><phrase role="PROG"/></command>
+    <replaceable>command</replaceable> <option>--help</option>
     for command specific help</para>
 
     <para>Available commands include:</para>

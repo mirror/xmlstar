@@ -1,6 +1,7 @@
 #! /bin/sh
 
 XMLSTARLET=$1
+STAR_NAME=`echo xml | sed "$transform"`
 
 {
 echo ""
@@ -16,7 +17,7 @@ echo ""
 echo "1. BASIC COMMAND LINE OPTIONS"
 echo "===================================================="
 echo ""
-echo "xml"
+echo "$STAR_NAME"
 "$XMLSTARLET" --help
 
 echo ""
@@ -25,7 +26,7 @@ echo ""
 echo "2. Select/Query XML documents"
 echo "===================================================="
 echo ""
-echo "xml sel --help"
+echo "$STAR_NAME sel --help"
 "$XMLSTARLET" sel --help
 
 echo ""
@@ -34,7 +35,7 @@ echo ""
 echo "3. Editing XML documents"
 echo "===================================================="
 echo ""
-echo "xml ed --help"
+echo "$STAR_NAME ed --help"
 "$XMLSTARLET" ed --help
 
 echo ""
@@ -43,7 +44,7 @@ echo ""
 echo "4. Using XSLT to transform XML documents"
 echo "===================================================="
 echo ""
-echo "xml tr --help"
+echo "$STAR_NAME tr --help"
 "$XMLSTARLET" tr --help
 
 echo ""
@@ -52,7 +53,7 @@ echo ""
 echo "5. Formatting XML documents"
 echo "===================================================="
 echo ""
-echo "xml fo --help"
+echo "$STAR_NAME fo --help"
 "$XMLSTARLET" fo --help
 
 echo ""
@@ -61,7 +62,7 @@ echo ""
 echo "6. Validating XML documents"
 echo "===================================================="
 echo ""
-echo "xml val --help"
+echo "$STAR_NAME val --help"
 "$XMLSTARLET" val --help
 
 echo ""
@@ -70,7 +71,7 @@ echo ""
 echo "7. Displaying structure of XML documents"
 echo "===================================================="
 echo ""
-echo "xml el --help"
+echo "$STAR_NAME el --help"
 "$XMLSTARLET" el --help
 
 echo ""
@@ -80,7 +81,7 @@ echo ""
 echo "8. Escape/Unescape special XML characters"
 echo "===================================================="
 echo ""
-echo "xml esc --help"
+echo "$STAR_NAME esc --help"
 "$XMLSTARLET" esc --help
 
 echo ""
@@ -90,7 +91,7 @@ echo ""
 echo "9. List directory as XML"
 echo "===================================================="
 echo ""
-echo "xml ls --help"
+echo "$STAR_NAME ls --help"
 "$XMLSTARLET" ls --help
 
 echo ""
@@ -100,7 +101,7 @@ echo ""
 echo "10. XML canonicalization"
 echo "===================================================="
 echo ""
-echo "xml c14n --help"
+echo "$STAR_NAME c14n --help"
 "$XMLSTARLET" c14n --help
 
 echo ""
@@ -110,7 +111,7 @@ echo ""
 echo "11. Convert XML into PYX format (based on ESIS - ISO 8879)"
 echo "===================================================="
 echo ""
-echo "xml pyx --help"
+echo "$STAR_NAME pyx --help"
 "$XMLSTARLET" pyx --help
 
 echo ""
@@ -179,6 +180,6 @@ do
 done
 
 echo ""
-} | sed -e 's#\./xmlstarlet#xml#g; s#\([.]/\)*xml #xml #g'
+} | sed -e "s#\./xmlstarlet#$STAR_NAME#g; s#\([./]\)*xml #$STAR_NAME #g"
 
 
