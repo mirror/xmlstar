@@ -8,6 +8,8 @@ txtguide_src = doc/gen-doc
 manpage = doc/xmlstarlet.1
 manpage_src = doc/xmlstarlet-man.xml
 
+generated_docs = $(userguide_gen) $(txtguide) $(manpage)
+
 DOCBOOK_PARAMS = \
 --param section.autolabel 1 \
 --stringparam generate.toc 'book toc,title'
@@ -19,31 +21,37 @@ EDIT_XML = ./xml ed -P \
 if BUILD_DOCS
 
 .xml.html:
-	$(EDIT_XML) $< | xsltproc $(DOCBOOK_PARAMS) \
+	$(V_DOCBOOK)$(EDIT_XML) $< | xsltproc $(DOCBOOK_PARAMS) \
   --stringparam html.stylesheet html.css \
   http://docbook.sourceforge.net/release/xsl-ns/current/html/docbook.xsl \
   - > $@
 
 .xml.fo:
-	$(EDIT_XML) $< | xsltproc $(DOCBOOK_PARAMS) doc/xmlstar-fodoc-style.xsl - > $@
+	$(V_DOCBOOK)$(EDIT_XML) $< | xsltproc $(DOCBOOK_PARAMS) doc/xmlstar-fodoc-style.xsl - > $@
 
 if HAVE_FOP
 .fo.pdf:
-	$(FOP) -q $< $@
+	$(V_FOP)$(FOP) -q $< $@
 endif
 if HAVE_PDF2PS
 .pdf.ps:
-	$(PDF2PS) $< $@
+	$(AM_V_GEN)$(PDF2PS) $< $@
 endif
 
 $(userguide).html : $(userguide).xml | xml$(EXEEXT)
 
 $(manpage): $(manpage_src)
-	 $(EDIT_XML) $< | xsltproc -o $@ \
+	 $(V_DOCBOOK)$(EDIT_XML) $< | xsltproc -o $@ \
 	  http://docbook.sourceforge.net/release/xsl-ns/current/manpages/docbook.xsl \
 	  -
 
 $(txtguide): $(txtguide_src) | xml$(EXEEXT)
-	srcdir=$(srcdir) transform='$(program_transform_name)' $< ./xml > $@
+	$(AM_V_GEN)srcdir=$(srcdir) transform='$(program_transform_name)' $< ./xml > $@
 
-endif # BUILD_DOCS
+clean-doc:
+	rm -f $(generated_docs)
+
+endif BUILD_DOCS
+
+# NOTE: if put inside "if BUILD_DOCS" automake issues a warning
+.PHONY: clean-doc
