@@ -14,9 +14,10 @@ DOCBOOK_PARAMS = \
 --param section.autolabel 1 \
 --stringparam generate.toc 'book toc,title'
 
-EDIT_XML = ./xml ed -P \
--u '//db:phrase[@role="VERSION"]' -v '$(VERSION)' \
--u '//db:phrase[@role="PROG"]' -v "`echo xml | sed '$(program_transform_name)'`"
+EDIT_XML = xsltproc \
+  --stringparam VERSION '$(VERSION)' \
+  --stringparam PROG "`echo xml | sed '$(program_transform_name)'`" \
+  doc/replace-PROG-VERSION.xsl
 
 if BUILD_DOCS
 
@@ -38,7 +39,7 @@ if HAVE_PDF2PS
 	$(AM_V_GEN)$(PDF2PS) $< $@
 endif
 
-$(userguide).html : $(userguide).xml | xml$(EXEEXT)
+$(userguide).html : $(userguide).xml
 
 $(manpage): $(manpage_src)
 	 $(V_DOCBOOK)$(EDIT_XML) $< | xsltproc -o $@ \
