@@ -14,7 +14,7 @@ DOCBOOK_PARAMS = \
 --param section.autolabel 1 \
 --stringparam generate.toc 'book toc,title'
 
-EDIT_XML = xsltproc \
+EDIT_XML = $(XSLTPROC) \
   --stringparam VERSION '$(VERSION)' \
   --stringparam PROG "`echo xml | sed '$(program_transform_name)'`" \
   doc/replace-PROG-VERSION.xsl
@@ -22,13 +22,13 @@ EDIT_XML = xsltproc \
 if BUILD_DOCS
 
 .xml.html:
-	$(V_DOCBOOK)$(EDIT_XML) $< | xsltproc $(DOCBOOK_PARAMS) \
+	$(V_DOCBOOK)$(EDIT_XML) $< | $(XSLTPROC) $(DOCBOOK_PARAMS) \
   --stringparam html.stylesheet html.css \
   http://docbook.sourceforge.net/release/xsl-ns/current/html/docbook.xsl \
   - > $@
 
 .xml.fo:
-	$(V_DOCBOOK)$(EDIT_XML) $< | xsltproc $(DOCBOOK_PARAMS) doc/xmlstar-fodoc-style.xsl - > $@
+	$(V_DOCBOOK)$(EDIT_XML) $< | $(XSLTPROC) $(DOCBOOK_PARAMS) doc/xmlstar-fodoc-style.xsl - > $@
 
 if HAVE_FOP
 .fo.pdf:
@@ -42,7 +42,7 @@ endif
 $(userguide).html : $(userguide).xml
 
 $(manpage): $(manpage_src)
-	 $(V_DOCBOOK)$(EDIT_XML) $< | xsltproc -o $@ \
+	 $(V_DOCBOOK)$(EDIT_XML) $< | $(XSLTPROC) -o $@ \
 	  http://docbook.sourceforge.net/release/xsl-ns/current/manpages/docbook.xsl \
 	  -
 

@@ -26,7 +26,6 @@ AC_ARG_ENABLE([build_docs],
         [AS_HELP_STRING([--enable-build-docs],
                 [include rules to build documentation files (requires GNU make)])],
         [], [enable_build_docs=no])
-AM_CONDITIONAL([BUILD_DOCS], [test "$enable_build_docs" = yes])
 
 dnl
 dnl Check the environment
@@ -39,15 +38,6 @@ AS_IF([test x$GCC = xyes], [CFLAGS="-ansi $CFLAGS"])
 AM_PROG_CC_C_O
 AC_ARG_PROGRAM          dnl Transforming Program Names When Installing
 AC_PROG_SED
-AC_PATH_PROG(FOP, fop, [none])
-AM_CONDITIONAL([HAVE_FOP], [test "$FOP" != none])
-AC_PATH_PROG(PDF2PS, pdf2ps, [none])
-AM_CONDITIONAL([HAVE_PDF2PS], [test "$PDF2PS" != none])
-
-AS_IF([test x"$enable_build_docs" = xyes -a "$FOP" = none],
-      [AC_MSG_WARN([fop not installed, unable to build pdf documentation])])
-AS_IF([test x"$enable_build_docs" = xyes -a "$PDF2PS" = none],
-      [AC_MSG_WARN([pdf2ps not installed, unable to build postscript documentation])])
 
 XSTAR_LIB_CHECK([LIBXML], [xml2-config])
 
@@ -68,13 +58,30 @@ AS_IF([test "x$STATIC_LIBS" != xno],
 XSTAR_LIB_CHECK([LIBXSLT], [xslt-config])
 
 AS_IF([test "x$LIBXSLT_SRCDIR" != x],
-      [LIBXSLT_INCDIR="$LIBXSLT_SRCDIR"
+      [XSLTPROC_PATH="$LIBXSLT_SRCDIR/xsltproc:$PATH"
+       LIBXSLT_INCDIR="$LIBXSLT_SRCDIR"
        LIBXSLT_LDFLAGS="-L$LIBXSLT_SRCDIR/libexslt/.libs -L$LIBXSLT_SRCDIR/libxslt/.libs"
        AS_IF([test "x$STATIC_LIBS" != xno],
              [LIBXSLT_LIBS="$LIBXSLT_SRCDIR/libexslt/.libs/libexslt.a $LIBXSLT_SRCDIR/libxslt/.libs/libxslt.a"])],
-      [LIBXSLT_LDFLAGS="-L$LIBXSLT_LIBDIR"
+      [XSLTPROC_PATH="$PATH"
+       LIBXSLT_LDFLAGS="-L$LIBXSLT_LIBDIR"
       AS_IF([test "x$STATIC_LIBS" != xno],
              [LIBXSLT_LIBS="$LIBXSLT_LIBDIR/libexslt.a $LIBXSLT_LIBDIR/libxslt.a"])])
+
+AS_IF([test x"$enable_build_docs" = xyes],
+      [AC_PATH_PROG(XSLTPROC, xsltproc, [none], [$XSLTPROC_PATH])
+       AS_IF([test "$XSLTPROC" = none], [AC_MSG_ERROR([xsltproc not found, unable to build documentation])])
+
+       AC_PATH_PROG(FOP, fop, [none])
+       AM_CONDITIONAL([HAVE_FOP], [test "$FOP" != none])
+       AS_IF([test "$FOP" = none], [AC_MSG_WARN([fop not installed, unable to build pdf documentation])])
+
+       AC_PATH_PROG(PDF2PS, pdf2ps, [none])
+       AM_CONDITIONAL([HAVE_PDF2PS], [test "$PDF2PS" != none])
+       AS_IF([test "$PDF2PS" = none], [AC_MSG_WARN([pdf2ps not installed, unable to build postscript documentation])])])
+
+AM_CONDITIONAL([BUILD_DOCS], [test "$enable_build_docs" = yes])
+
 
 AS_IF([test "x$STATIC_LIBS" = xno],
       [LIBXSLT_LIBS="-lexslt -lxslt"])
