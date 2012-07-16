@@ -47,24 +47,18 @@ THE SOFTWARE.
  *         2. exit values on errors
  */
 
-static const char escape_usage_str[] =
-"XMLStarlet Toolkit: %s special XML characters\n"
-"Usage: %s %s [<options>] [<string>]\n"
-"where <options> are\n"
-"  --help      - print usage\n"
-"  (TODO: more to be added in future)\n"
-"if <string> is missing stdin is used instead.\n"
-"\n";
-
 /**
  *  Print small help for command line options
  */
 void
 escUsage(int argc, char **argv, int escape, exit_status status)
 {
+    extern void fprint_escape_usage(FILE* o, const char* argv0);
+    extern void fprint_unescape_usage(FILE* o, const char* argv0);
     extern const char more_info[];
     FILE *o = (status == EXIT_SUCCESS)? stdout : stderr;
-    fprintf(o, escape_usage_str, escape?"Escape":"Unescape", argv[0], escape?"esc":"unesc");
+    if (escape) fprint_escape_usage(o, argv[0]);
+    else fprint_unescape_usage(o, argv[0]);
     fprintf(o, "%s", more_info);
     exit(status);
 }

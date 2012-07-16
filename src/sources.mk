@@ -1,15 +1,15 @@
-#src/escape-usage.c
-
 generated_usage_sources =\
 src/c14n-usage.c\
 src/depyx-usage.c\
 src/edit-usage.c\
 src/elem-usage.c\
+src/escape-usage.c\
 src/format-usage.c\
 src/ls-usage.c\
 src/pyx-usage.c\
 src/select-usage.c\
 src/trans-usage.c\
+src/unescape-usage.c\
 src/validate-usage.c
 
 .txt.c:
