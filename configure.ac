@@ -24,7 +24,7 @@ AC_ARG_ENABLE([static-libs],
 
 AC_ARG_ENABLE([build_docs],
         [AS_HELP_STRING([--enable-build-docs],
-                [include rules to build documentation files (requires GNU make)])],
+                [include rules to build documentation files])],
         [], [enable_build_docs=no])
 
 dnl

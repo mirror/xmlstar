@@ -1,3 +1,18 @@
+usage_texts =\
+src/usage.txt\
+src/c14n-usage.txt\
+src/depyx-usage.txt\
+src/edit-usage.txt\
+src/elem-usage.txt\
+src/escape-usage.txt\
+src/format-usage.txt\
+src/ls-usage.txt\
+src/pyx-usage.txt\
+src/select-usage.txt\
+src/trans-usage.txt\
+src/unescape-usage.txt\
+src/validate-usage.txt
+
 generated_usage_sources =\
 src/usage.c\
 src/c14n-usage.c\
@@ -12,12 +27,6 @@ src/select-usage.c\
 src/trans-usage.c\
 src/unescape-usage.c\
 src/validate-usage.c
-
-.txt.c:
-	$(AM_V_GEN)$(AWK) -f ./usage2c.awk $< > $@
-$(generated_usage_sources) : usage2c.awk
-
-nodist_xml_SOURCES = $(generated_usage_sources)
 
 xml_SOURCES =\
 src/escape.h\

@@ -59,6 +59,13 @@ bin_PROGRAMS = xml
 
 include src/sources.mk
 xml_SOURCES += version.h
+nodist_xml_SOURCES = $(generated_usage_sources)
+EXTRA_DIST += $(usage_texts)
+
+.txt.c:
+	$(AM_V_GEN)$(AWK) -f ./usage2c.awk $< > $@
+$(generated_usage_sources) : usage2c.awk
+
 
 # doc
 include doc/doc.mk

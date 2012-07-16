@@ -1,7 +1,8 @@
 #! /bin/sh
 
+: "${SED=sed}"
 XMLSTARLET=$1
-STAR_NAME=`echo xml | sed "$transform"`
+STAR_NAME=`echo xml | ${SED} "$transform"`
 
 {
 echo ""
@@ -17,8 +18,8 @@ echo ""
 echo "1. BASIC COMMAND LINE OPTIONS"
 echo "===================================================="
 echo ""
-echo "$STAR_NAME"
-"$XMLSTARLET" --help
+echo "$STAR_NAME --help"
+$SED '/^#/d' src/usage.txt
 
 echo ""
 echo ""
@@ -27,7 +28,7 @@ echo "2. Select/Query XML documents"
 echo "===================================================="
 echo ""
 echo "$STAR_NAME sel --help"
-"$XMLSTARLET" sel --help
+$SED '/^#/d' src/select-usage.txt
 
 echo ""
 echo ""
@@ -36,7 +37,7 @@ echo "3. Editing XML documents"
 echo "===================================================="
 echo ""
 echo "$STAR_NAME ed --help"
-"$XMLSTARLET" ed --help
+$SED '/^#/d' src/edit-usage.txt
 
 echo ""
 echo ""
@@ -45,7 +46,7 @@ echo "4. Using XSLT to transform XML documents"
 echo "===================================================="
 echo ""
 echo "$STAR_NAME tr --help"
-"$XMLSTARLET" tr --help
+$SED '/^#/d' src/trans-usage.txt
 
 echo ""
 echo ""
@@ -54,7 +55,7 @@ echo "5. Formatting XML documents"
 echo "===================================================="
 echo ""
 echo "$STAR_NAME fo --help"
-"$XMLSTARLET" fo --help
+$SED '/^#/d' src/format-usage.txt
 
 echo ""
 echo ""
@@ -63,7 +64,7 @@ echo "6. Validating XML documents"
 echo "===================================================="
 echo ""
 echo "$STAR_NAME val --help"
-"$XMLSTARLET" val --help
+$SED '/^#/d' src/validate-usage.txt
 
 echo ""
 echo ""
@@ -72,7 +73,7 @@ echo "7. Displaying structure of XML documents"
 echo "===================================================="
 echo ""
 echo "$STAR_NAME el --help"
-"$XMLSTARLET" el --help
+$SED '/^#/d' src/elem-usage.txt
 
 echo ""
 echo ""
@@ -82,7 +83,7 @@ echo "8. Escape/Unescape special XML characters"
 echo "===================================================="
 echo ""
 echo "$STAR_NAME esc --help"
-"$XMLSTARLET" esc --help
+$SED '/^#/d' src/escape-usage.txt
 
 echo ""
 echo ""
@@ -92,7 +93,7 @@ echo "9. List directory as XML"
 echo "===================================================="
 echo ""
 echo "$STAR_NAME ls --help"
-"$XMLSTARLET" ls --help
+$SED '/^#/d' src/ls-usage.txt
 
 echo ""
 echo ""
@@ -102,7 +103,7 @@ echo "10. XML canonicalization"
 echo "===================================================="
 echo ""
 echo "$STAR_NAME c14n --help"
-"$XMLSTARLET" c14n --help
+$SED '/^#/d' src/c14n-usage.txt
 
 echo ""
 echo ""
@@ -112,7 +113,7 @@ echo "11. Convert XML into PYX format (based on ESIS - ISO 8879)"
 echo "===================================================="
 echo ""
 echo "$STAR_NAME pyx --help"
-"$XMLSTARLET" pyx --help
+$SED '/^#/d' src/pyx-usage.txt
 
 echo ""
 echo ""
@@ -180,6 +181,6 @@ do
 done
 
 echo ""
-} | sed -e "s#\./xmlstarlet#$STAR_NAME#g; s#\([./]\)*xml #$STAR_NAME #g"
+} | $SED -e "s:\./xmlstarlet:$STAR_NAME:g; s:PROG:$STAR_NAME:g"
 
 

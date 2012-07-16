@@ -16,7 +16,7 @@ DOCBOOK_PARAMS = \
 
 EDIT_XML = $(XSLTPROC) \
   --stringparam VERSION '$(VERSION)' \
-  --stringparam PROG "`echo xml | sed '$(program_transform_name)'`" \
+  --stringparam PROG "`echo xml | $(SED) '$(program_transform_name)'`" \
   doc/replace-PROG-VERSION.xsl
 
 if BUILD_DOCS
@@ -46,8 +46,8 @@ $(manpage): $(manpage_src)
 	  http://docbook.sourceforge.net/release/xsl-ns/current/manpages/docbook.xsl \
 	  -
 
-$(txtguide): $(txtguide_src) | xml$(EXEEXT)
-	$(AM_V_GEN)srcdir=$(srcdir) transform='$(program_transform_name)' $< ./xml > $@
+$(txtguide): $(txtguide_src) $(usage_texts)
+	$(AM_V_GEN)srcdir=$(srcdir) SED=$(SED) transform='$(program_transform_name)' $< ./xml > $@
 
 clean-doc:
 	rm -f $(generated_docs)
