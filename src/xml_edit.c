@@ -120,55 +120,16 @@ typedef struct _XmlEdAction {
   XmlNodeType   type;
 } XmlEdAction;
 
-/*
- * usage string chunk : 509 char max on ISO C90
- */
-static const char edit_usage_str_1[] =
-"XMLStarlet Toolkit: Edit XML document(s)\n"
-"Usage: %s ed <global-options> {<action>} [ <xml-file-or-uri> ... ]\n"
-"where\n"
-"  <global-options>  - global options for editing\n"
-"  <xml-file-or-uri> - input XML document file name/uri (stdin otherwise)\n\n";
-
-
-static const char edit_usage_str_2[] =
-"<global-options> are:\n"
-"  -P, or -S           - preserve whitespace nodes.\n"
-"     (or --pf, --ps)    Note that space between attributes is not preserved\n"
-"  -O (or --omit-decl) - omit XML declaration (<?xml ...?>)\n"
-"  -L (or --inplace)   - edit file inplace\n"
-"  -N <name>=<value>   - predefine namespaces (name without \'xmlns:\')\n"
-"                        ex: xsql=urn:oracle-xsql\n"
-"                        Multiple -N options are allowed.\n"
-"                        -N options must be last global options.\n";
-
-static const char edit_usage_str_3[] =
-"  --net               - allow network access\n"
-"  --help or -h        - display help\n\n"
-"where <action>\n"
-"  -d or --delete <xpath>\n"
-"  -i or --insert <xpath> -t (--type) elem|text|attr -n <name> -v (--value) <value>\n"
-"  -a or --append <xpath> -t (--type) elem|text|attr -n <name> -v (--value) <value>\n"
-"  -s or --subnode <xpath> -t (--type) elem|text|attr -n <name> -v (--value) <value>\n";
-
-static const char edit_usage_str_4[] =
-"  -m or --move <xpath1> <xpath2>\n"
-"  -r or --rename <xpath1> -v <new-name>\n"
-"  -u or --update <xpath> -v (--value) <value>\n"
-"                         -x (--expr) <xpath>\n\n";
-
 /**
  *  display short help message
  */
 static void
 edUsage(const char *argv0, exit_status status)
 {
+    extern void fprint_edit_usage(FILE* o, const char* argv0);
     extern const char more_info[];
     FILE *o = (status == EXIT_SUCCESS)? stdout : stderr;
-    fprintf(o, edit_usage_str_1, argv0);
-    fprintf(o, "%s", edit_usage_str_2);
-    fprintf(o, "%s", edit_usage_str_3);
-    fprintf(o, "%s", edit_usage_str_4);
+    fprint_edit_usage(o, argv0);
     fprintf(o, "%s", more_info);
     exit(status);
 }

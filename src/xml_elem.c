@@ -55,18 +55,6 @@ typedef struct _elOptions {
 } elOptions;
 
 
-static const char elem_usage_str[] =
-"XMLStarlet Toolkit: Display element structure of XML document\n"
-"Usage: %s el [<options>] <xml-file>\n"
-"where\n"
-"  <xml-file> - input XML document file name (stdin is used if missing)\n"
-"  <options> is one of:\n"
-"  -a    - show attributes as well\n"
-"  -v    - show attributes and their values\n"
-"  -u    - print out sorted unique lines\n"
-"  -d<n> - print out sorted unique lines up to depth <n>\n" 
-"\n";
-
 static elOptions elOps;
 static xmlHashTablePtr uniq = NULL;
 static xmlChar *curXPath = NULL;
@@ -77,9 +65,10 @@ static xmlChar *curXPath = NULL;
 void
 elUsage(int argc, char **argv, exit_status status)
 {
+    extern void fprint_elem_usage(FILE* o, const char* argv0);
     extern const char more_info[];
     FILE *o = (status == EXIT_SUCCESS)? stdout : stderr;
-    fprintf(o, elem_usage_str, argv[0]);
+    fprint_elem_usage(o, argv[0]);
     fprintf(o, "%s", more_info);
     exit(status);
 }

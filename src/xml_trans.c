@@ -43,50 +43,17 @@ THE SOFTWARE.
  *        4. exit values on errors
  */
 
-/*
- * usage string chunk : 509 char max on ISO C90
- */
-static const char trans_usage_str_1[] =
-"XMLStarlet Toolkit: Transform XML document(s) using XSLT\n"
-"Usage: %s tr [<options>] <xsl-file> {-p|-s <name>=<value>} [<xml-file>...]\n"
-"where\n"
-"  <xsl-file>      - main XSLT stylesheet for transformation\n"
-"  <xml-file>      - input XML document file/URL (stdin is used if missing)\n";
-
-static const char trans_usage_str_2[] =
-"  <name>=<value>  - name and value of the parameter passed to XSLT processor\n"
-"  -p              - parameter is XPATH expression (\"'string'\" to quote string)\n"
-"  -s              - parameter is a string literal\n"
-"<options> are:\n"
-"  --help or -h    - display help message\n"
-"  --omit-decl     - omit xml declaration <?xml version=\"1.0\"?>\n"
-"  --embed or -E   - allow applying embedded stylesheet\n"
-"  --show-ext      - show list of extensions\n";
-
-static const char trans_usage_str_3[] =
-"  --val           - allow validate against DTDs or schemas\n"
-"  --net           - allow fetch DTDs or entities over network\n"
-#ifdef LIBXML_XINCLUDE_ENABLED
-"  --xinclude      - do XInclude processing on document input\n"
-#endif
-"  --maxdepth val  - increase the maximum depth\n"
-#ifdef LIBXML_HTML_ENABLED
-"  --html          - input document(s) is(are) in HTML format\n"
-#endif
-;
-
 /**
  *  Display usage syntax
  */
 void
 trUsage(const char *argv0, exit_status status)
 {
+    extern void fprint_trans_usage(FILE* o, const char* argv0);
     extern const char more_info[];
     extern const char libxslt_more_info[];
     FILE *o = (status == EXIT_SUCCESS)? stdout : stderr;
-    fprintf(o, trans_usage_str_1, argv0);
-    fprintf(o, "%s", trans_usage_str_2);
-    fprintf(o, "%s", trans_usage_str_3);
+    fprint_trans_usage(o, argv0);
     fprintf(o, "%s", more_info);
     fprintf(o, "%s", libxslt_more_info);
     exit(status);

@@ -21,26 +21,6 @@
 
 #include "xmlstar.h"
 
-/*
- * usage string chunk : 509 char max on ISO C90
- */
-static const char pyx_usage_str_1[] =
-"XMLStarlet Toolkit: Convert XML into PYX format (based on ESIS - ISO 8879)\n"
-"Usage: %s pyx {<xml-file>}\n"
-"where\n"
-"  <xml-file> - input XML document file name (stdin is used if missing)\n\n";
-
-static const char pyx_usage_str_2[] =
-"The PYX format is a line-oriented representation of\n"
-"XML documents that is derived from the SGML ESIS format.\n"
-"(see ESIS - ISO 8879 Element Structure Information Set spec,\n"
-"ISO/IEC JTC1/SC18/WG8 N931 (ESIS))\n\n";
-
-static const char pyx_usage_str_3[] =
-"A non-validating, ESIS generating tool originally developed for\n"
-"pyxie project (see http://pyxie.sourceforge.net/)\n"
-"ESIS Generation by Sean Mc Grath http://www.digitome.com/sean.html\n\n";
-
 /**
  *  Output newline and tab characters as escapes
  *  Required both for attribute values and character data (#PCDATA)
@@ -243,11 +223,10 @@ pyxCdataBlockHandler(void *ctx ATTRIBUTE_UNUSED, const xmlChar *value, int len)
 static void
 pyxUsage(const char *argv0, exit_status status)
 {
+    extern void fprint_pyx_usage(FILE* o, const char* argv0);
     extern const char more_info[];
     FILE *o = (status == EXIT_SUCCESS)? stdout : stderr;
-    fprintf(o, pyx_usage_str_1, argv0);
-    fprintf(o, "%s", pyx_usage_str_2);
-    fprintf(o, "%s", pyx_usage_str_3);
+    fprint_pyx_usage(o, argv0);
     fprintf(o, "%s", more_info);
     exit(status);
 }

@@ -37,23 +37,13 @@ THE SOFTWARE.
 
 #define INSZ 4*1024
 
-static const char depyx_usage_str[] =
-"XMLStarlet Toolkit: Convert PYX into XML\n"
-"Usage: %s p2x [<pyx-file>]\n"
-"where\n"
-"  <pyx-file> - input PYX document file name (stdin is used if missing)\n\n"
-"The PYX format is a line-oriented representation of\n"
-"XML documents that is derived from the SGML ESIS format.\n"
-"(see ESIS - ISO 8879 Element Structure Information Set spec,\n"
-"ISO/IEC JTC1/SC18/WG8 N931 (ESIS))\n"
-"\n";
-
 static void
 depyxUsage(int argc, char **argv, exit_status status)
 {
+    extern void fprint_depyx_usage(FILE* o, const char* argv0);
     extern const char more_info[];
     FILE *o = (status == EXIT_SUCCESS)? stdout : stderr;
-    fprintf(o, depyx_usage_str, argv[0]);
+    fprint_depyx_usage(o, argv[0]);
     fprintf(o, "%s", more_info);
     exit(status);
 }

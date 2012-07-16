@@ -69,7 +69,7 @@ EXTRA_DIST += $(manpage_src) $(userguide_src) $(txtguide_src)
 
 
 
-CLEANFILES = version.h
+CLEANFILES = version.h $(generated_usage_sources)
 MAINTAINERCLEANFILES = $(manpage) $(userguide_gen) $(txtguide)
 
 .PHONY: cleantar rpm dist-win32 VERSION doc

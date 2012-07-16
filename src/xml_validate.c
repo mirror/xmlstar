@@ -67,50 +67,16 @@ typedef struct _valOptions {
 
 typedef valOptions *valOptionsPtr;
 
-/*
- * usage string chunk : 509 char max on ISO C90
- */
-static const char validate_usage_str_1[] =
-"XMLStarlet Toolkit: Validate XML document(s)\n"
-"Usage: %s val <options> [ <xml-file-or-uri> ... ]\n"
-"where <options>\n"
-"  -w or --well-formed        - validate well-formedness only (default)\n"
-"  -d or --dtd <dtd-file>     - validate against DTD\n"
-"  --net                      - allow network access\n";
-
-
-static const char validate_usage_str_2[] =
-#ifdef LIBXML_SCHEMAS_ENABLED
-"  -s or --xsd <xsd-file>     - validate against XSD schema\n"
-"  -E or --embed              - validate using embedded DTD\n"
-#endif
-#ifdef LIBXML_SCHEMAS_ENABLED
-"  -r or --relaxng <rng-file> - validate against Relax-NG schema\n"
-#endif
-"  -e or --err                - print verbose error messages on stderr\n"
-"  -b or --list-bad           - list only files which do not validate\n"
-"  -g or --list-good          - list only files which validate\n"
-"  -q or --quiet              - do not list files (return result code only)\n\n";
-
-#ifdef LIBXML_SCHEMAS_ENABLED
-static const char schema_notice[] =
-"NOTE: XML Schemas are not fully supported yet due to its incomplete\n" 
-"      support in libxml2 (see http://xmlsoft.org)\n\n";
-#endif
-
 /**
  *  display short help message
  */
 void
 valUsage(int argc, char **argv, exit_status status)
 {
+    extern void fprint_validate_usage(FILE* o, const char* argv0);
     extern const char more_info[];
     FILE *o = (status == EXIT_SUCCESS)? stdout : stderr;
-    fprintf(o, validate_usage_str_1, argv[0]);
-    fprintf(o, "%s", validate_usage_str_2);
-#ifdef LIBXML_SCHEMAS_ENABLED
-    fprintf(o, "%s", schema_notice);
-#endif
+    fprint_validate_usage(o, argv[0]);
     fprintf(o, "%s", more_info);
     exit(status);
 }

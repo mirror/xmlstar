@@ -38,6 +38,7 @@ AS_IF([test x$GCC = xyes], [CFLAGS="-ansi $CFLAGS"])
 AM_PROG_CC_C_O
 AC_ARG_PROGRAM          dnl Transforming Program Names When Installing
 AC_PROG_SED
+AC_PROG_AWK
 
 XSTAR_LIB_CHECK([LIBXML], [xml2-config])
 

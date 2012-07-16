@@ -29,41 +29,12 @@
 
 #include "xmlstar.h"
 
-static const char c14n_usage_str_1[] =
-"XMLStarlet Toolkit: XML canonicalization\n"
-"Usage: %s c14n [--net] <mode> <xml-file> [<xpath-file>] [<inclusive-ns-list>]\n"
-"where\n"
-"  <xml-file>   - input XML document file name (stdin is used if '-')\n"
-"  <xpath-file> - XML file containing XPath expression for\n"
-"                 c14n XML canonicalization\n";
-
-static const char c14n_usage_str_2[] =
-"    Example:\n"
-"    <?xml version=\"1.0\"?>\n"
-"    <XPath xmlns:n0=\"http://a.example.com\" xmlns:n1=\"http://b.example\">\n"
-"    (//. | //@* | //namespace::*)[ancestor-or-self::n1:elem1]\n"
-"    </XPath>\n"
-"\n"
-"  <inclusive-ns-list> - the list of inclusive namespace prefixes\n"
-"                        (only for exclusive canonicalization)\n"
-"    Example: 'n1 n2'\n"
-"\n";
-
-static const char c14n_usage_str_3[] =
-"  <mode> is one of following:\n"
-"  --with-comments         XML file canonicalization w comments (default)\n"
-"  --without-comments      XML file canonicalization w/o comments\n"
-"  --exc-with-comments     Exclusive XML file canonicalization w comments\n"
-"  --exc-without-comments  Exclusive XML file canonicalization w/o comments\n"
-"\n";
-
 static void c14nUsage(const char *name, exit_status status)
 {
+    extern void fprint_c14n_usage(FILE* o, const char* argv0);
     extern const char more_info[];
     FILE *o = (status == EXIT_SUCCESS)? stdout : stderr;
-    fprintf(o, c14n_usage_str_1, name);
-    fprintf(o, "%s", c14n_usage_str_2);
-    fprintf(o, "%s", c14n_usage_str_3);
+    fprint_c14n_usage(o, name);
     fprintf(o, "%s", more_info);
     exit(status);
 }

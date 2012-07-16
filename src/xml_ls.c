@@ -60,22 +60,16 @@ THE SOFTWARE.
 # define S_ISSOCK(m) 0
 #endif
 
-static const char ls_usage_str[] =
-"XMLStarlet Toolkit: List directory as XML\n"
-"Usage: %s ls [ <dir> | --help ]\n"
-"Lists current directory in XML format.\n"
-"Time is shown per ISO 8601 spec.\n"
-"\n";
-
 /**
  *  Print small help for command line options
  */
 void
 lsUsage(int argc, char **argv, exit_status status)
 {
+    extern void fprint_ls_usage(FILE* o, const char* argv0);
     extern const char more_info[];
     FILE *o = (status == EXIT_SUCCESS)? stdout : stderr;
-    fprintf(o, ls_usage_str, argv[0]);
+    fprint_ls_usage(o, argv[0]);
     fprintf(o, "%s", more_info);
     exit(status);
 }

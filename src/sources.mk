@@ -1,3 +1,23 @@
+#src/escape-usage.c
+
+generated_usage_sources =\
+src/c14n-usage.c\
+src/depyx-usage.c\
+src/edit-usage.c\
+src/elem-usage.c\
+src/format-usage.c\
+src/ls-usage.c\
+src/pyx-usage.c\
+src/select-usage.c\
+src/trans-usage.c\
+src/validate-usage.c
+
+.txt.c:
+	$(AM_V_GEN)$(AWK) -f ./usage2c.awk $< > $@
+$(generated_usage_sources) : usage2c.awk
+
+nodist_xml_SOURCES = $(generated_usage_sources)
+
 xml_SOURCES =\
 src/escape.h\
 src/trans.c\
