@@ -54,40 +54,6 @@ extern int pyxMain(int argc, char **argv);
 extern int depyxMain(int argc, char **argv);
 extern int escMain(int argc, char **argv, int escape);
 
-/* 
- * usage string chunk : 509 char max on ISO C90
- */
-static const char usage_str_1[] = 
-"XMLStarlet Toolkit: Command line utilities for XML\n"
-"Usage: %s [<options>] <command> [<cmd-options>]\n";
-
-static const char usage_str_2[] = 
-"where <command> is one of:\n"
-"  ed    (or edit)      - Edit/Update XML document(s)\n"
-"  sel   (or select)    - Select data or query XML document(s) (XPATH, etc)\n"
-"  tr    (or transform) - Transform XML document(s) using XSLT\n"
-"  val   (or validate)  - Validate XML document(s) (well-formed/DTD/XSD/RelaxNG)\n"
-"  fo    (or format)    - Format XML document(s)\n"
-"  el    (or elements)  - Display element structure of XML document\n";
-
-static const char usage_str_3[] = 
-"  c14n  (or canonic)   - XML canonicalization\n"
-"  ls    (or list)      - List directory as XML\n"
-"  esc   (or escape)    - Escape special XML characters\n"
-"  unesc (or unescape)  - Unescape special XML characters\n"
-"  pyx   (or xmln)      - Convert XML into PYX format (based on ESIS - ISO 8879)\n"
-"  p2x   (or depyx)     - Convert PYX into XML\n";
-
-static const char usage_str_4[] = 
-"<options> are:\n"
-"  --version            - show version\n"
-"  --help               - show help\n"
-"Wherever file name mentioned in command help it is assumed\n"
-"that URL can be used instead as well.\n\n"
-"Type: %s <command> --help <ENTER> for command help\n\n";
-
-
-
 const char more_info[] =
 "XMLStarlet is a command line toolkit to query/edit/check/transform\n"
 "XML documents (for more information see http://xmlstar.sourceforge.net/)\n";
@@ -103,12 +69,9 @@ const char libxslt_more_info[] =
 void
 usage(int argc, char **argv, exit_status status)
 {
+    extern void fprint_usage(FILE* o, const char* argv0);
     FILE* o = (status == EXIT_SUCCESS)? stdout : stderr;
-
-    fprintf(o, usage_str_1, argv[0]);
-    fprintf(o, "%s", usage_str_2);
-    fprintf(o, "%s", usage_str_3);
-    fprintf(o, usage_str_4, argv[0]);
+    fprint_usage(o, argv[0]);
     fprintf(o, "%s", more_info);
     exit(status);
 }  

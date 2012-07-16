@@ -1,4 +1,5 @@
 generated_usage_sources =\
+src/usage.c\
 src/c14n-usage.c\
 src/depyx-usage.c\
 src/edit-usage.c\

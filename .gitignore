@@ -19,7 +19,7 @@
 /src/.deps/
 /src/.dirstamp
 /src/*.o
-/src/*-usage.c
+/src/*usage.c
 /xml
 /version.h
 /doc/xmlstarlet-ug.html
