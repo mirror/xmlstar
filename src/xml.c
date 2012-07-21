@@ -191,7 +191,8 @@ char* get_arg(ArgOp op)
 
                 arg = main_argv[++argi];
             }
-            if (op == OPTION_NEXT && arg[0] != '-') return NULL;
+            if (op == OPTION_NEXT && (arg[0] != '-' || arg[1] == '\0'))
+                return NULL;
             if (op == ARG_NEXT || op == OPTION_NEXT) argi++;
             return arg;
         }
@@ -231,7 +232,7 @@ main(int argc, char **argv)
     }
     else if (!strcmp(argv1, "sel") || !strcmp(argv1, "select"))
     {
-        ret = selMain(argc, argv);
+        ret = selMain();
     }
     else if (!strcmp(argv1, "tr") || !strcmp(argv1, "transform"))
     {
@@ -326,56 +327,6 @@ registerXstarNs(xmlXPathContextPtr ctxt)
 {
     xmlXPathRegisterVariableLookup(ctxt, &varLookupFallbackToXstarNS, ctxt);
     xmlXPathRegisterNs(ctxt, XMLSTAR_NS_PREFIX, XMLSTAR_NS);
-}
-
-/**
- *  Parse command line for -N <prefix>=<namespace> arguments
- */
-int
-parseNSArr(xmlChar** ns_arr, int* plen, int argc, char **argv)
-{
-    int i = 0;
-    *plen = 0;
-    ns_arr[0] = 0;
-
-    for (i=0; i<argc; i++)
-    {
-        int prefix_len;
-        xmlChar *name, *value;
-        const xmlChar *equal_sign;
-
-        /* check for end of arguments */
-        if (argv[i] == 0 || argv[i][0] != '-')
-            break;
-        if (strcmp(argv[i], "-N") != 0)
-            continue;
-
-        i++;
-        if (i >= argc) bad_ns_opt("-N without argument");
-
-        equal_sign = xmlStrchr((const xmlChar*) argv[i], '=');
-        if (!equal_sign)
-            bad_ns_opt("namespace should have the form <prefix>=<url>");
-        prefix_len = equal_sign - (const xmlChar*) argv[i];
-
-        name = xmlStrndup((const xmlChar*) argv[i], prefix_len);
-        value = xmlStrdup((const xmlChar*) argv[i]+prefix_len+1);
-
-        if (*plen >= MAX_NS_ARGS)
-        {
-            fprintf(stderr, "too many namespaces increase MAX_NS_ARGS\n");
-            exit(EXIT_BAD_ARGS);
-        }
-
-        ns_arr[*plen] = name;
-        (*plen)++;
-        ns_arr[*plen] = value;
-        (*plen)++;
-        ns_arr[*plen] = 0;
-
-    }
-
-    return i;
 }
 
 /**

@@ -155,13 +155,13 @@ caseSortFunction(xsltTransformContextPtr ctxt, xmlNodePtr *sorts,
  *  Print small help for command line options
  */
 void
-selUsage(const char *argv0, exit_status status)
+selUsage(exit_status status)
 {
     extern void fprint_select_usage(FILE* out, const char* argv0);
     extern const char more_info[];
     extern const char libxslt_more_info[];
     FILE *o = (status == EXIT_SUCCESS)? stdout : stderr;
-    fprint_select_usage(o, argv0);
+    fprint_select_usage(o, get_arg(ARG0));
     fprintf(o, "%s", more_info);
     fprintf(o, "%s", libxslt_more_info);
     exit(status);
@@ -187,76 +187,44 @@ selInitOptions(selOptionsPtr ops)
 /**
  *  Parse global command line options
  */
-int
-selParseOptions(selOptionsPtr ops, int argc, char **argv)
+void
+selParseOptions(selOptionsPtr ops)
 {
-    int i;
+    for (;;) {
+        const char* arg = get_arg(ARG_PEEK);
+        if (arg[0] != '-' || strcmp(arg, "-t") == 0 || strcmp(arg, "--template") == 0)
+            break;
+        get_arg(ARG_NEXT);
 
-    i = 2;
-    while((i < argc) && (strcmp(argv[i], "-t")) && strcmp(argv[i], "--template"))
-    {
-        if (!strcmp(argv[i], "-C"))
-        {
+        if (strcmp(arg, "-C") == 0) {
             ops->printXSLT = 1;
-        }
-        else if (!strcmp(argv[i], "-Q") || !strcmp(argv[i], "--quiet"))
-        {
+        } else if (strcmp(arg, "-Q") == 0 || strcmp(arg, "--quiet") == 0) {
             ops->quiet = 1;
-        }
-        else if (!strcmp(argv[i], "-B") || !strcmp(argv[i], "--noblanks"))
-        {
+        } else if (strcmp(arg, "-B") == 0 || strcmp(arg, "--noblanks") == 0) {
             ops->noblanks = 1;
-        }
-        else if (!strcmp(argv[i], "-T") || !strcmp(argv[i], "--text"))
-        {
+        } else if (strcmp(arg, "-T") == 0 || strcmp(arg, "--text") == 0) {
             ops->outText = 1;
-        }
-        else if (!strcmp(argv[i], "-R") || !strcmp(argv[i], "--root"))
-        {
+        } else if (strcmp(arg, "-R") == 0 || strcmp(arg, "--root") == 0) {
             ops->printRoot = 1;
-        }
-        else if (!strcmp(argv[i], "-I") || !strcmp(argv[i], "--indent"))
-        {
+        } else if (strcmp(arg, "-I") == 0 || strcmp(arg, "--indent") == 0) {
             ops->indent = 1;
-        }
-        else if (!strcmp(argv[i], "-D") || !strcmp(argv[i], "--xml-decl"))
-        {
+        } else if (strcmp(arg, "-D") == 0 || strcmp(arg, "--xml-decl") == 0) {
             ops->no_omit_decl = 1;
-        }
-        else if (!strcmp(argv[i], "-E") || !strcmp(argv[i], "--encode"))
-        {
-            if ((i+1) < argc)
-            {
-                if (argv[i + 1][0] == '-')
-                {
-                    fprintf(stderr, "-E option requires argument <encoding> ex: (utf-8, unicode...)\n");
-                    exit(EXIT_BAD_ARGS);
-                }
-                else
-                {
-                    ops->encoding = BAD_CAST argv[i + 1];
-                }
-            }
-            else
-            {
+        } else if (strcmp(arg, "-E") == 0 || strcmp(arg, "--encode") == 0) {
+            const char* encoding = get_arg(ARG_NEXT);
+            if (!encoding || encoding[0] == '-') {
                 fprintf(stderr, "-E option requires argument <encoding> ex: (utf-8, unicode...)\n");
                 exit(EXIT_BAD_ARGS);
+            } else {
+                ops->encoding = BAD_CAST encoding;
             }
-
-        }
-        else if (!strcmp(argv[i], "--net"))
-        {
+        } else if (strcmp(arg, "--net") == 0) {
             ops->nonet = 0;
+        } else if (strcmp(arg, "--help") == 0 || strcmp(arg, "-h") == 0 ||
+                 strcmp(arg, "-?") == 0 || strcmp(arg, "-Z") == 0) {
+            selUsage(EXIT_SUCCESS);
         }
-        else if (!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h") ||
-                 !strcmp(argv[i], "-?") || !strcmp(argv[i], "-Z"))
-        {
-            selUsage(argv[0], EXIT_SUCCESS);
-        }
-        i++;
     }
-
-    return i;
 }
 
 
@@ -292,83 +260,54 @@ checkNsRefs(xmlNodePtr root, const char *xpath)
 
 /**
  *  Prepare XSLT template based on command line options
- *  Assumes start points to -t option
+ *  starting one argument after the "-t" or "--template"
+ *
+ *  @returns 1 if there is following template, 0 otherwise.
  */
 int
 selGenTemplate(xmlNodePtr root, xmlNodePtr template_node,
-    xmlNsPtr xslns, selOptionsPtr ops, int* use_inputfile, int* use_value_of,
-    int* lastTempl, int start, int argc, char **argv)
+    xmlNsPtr xslns, selOptionsPtr ops, int* use_inputfile, int* use_value_of)
 {
-    int i;
-    int templateEmpty;
-    int nextTempl;
+    int have_next_template = 0;
+    int templateEmpty = 1;
     const template_option *targ = NULL;
     xmlNodePtr node = template_node;
 
-    if (strcmp(argv[start], "-t") != 0 &&
-        strcmp(argv[start], "--template") != 0)
-    {
-        fprintf(stderr, "not at the beginning of template\n");
-        abort();
-    }
-
-    *lastTempl = 0;
-    templateEmpty = 1;
-    nextTempl = 0;
-    i = start + 1;
-
-    while(i < argc)
-    {
+    for (;;) {
         xmlNodePtr newnode = NULL;
         const template_option *newtarg = NULL;
         int j;
         int nesting;
+        const char* option = get_arg(OPTION_NEXT);
 
-        if (argv[i][0] == '-' && argv[i][1] != '\0')
-        {
-            for (j = 0; j < sizeof(TEMPLATE_OPTIONS)/sizeof(*TEMPLATE_OPTIONS); j++)
-            {
-                newtarg = TEMPLATE_OPTIONS[j];
-                if (argv[i][1] == '-' && strcmp(newtarg->longopt, &argv[i][2]) == 0)
-                    goto found_option; /* long option */
-                else if(newtarg->shortopt == argv[i][1])
-                    goto found_option; /* short option */
-            }
-            fprintf(stderr, "unrecognized option: %s\n", argv[i]);
-            exit(EXIT_BAD_ARGS);
+        if (!option) break;
+        for (j = 0; j < sizeof(TEMPLATE_OPTIONS)/sizeof(*TEMPLATE_OPTIONS); j++) {
+            newtarg = TEMPLATE_OPTIONS[j];
+            if (option[1] == '-' && strcmp(newtarg->longopt, &option[2]) == 0)
+                goto found_option; /* long option */
+            else if(newtarg->shortopt == option[1])
+                goto found_option; /* short option */
         }
-        else
-        {
-            break;
-        }
+        fprintf(stderr, "unrecognized option: %s\n", option);
+        exit(EXIT_BAD_ARGS);
 
     found_option:
-        if (newtarg == &OPT_SORT && (targ != &OPT_MATCH && targ != &OPT_SORT))
-        {
+        if (newtarg == &OPT_SORT && (targ != &OPT_MATCH && targ != &OPT_SORT)) {
             fprintf(stderr, "sort(s) must follow match\n");
             exit(EXIT_BAD_ARGS);
-        }
-        else if (newtarg == &OPT_TEMPLATE)
-        {
-            nextTempl = 1;
-            i--;
+        } else if (newtarg == &OPT_TEMPLATE) {
+            have_next_template = 1;
             break;
-        }
-        else if (newtarg == &OPT_IF)
-        {
+        } else if (newtarg == &OPT_IF) {
             node = xmlNewChild(node, xslns, BAD_CAST "choose", NULL);
             node->_private = (void*) &OPT_IF;
-        }
-        else if (newtarg == &OPT_ELIF || newtarg == &OPT_ELSE)
-        {
+        } else if (newtarg == &OPT_ELIF || newtarg == &OPT_ELSE) {
             node = node->parent;
             if (node->_private != &OPT_IF) {
                 fprintf(stderr, "else without if\n");
                 exit(EXIT_BAD_ARGS);
             }
-        }
-        else if (newtarg == &OPT_VALUE_OF)
-        {
+        } else if (newtarg == &OPT_VALUE_OF) {
             node = xmlNewChild(node, xslns, BAD_CAST "call-template", NULL);
             xmlNewProp(node, BAD_CAST "name", BAD_CAST "value-of-template");
             node->_private = (void*) &OPT_VALUE_OF;
@@ -377,38 +316,41 @@ selGenTemplate(xmlNodePtr root, xmlNodePtr template_node,
             checkNsRefs(root, "exslt:node-set");
         }
 
-        i++;
         templateEmpty = 0;
         nesting = newtarg->nest;
 
         if (newtarg->xslname)
             newnode = xmlNewChild(node, xslns, newtarg->xslname, NULL);
 
-        for (j = 0; j < TEMPLATE_OPT_MAX_ARGS && newtarg->arguments[j].type; j++)
-        {
-            if (i >= argc && newtarg->arguments[j].type < TARG_NO_CMDLINE)
-                selUsage(argv[0], EXIT_BAD_ARGS);
-            switch (newtarg->arguments[j].type)
-            {
+        for (j = 0; j < TEMPLATE_OPT_MAX_ARGS && newtarg->arguments[j].type; j++) {
+            const char* arg = NULL;
+            if (newtarg->arguments[j].type < TARG_NO_CMDLINE) {
+                arg = get_arg(ARG_NEXT);
+                if (!arg) {
+                    fprintf(stderr, "%s expected another argument\n", option);
+                    exit(EXIT_BAD_ARGS);
+                }
+            }
+            switch (newtarg->arguments[j].type) {
             case TARG_VAR: {
-                char *equals = strchr(argv[i], '=');
+                char *equals = strchr(arg, '=');
                 if (equals) {
                     *equals = '\0';
                     xmlNewProp(newnode, BAD_CAST "select", BAD_CAST (&equals[1]));
                     nesting = 0;
                 }
-                xmlNewProp(newnode, newtarg->arguments[j].attrname, BAD_CAST argv[i]);
+                xmlNewProp(newnode, newtarg->arguments[j].attrname, BAD_CAST arg);
                 break;
             }
 
             case TARG_XPATH:
-                checkNsRefs(root, argv[i]);
+                checkNsRefs(root, arg);
             case TARG_ATTR_STRING:
-                xmlNewProp(newnode, newtarg->arguments[j].attrname, BAD_CAST argv[i]);
+                xmlNewProp(newnode, newtarg->arguments[j].attrname, BAD_CAST arg);
                 break;
 
             case TARG_STRING:
-                xmlNodeAddContent(newnode, BAD_CAST argv[i]);
+                xmlNodeAddContent(newnode, BAD_CAST arg);
                 break;
 
             case TARG_NEWLINE:
@@ -426,8 +368,12 @@ selGenTemplate(xmlNodePtr root, xmlNodePtr template_node,
             case TARG_SORT_OP: {
                 char order, data_type, case_order;
                 int nread;
-                nread = sscanf(argv[i], "%c:%c:%c", &order, &data_type, &case_order);
-                if (nread != 3) selUsage(argv[0], EXIT_BAD_ARGS); /* TODO: allow missing letters */
+                nread = sscanf(arg, "%c:%c:%c", &order, &data_type, &case_order);
+                if (nread != 3) {
+                    /* TODO: allow missing letters */
+                    fprintf(stderr, "sort requires (A|D):(N|T):(U|L), got %s\n", arg);
+                    exit(EXIT_BAD_ARGS);
+                }
 
                 if (order == 'A' || order == 'D')
                     xmlNewProp(newnode, BAD_CAST "order",
@@ -443,7 +389,6 @@ selGenTemplate(xmlNodePtr root, xmlNodePtr template_node,
             default:
                 assert(0);
             }
-            if (newtarg->arguments[j].type < TARG_NO_CMDLINE) i++;
         }
 
         switch (nesting) {
@@ -469,27 +414,19 @@ selGenTemplate(xmlNodePtr root, xmlNodePtr template_node,
         exit(EXIT_BAD_ARGS);
     }
 
-    if (!nextTempl)
-    {
-        if (i >= argc || argv[i][0] != '-' || strcmp(argv[i], "-") == 0)
-        {
-            *lastTempl = 1;
-            return i;           /* return index of next input filename */
-        }
-    }
-
-    /* return index to beginning of the next template */
-    return ++i;
+    return have_next_template;
 }
 
 /**
  *  Prepare XSLT stylesheet based on command line options
  */
-int
-selPrepareXslt(xmlDocPtr style, selOptionsPtr ops, xmlChar *ns_arr[],
-               int start, int argc, char **argv)
+void
+selPrepareXslt(xmlDocPtr style, selOptionsPtr ops)
 {
-    int i, t, ns, use_inputfile = 0, use_value_of = 0;
+    const xmlChar* TEMPLATE_NAME_FMT = BAD_CAST "t%d";
+    xmlChar num_buf[1+10+1];    /* t+maxnumber+NUL */
+
+    int ns, use_inputfile = 0, use_value_of = 0, templates = 0;
     xmlNodePtr root, root_template = NULL;
     xmlNsPtr xslns;
     xmlBufferPtr attr_buf;
@@ -519,51 +456,48 @@ selPrepareXslt(xmlDocPtr style, selOptionsPtr ops, xmlChar *ns_arr[],
         if (ops->outText) xmlNewProp(output, BAD_CAST "method", BAD_CAST "text");
     }
 
-    for (i = start, t = 0; i < argc; i++)
-        if(!strcmp(argv[i], "-t") || !strcmp(argv[i], "--template"))
-            t++;
-
-    /*
-     *  At least one -t option must be found
-     */
-    if (t == 0)
     {
-        fprintf(stderr, "error in arguments:");
-        fprintf(stderr, " no -t or --template options found\n");
-        exit(EXIT_BAD_ARGS);
+        const char* arg = get_arg(OPTION_NEXT);
+        if (!arg || (strcmp(arg, "-t") != 0 && strcmp(arg, "--template") != 0)) {
+            fprintf(stderr, "error in arguments:");
+            fprintf(stderr, " no -t or --template options found\n");
+            exit(EXIT_BAD_ARGS);
+        }
     }
 
-    if (t > 1)
+    for (;;) {
+        xmlNodePtr template;
+        int more_templates = 0;
+        templates++;
+        template = xmlNewChild(root, xslns, BAD_CAST "template", NULL);
+
+        more_templates = selGenTemplate(root, template,
+            xslns, ops, &use_inputfile, &use_value_of);
+        if (!more_templates) break;
+    }
+
+    if (templates > 1) {
+        int t;
+        xmlNodePtr callee_template = root->last;
         root_template = xmlNewChild(root, xslns, BAD_CAST "template", NULL);
 
-    t = 0;
-    i = start;
-    while(i < argc)
-    {
-        if(!strcmp(argv[i], "-t") || !strcmp(argv[i], "--template"))
-        {
-            xmlNodePtr call_template, template;
-            int lastTempl = 0;
-            t++;
-            template = xmlNewChild(root, xslns, BAD_CAST "template", NULL);
+        for (t = 0; t < templates; t++) {
+            xmlNodePtr call_template;
 
-            if (root_template) {
-                xmlChar num_buf[1+10+1];    /* t+maxnumber+NUL */
-                xmlStrPrintf(num_buf, sizeof num_buf, BAD_CAST "t%d", t);
+            call_template = xmlNewChild(root_template, xslns,
+                BAD_CAST "call-template", NULL);
 
-                call_template = xmlNewChild(root_template, xslns,
-                    BAD_CAST "call-template", NULL);
-                xmlNewProp(call_template, BAD_CAST "name", num_buf);
-                xmlNewProp(template, BAD_CAST "name", num_buf);
-            } else {
-                root_template = template;
-            }
+            xmlStrPrintf(num_buf, sizeof num_buf, TEMPLATE_NAME_FMT, t);
+            xmlNewProp(call_template, BAD_CAST "name", num_buf);
 
-            i = selGenTemplate(root, template,
-                xslns, ops, &use_inputfile, &use_value_of,
-                &lastTempl, i, argc, argv);
-            if (lastTempl) break;
+            /* we are going over callee templates backwards  */
+            xmlStrPrintf(num_buf, sizeof num_buf, TEMPLATE_NAME_FMT, templates-1 - t);
+            xmlNewProp(callee_template, BAD_CAST "name", num_buf);
+
+            callee_template = callee_template->prev;
         }
+    } else {
+        root_template = root->last;
     }
 
     if (!ops->outText && ops->printRoot) {
@@ -626,8 +560,6 @@ selPrepareXslt(xmlDocPtr style, selOptionsPtr ops, xmlChar *ns_arr[],
 
 #       undef XSLT_NS
     }
-
-    return i;
 }
 
 /**
@@ -694,20 +626,20 @@ do_file(const char *filename, xmlDocPtr style_tree,
  *  This is the main function for 'select' option
  */
 int
-selMain(int argc, char **argv)
+selMain(void)
 {
     static xsltOptions xsltOps;
     static selOptions ops;
-    int start, i, n, status = EXIT_FAILURE;
-    int nCount = 0;
+    int status = EXIT_FAILURE;
     xmlDocPtr style_tree;
     int xml_options = 0;
 
-    if (argc <= 2) selUsage(argv[0], EXIT_BAD_ARGS);
+    handle_namespace_args = 1;
+    if (!get_arg(ARG_PEEK)) selUsage(EXIT_BAD_ARGS);
 
     selInitOptions(&ops);
     xsltInitOptions(&xsltOps);
-    start = selParseOptions(&ops, argc, argv);
+    selParseOptions(&ops);
     xml_options |= XML_PARSE_NOENT; /* substitute entities */
     xml_options |= ops.nonet? XML_PARSE_NONET : 0;
     xsltOps.nonet = ops.nonet;
@@ -715,16 +647,17 @@ selMain(int argc, char **argv)
     xsltInitLibXml(&xsltOps);
     xsltSetSortFunc(caseSortFunction);
 
-    /* set parameters */
-    parseNSArr(ns_arr, &nCount, start, argv+2);
-
     style_tree = xmlNewDoc(NULL);
-    i = selPrepareXslt(style_tree, &ops, ns_arr, start, argc, argv);
+    selPrepareXslt(style_tree, &ops);
 
     if (ops.printXSLT)
     {
-        if (i < argc) {
-            xmlTextReaderPtr reader = xmlReaderForFile(argv[i], NULL, xml_options);
+        for (;;) {
+            xmlTextReaderPtr reader;
+            const char* filename = get_arg(ARG_NEXT);
+            if (!filename) break;
+
+            reader = xmlReaderForFile(filename, NULL, xml_options);
             xmlTextReaderRead(reader);
             extract_ns_defs(xmlTextReaderCurrentNode(reader), style_tree);
             xmlTextReaderClose(reader);
@@ -733,11 +666,15 @@ selMain(int argc, char **argv)
         exit(EXIT_SUCCESS);
     }
 
-    for (n=i; n<argc; n++)
-        do_file(argv[n], style_tree, xml_options, &ops, &xsltOps, &status);
-
-    if (i == argc)
+    if (get_arg(ARG_PEEK)) {
+        for (;;) {
+            const char* filename = get_arg(ARG_NEXT);
+            if (!filename) break;
+            do_file(filename, style_tree, xml_options, &ops, &xsltOps, &status);
+        }
+    } else {
         do_file("-", style_tree, xml_options, &ops, &xsltOps, &status);
+    }
 
     /* 
      * Shutdown libxml

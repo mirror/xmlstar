@@ -36,12 +36,11 @@ void registerXstarVariable(xmlXPathContextPtr ctxt,
     const char* name, xmlXPathObjectPtr value);
 void registerXstarNs(xmlXPathContextPtr ctxt);
 
-int parseNSArr(xmlChar** ns_arr, int* plen, int argc, char **argv);
 void cleanupNSArr(xmlChar **ns_arr);
 extern xmlChar *ns_arr[];
 
 extern int edMain(void);
-extern int selMain(int argc, char **argv);
+extern int selMain(void);
 extern int trMain(int argc, char **argv);
 extern int valMain(int argc, char **argv);
 extern int foMain(int argc, char **argv);
