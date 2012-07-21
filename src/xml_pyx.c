@@ -221,12 +221,12 @@ pyxCdataBlockHandler(void *ctx ATTRIBUTE_UNUSED, const xmlChar *value, int len)
 }
 
 static void
-pyxUsage(const char *argv0, exit_status status)
+pyxUsage(exit_status status)
 {
     extern void fprint_pyx_usage(FILE* o, const char* argv0);
     extern const char more_info[];
     FILE *o = (status == EXIT_SUCCESS)? stdout : stderr;
-    fprint_pyx_usage(o, argv0);
+    fprint_pyx_usage(o, get_arg(ARG0));
     fprintf(o, "%s", more_info);
     exit(status);
 }
@@ -263,31 +263,27 @@ pyx_process_file(const char *filename)
 }
 
 int
-pyxMain(int argc, char *argv[])
+pyxMain(void)
 {
     int status = 0;
+    const char* filename = get_arg(ARG_NEXT);
+    if (!filename) filename = "-";
 
-    if ((argc > 2) &&
-        (
-           (strcmp(argv[2],"-h") == 0) ||
-           (strcmp(argv[2],"-H") == 0) ||
-           (strcmp(argv[2],"-Z") == 0) ||
-           (strcmp(argv[2],"-?") == 0) ||
-           (strcmp(argv[2],"--help") == 0)
-       ))
+    if (strcmp(filename,"-h") == 0 ||
+        strcmp(filename,"-H") == 0 ||
+        strcmp(filename,"-Z") == 0 ||
+        strcmp(filename,"-?") == 0 ||
+        strcmp(filename,"--help") == 0)
     {
-        pyxUsage(argv[0], EXIT_SUCCESS);
+        pyxUsage(EXIT_SUCCESS);
     }
-    if (argc == 2) {
-        status = pyx_process_file("-");
-    }
-    else {
-        argv++;
-        argc--;
-        for (++argv; argc>1; argc--,argv++) {
-            int ret = pyx_process_file(*argv);
-            if (ret != 0) status = ret;
-        }
+
+    for (;;) {
+        int ret = pyx_process_file(filename);
+        if (ret != 0) status = ret;
+
+        filename = get_arg(ARG_NEXT);
+        if (!filename) break;
     }
     return status;
 }

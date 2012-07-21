@@ -260,7 +260,7 @@ main(int argc, char **argv)
     }
     else if (!strcmp(argv1, "pyx") || !strcmp(argv1, "xmln"))
     {
-        ret = pyxMain(argc, argv);
+        ret = pyxMain();
     }
     else if (!strcmp(argv1, "depyx") || !strcmp(argv1, "p2x"))
     {
