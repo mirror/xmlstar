@@ -45,7 +45,7 @@ extern int trMain(void);
 extern int valMain(void);
 extern int foMain(void);
 extern int elMain(void);
-extern int c14nMain(int argc, char **argv);
+extern int c14nMain(void);
 extern int lsMain(int argc, char **argv);
 extern int pyxMain(int argc, char **argv);
 extern int depyxMain(int argc, char **argv);

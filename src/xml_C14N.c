@@ -29,12 +29,12 @@
 
 #include "xmlstar.h"
 
-static void c14nUsage(const char *name, exit_status status)
+static void c14nUsage(exit_status status)
 {
     extern void fprint_c14n_usage(FILE* o, const char* argv0);
     extern const char more_info[];
     FILE *o = (status == EXIT_SUCCESS)? stdout : stderr;
-    fprint_c14n_usage(o, name);
+    fprint_c14n_usage(o, get_arg(ARG0));
     fprintf(o, "%s", more_info);
     exit(status);
 }
@@ -42,7 +42,7 @@ static void c14nUsage(const char *name, exit_status status)
 static xmlXPathObjectPtr
 load_xpath_expr (xmlDocPtr parent_doc, const char* filename);
 
-static xmlChar **parse_list(xmlChar *str);
+static xmlChar **parse_list(char *str);
 
 #if 0
 static void print_xpath_nodes(xmlNodeSetPtr nodes);
@@ -114,55 +114,58 @@ run_c14n(const char* xml_filename, int with_comments, int exclusive,
     return(ret >= 0? EXIT_SUCCESS : EXIT_FAILURE);
 }
 
-int c14nMain(int argc, char **argv) {
+int c14nMain(void) {
     int ret = -1, nonet = 1;
+    int with_comments = 0, exclusive = 0;
+    const char* option;
+    const char* xml_filename;
+    const char* xpath_filename;
+    xmlChar** incl_ns_list = NULL;
+    char* incl_ns_arg;
     
     /*
      * Init libxml
      */     
     xmlInitParser();
-    LIBXML_TEST_VERSION
+    {LIBXML_TEST_VERSION}
     
     /*
      * Parse command line and process file
      */
 
-    if (argc > 2 && strcmp(argv[2], "--net") == 0) {
+    option = get_arg(OPTION_NEXT);
+    if (option && strcmp(option, "--net") == 0) {
         nonet = 0;
-        /* TODO: parse options properly */
-        argc--;
-        argv++;
+        option = get_arg(OPTION_NEXT);
     }
+    xml_filename = get_arg(ARG_NEXT);
+    if (!xml_filename) xml_filename = "-";
+    xpath_filename = get_arg(ARG_NEXT);
 
-    if (argc < 4) {
-        if (argc >= 3)
-        {
-            if (strcmp(argv[2], "--help") == 0 || strcmp(argv[2], "-h") == 0)
-                c14nUsage(argv[0], EXIT_SUCCESS);
-        }
-        ret = run_c14n((argc > 2)? argv[2] : "-", 1, 0, NULL, NULL, nonet);
-    } else if(strcmp(argv[2], "--with-comments") == 0) {
-        ret = run_c14n(argv[3], 1, 0, (argc > 4) ? argv[4] : NULL, NULL, nonet);
-    } else if(strcmp(argv[2], "--without-comments") == 0) {
-        ret = run_c14n(argv[3], 0, 0, (argc > 4) ? argv[4] : NULL, NULL, nonet);
-    } else if(strcmp(argv[2], "--exc-with-comments") == 0) {
-        xmlChar **list;
-        
-        /* load exclusive namespace from command line */
-        list = (argc > 5) ? parse_list((xmlChar *)argv[5]) : NULL;
-        ret = run_c14n(argv[3], 1, 1, (argc > 4) ? argv[4] : NULL, list, nonet);
-        if(list != NULL) xmlFree(list);
-    } else if(strcmp(argv[2], "--exc-without-comments") == 0) {
-        xmlChar **list;
-        
-        /* load exclusive namespace from command line */
-        list = (argc > 5) ? parse_list((xmlChar *)argv[5]) : NULL;
-        ret = run_c14n(argv[3], 0, 1, (argc > 4) ? argv[4] : NULL, list, nonet);
-        if(list != NULL) xmlFree(list);
-    } else {
-        fprintf(stderr, "error: bad arguments.\n");
-        c14nUsage(argv[0], EXIT_BAD_ARGS);
-    }
+
+     if (!option || strcmp(option, "--with-comments") == 0) {
+         with_comments = 1;
+     } else if (strcmp(option, "--without-comments") == 0) {
+         ;
+     } else if(strcmp(option, "--exc-with-comments") == 0) {
+         exclusive = 1;
+         with_comments = 1;
+     } else if(strcmp(option, "--exc-without-comments") == 0) {
+         exclusive = 1;
+     } else if (strcmp(option, "--help") == 0 || strcmp(option, "-h") == 0) {
+        c14nUsage(EXIT_SUCCESS);
+     } else {
+         fprintf(stderr, "error: unknown mode: %s.\n", option);
+         exit(EXIT_BAD_ARGS);
+     }
+
+     if (exclusive) {
+         incl_ns_arg = get_arg(ARG_NEXT);
+         if (incl_ns_arg) incl_ns_list = parse_list(incl_ns_arg);
+     }
+     ret = run_c14n(xml_filename, with_comments, exclusive,
+         xpath_filename, incl_ns_list, nonet);
+     free(incl_ns_list);
 
     /* 
      * Shutdown libxml
@@ -187,7 +190,7 @@ int c14nMain(int argc, char **argv) {
 }
 
 static xmlChar **
-parse_list(xmlChar *str) {
+parse_list(char *str) {
     xmlChar **buffer;
     xmlChar **out = NULL;
     int buffer_size = 0;
@@ -197,7 +200,7 @@ parse_list(xmlChar *str) {
         return(NULL);
     }
 
-    len = xmlStrlen(str);
+    len = xmlStrlen(BAD_CAST str);
     if((str[0] == '\'') && (str[len - 1] == '\'')) {
         str[len - 1] = '\0';
         str++;
@@ -217,7 +220,7 @@ parse_list(xmlChar *str) {
             growBufferReentrant();
             out = &buffer[indx];
         }
-        (*out++) = str;
+        (*out++) = BAD_CAST str;
         while(*str != ',' && *str != '\0') ++str;
         if(*str == ',') *(str++) = '\0';
     }

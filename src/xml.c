@@ -252,7 +252,7 @@ main(int argc, char **argv)
     }
     else if (!strcmp(argv1, "c14n") || !strcmp(argv1, "canonic"))
     {
-        ret = c14nMain(argc, argv);
+        ret = c14nMain();
     }
     else if (!strcmp(argv1, "ls") || !strcmp(argv1, "list"))
     {
