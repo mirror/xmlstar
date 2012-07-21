@@ -64,12 +64,12 @@ THE SOFTWARE.
  *  Print small help for command line options
  */
 void
-lsUsage(int argc, char **argv, exit_status status)
+lsUsage(exit_status status)
 {
     extern void fprint_ls_usage(FILE* o, const char* argv0);
     extern const char more_info[];
     FILE *o = (status == EXIT_SUCCESS)? stdout : stderr;
-    fprint_ls_usage(o, argv[0]);
+    fprint_ls_usage(o, get_arg(ARG0));
     fprintf(o, "%s", more_info);
     exit(status);
 }
@@ -182,19 +182,14 @@ xml_print_dir(const char* dir)
 }
 
 int
-lsMain(int argc, char** argv)
+lsMain(void)
 {
-    const char *dir = ".";
     int files;
+    const char *dir = get_arg(ARG_NEXT);
+    if (!dir) dir = ".";
 
-    if (argc == 3) {
-        if (strcmp(argv[2], "--help") == 0)
-            lsUsage(argc, argv, EXIT_SUCCESS);
-        else
-            dir = argv[2];
-    } else if (argc > 3) {
-        lsUsage(argc, argv, EXIT_BAD_ARGS);
-    }
+    if (strcmp(dir, "--help") == 0)
+        lsUsage(EXIT_SUCCESS);
 
     printf("<dir>\n");
     files = xml_print_dir(dir);

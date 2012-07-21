@@ -256,7 +256,7 @@ main(int argc, char **argv)
     }
     else if (!strcmp(argv1, "ls") || !strcmp(argv1, "list"))
     {
-        ret = lsMain(argc, argv);
+        ret = lsMain();
     }
     else if (!strcmp(argv1, "pyx") || !strcmp(argv1, "xmln"))
     {
