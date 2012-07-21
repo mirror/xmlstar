@@ -53,6 +53,7 @@ extern int depyxMain(int argc, char **argv);
 extern int escMain(int argc, char **argv, int escape);
 
 typedef enum { ARG0, ARG_PEEK, ARG_NEXT, OPTION_NEXT } ArgOp;
+extern int handle_namespace_args;
 char* get_arg(ArgOp op);
 
 #endif  /* XMLSTAR_H */

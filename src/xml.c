@@ -145,6 +145,17 @@ xstrdup(const char *str)
     return ret;
 }
 
+#define MAX_NS_ARGS    256
+xmlChar *ns_arr[2 * MAX_NS_ARGS + 1];
+int ns_arr_items = 0;
+int handle_namespace_args;
+static void bad_ns_opt(const char *msg)
+{
+    fprintf(stderr, "Bad namespace option: %s\n", msg);
+    exit(EXIT_BAD_ARGS);
+}
+
+
 static int main_argc;
 static char** main_argv;
 char* get_arg(ArgOp op)
@@ -159,7 +170,27 @@ char* get_arg(ArgOp op)
         if (argi >= main_argc) {
             return NULL;
         } else {
-            char* arg =  main_argv[argi];
+            char* arg = main_argv[argi];
+            while (handle_namespace_args && strcmp(arg, "-N") == 0) {
+                const xmlChar *equal_sign;
+                int prefix_len;
+                arg = main_argv[++argi];
+                if (!arg) bad_ns_opt("-N without arguments");
+
+                if (ns_arr_items/2 >= MAX_NS_ARGS) {
+                    fprintf(stderr, "too many namespaces increase MAX_NS_ARGS\n");
+                    exit(EXIT_INTERNAL_ERROR);
+                }
+                equal_sign = xmlStrchr((const xmlChar*) arg, '=');
+                if (!equal_sign) bad_ns_opt("namespace should have the form <prefix>=<url>");
+                prefix_len = equal_sign - (const xmlChar*) arg;
+
+                ns_arr[ns_arr_items++] = xmlStrndup((const xmlChar*) arg, prefix_len);
+                ns_arr[ns_arr_items++] = xmlStrdup((const xmlChar*) arg+prefix_len+1);
+                ns_arr[ns_arr_items] = NULL;
+
+                arg = main_argv[++argi];
+            }
             if (op == OPTION_NEXT && arg[0] != '-') return NULL;
             if (op == ARG_NEXT || op == OPTION_NEXT) argi++;
             return arg;
@@ -296,16 +327,6 @@ registerXstarNs(xmlXPathContextPtr ctxt)
     xmlXPathRegisterVariableLookup(ctxt, &varLookupFallbackToXstarNS, ctxt);
     xmlXPathRegisterNs(ctxt, XMLSTAR_NS_PREFIX, XMLSTAR_NS);
 }
-
-
-static void bad_ns_opt(const char *msg)
-{
-    fprintf(stderr, "Bad namespace option: %s\n", msg);
-    exit(EXIT_BAD_ARGS);
-}
-
-#define MAX_NS_ARGS    256
-xmlChar *ns_arr[2 * MAX_NS_ARGS + 1];
 
 /**
  *  Parse command line for -N <prefix>=<namespace> arguments

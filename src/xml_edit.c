@@ -607,11 +607,10 @@ edMain(void)
 
     if (!get_arg(ARG_PEEK)) edUsage(EXIT_BAD_ARGS);
 
+    handle_namespace_args = 1;
     edInitOptions(&g_ops);
     edParseOptions(&g_ops);
 
-    /* parseNSArr(ns_arr, &nCount, argc-start, argv+start); */
-        
     /*
      *  parse command line and fill array of operations
      */
