@@ -51,14 +51,14 @@ THE SOFTWARE.
  *  Print small help for command line options
  */
 void
-escUsage(int argc, char **argv, int escape, exit_status status)
+escUsage(int escape, exit_status status)
 {
     extern void fprint_escape_usage(FILE* o, const char* argv0);
     extern void fprint_unescape_usage(FILE* o, const char* argv0);
     extern const char more_info[];
     FILE *o = (status == EXIT_SUCCESS)? stdout : stderr;
-    if (escape) fprint_escape_usage(o, argv[0]);
-    else fprint_unescape_usage(o, argv[0]);
+    if (escape) fprint_escape_usage(o, get_arg(ARG0));
+    else fprint_unescape_usage(o, get_arg(ARG0));
     fprintf(o, "%s", more_info);
     exit(status);
 }
@@ -264,29 +264,19 @@ xml_unescape(char* str)
  *  This is the main function for 'escape/unescape' options
  */
 int
-escMain(int argc, char **argv, int escape)
+escMain(int escape)
 {
     int ret = 0;
     int readStdIn = 0;
         
-    char* inp = NULL;
     xmlChar* outBuf = NULL;
+    char* inp = get_arg(ARG_NEXT);
     
-    if (argc < 2) escUsage(argc, argv, escape, EXIT_BAD_ARGS);
-
-    inp = argv[2];
-
-    if (argc > 2)
-    {
-        if (!strcmp(argv[2], "--help") || !strcmp(argv[2], "-h") ||
-           !strcmp(argv[2], "-?") || !strcmp(argv[2], "-Z"))
-            escUsage(argc, argv, escape, EXIT_SUCCESS);
-        if (!strcmp(argv[2], "-")) readStdIn = 1;
-    }
-    else
-    {
-        readStdIn = 1;        
-    }
+    if (!inp || strcmp(inp, "-") == 0)
+        readStdIn = 1;
+    else if (strcmp(inp, "--help") == 0 || strcmp(inp, "-h") == 0 ||
+        strcmp(inp, "-?") == 0 || strcmp(inp, "-Z") == 0)
+        escUsage(escape, EXIT_SUCCESS);
 
     if (readStdIn)
     {

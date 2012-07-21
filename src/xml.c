@@ -268,11 +268,11 @@ main(int argc, char **argv)
     }
     else if (!strcmp(argv1, "esc") || !strcmp(argv1, "escape"))
     {
-        ret = escMain(argc, argv, 1);
+        ret = escMain(1);
     }
     else if (!strcmp(argv1, "unesc") || !strcmp(argv1, "unescape"))
     {
-        ret = escMain(argc, argv, 0);
+        ret = escMain(0);
     }
     else if (!strcmp(argv1, "--version"))
     {

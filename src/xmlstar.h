@@ -49,7 +49,7 @@ extern int c14nMain(void);
 extern int lsMain(void);
 extern int pyxMain(void);
 extern int depyxMain(void);
-extern int escMain(int argc, char **argv, int escape);
+extern int escMain(int escape);
 
 typedef enum { ARG0, ARG_PEEK, ARG_NEXT, OPTION_NEXT } ArgOp;
 extern int handle_namespace_args;
