@@ -63,12 +63,12 @@ static xmlChar *curXPath = NULL;
  *  Display usage syntax
  */
 void
-elUsage(int argc, char **argv, exit_status status)
+elUsage(exit_status status)
 {
     extern void fprint_elem_usage(FILE* o, const char* argv0);
     extern const char more_info[];
     FILE *o = (status == EXIT_SUCCESS)? stdout : stderr;
-    fprint_elem_usage(o, argv[0]);
+    fprint_elem_usage(o, get_arg(ARG0));
     fprintf(o, "%s", more_info);
     exit(status);
 }
@@ -208,59 +208,38 @@ compare_string_ptr(const void *p1, const void *p2)
  *  This is the main function for 'el' option
  */
 int
-elMain(int argc, char **argv)
+elMain(void)
 {
     int errorno = 0;
-    char* inp_file = "-";
-
-    if (argc <= 1) elUsage(argc, argv, EXIT_BAD_ARGS);
+    const char* option = get_arg(OPTION_NEXT);
+    const char* inp_file = get_arg(ARG_NEXT);
 
     elInitOptions(&elOps);
 
-    if (argc == 2)
-        errorno = parse_xml_file("-");  
-    else
-    {
-        if (!strcmp(argv[2], "--help") || !strcmp(argv[2], "-h") ||
-            !strcmp(argv[2], "-?") || !strcmp(argv[2], "-Z"))
-        {
-            elUsage(argc, argv, EXIT_SUCCESS);
-        }
-        else if (!strcmp(argv[2], "-a"))
-        {
+    if (!inp_file) inp_file = "-";
+
+    if (option) {
+        if (strcmp(option, "--help") == 0 || strcmp(option, "-h") == 0 ||
+            strcmp(option, "-?") == 0 || strcmp(option, "-Z") == 0) {
+            elUsage(EXIT_SUCCESS);
+        } else if (strcmp(option, "-a") == 0) {
             elOps.show_attr = 1;
-            if (argc >= 4) inp_file = argv[3];
-            errorno = parse_xml_file(inp_file);
-        }
-        else if (!strcmp(argv[2], "-v"))
-        {
+        } else if (strcmp(option, "-v") == 0) {
             elOps.show_attr_and_val = 1;
-            if (argc >= 4) inp_file = argv[3];
-            errorno = parse_xml_file(inp_file);
-        }
-        else if (!strcmp(argv[2], "-u"))
-        {
+        } else if (strcmp(option, "-u") == 0) {
             elOps.sort_uniq = 1;
-            if (argc >= 4) inp_file = argv[3];
             uniq = xmlHashCreate(0);
-            errorno = parse_xml_file(inp_file);
-        }
-        else if (!strncmp(argv[2], "-d", 2)) 
-        { 
-            elOps.check_depth = atoi(argv[2]+2); 
+        } else if (strncmp(option, "-d", 2) == 0) {
+            elOps.check_depth = atoi(option+2);
             /* printf("Checking depth (%d)\n", elOps.check_depth); */ 
-            elOps.sort_uniq = 1; 
-            if (argc >= 4) inp_file = argv[3];
+            elOps.sort_uniq = 1;
             uniq = xmlHashCreate(0);
-            errorno = parse_xml_file(inp_file); 
+        } else {
+            fprintf(stderr, "unrecognized option %s\n", option);
+            exit(EXIT_BAD_ARGS);
         }
-        else if (argv[2][0] != '-')
-        {
-            errorno = parse_xml_file(argv[2]);
-        }
-        else
-            elUsage(argc, argv, EXIT_BAD_ARGS);
     }
+    errorno = parse_xml_file(inp_file);
 
     if (uniq)
     {

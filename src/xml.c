@@ -248,7 +248,7 @@ main(int argc, char **argv)
     }
     else if (!strcmp(argv1, "el") || !strcmp(argv1, "elements"))
     {
-        ret = elMain(argc, argv);
+        ret = elMain();
     }
     else if (!strcmp(argv1, "c14n") || !strcmp(argv1, "canonic"))
     {
