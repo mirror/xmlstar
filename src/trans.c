@@ -166,7 +166,7 @@ xsltProcess(xsltOptionsPtr ops, xmlDocPtr doc, const char** params,
 /**
  *  run XSLT on documents
  */
-int xsltRun(xsltOptionsPtr ops, char* xsl, const char** params,
+int xsltRun(xsltOptionsPtr ops, const char* xsl, const char** params,
             int count, char **docs)
 {
     xsltStylesheetPtr cur = NULL;

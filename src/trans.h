@@ -89,7 +89,7 @@ xmlDocPtr xsltTransform(xsltOptionsPtr ops, xmlDocPtr doc,
                  const char **params, xsltStylesheetPtr cur,
                  const char *filename);
 
-int xsltRun(xsltOptionsPtr ops, char* xsl,
+int xsltRun(xsltOptionsPtr ops, const char* xsl,
             const char **params,
             int count, char **docs);
 

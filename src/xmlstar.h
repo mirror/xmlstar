@@ -41,7 +41,7 @@ extern xmlChar *ns_arr[];
 
 extern int edMain(void);
 extern int selMain(void);
-extern int trMain(int argc, char **argv);
+extern int trMain(void);
 extern int valMain(int argc, char **argv);
 extern int foMain(int argc, char **argv);
 extern int elMain(int argc, char **argv);
@@ -53,6 +53,9 @@ extern int escMain(int argc, char **argv, int escape);
 
 typedef enum { ARG0, ARG_PEEK, ARG_NEXT, OPTION_NEXT } ArgOp;
 extern int handle_namespace_args;
+extern int main_argc;
+extern char** main_argv;
+extern int main_argi;
 char* get_arg(ArgOp op);
 
 #endif  /* XMLSTAR_H */

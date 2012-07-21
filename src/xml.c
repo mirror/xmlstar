@@ -156,25 +156,25 @@ static void bad_ns_opt(const char *msg)
 }
 
 
-static int main_argc;
-static char** main_argv;
+int main_argc;
+char** main_argv;
+int main_argi = 0;
 char* get_arg(ArgOp op)
 {
-    static int argi = 0;
     switch (op) {
     case ARG0:
         return main_argv[0];
     case ARG_NEXT:
     case ARG_PEEK:
     case OPTION_NEXT:
-        if (argi >= main_argc) {
+        if (main_argi >= main_argc) {
             return NULL;
         } else {
-            char* arg = main_argv[argi];
+            char* arg = main_argv[main_argi];
             while (handle_namespace_args && strcmp(arg, "-N") == 0) {
                 const xmlChar *equal_sign;
                 int prefix_len;
-                arg = main_argv[++argi];
+                arg = main_argv[++main_argi];
                 if (!arg) bad_ns_opt("-N without arguments");
 
                 if (ns_arr_items/2 >= MAX_NS_ARGS) {
@@ -189,11 +189,11 @@ char* get_arg(ArgOp op)
                 ns_arr[ns_arr_items++] = xmlStrdup((const xmlChar*) arg+prefix_len+1);
                 ns_arr[ns_arr_items] = NULL;
 
-                arg = main_argv[++argi];
+                arg = main_argv[++main_argi];
             }
             if (op == OPTION_NEXT && (arg[0] != '-' || arg[1] == '\0'))
                 return NULL;
-            if (op == ARG_NEXT || op == OPTION_NEXT) argi++;
+            if (op == ARG_NEXT || op == OPTION_NEXT) main_argi++;
             return arg;
         }
 
@@ -236,7 +236,7 @@ main(int argc, char **argv)
     }
     else if (!strcmp(argv1, "tr") || !strcmp(argv1, "transform"))
     {
-        ret = trMain(argc, argv);
+        ret = trMain();
     }
     else if (!strcmp(argv1, "fo") || !strcmp(argv1, "format"))
     {
