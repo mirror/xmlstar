@@ -264,7 +264,7 @@ main(int argc, char **argv)
     }
     else if (!strcmp(argv1, "depyx") || !strcmp(argv1, "p2x"))
     {
-        ret = depyxMain(argc, argv);
+        ret = depyxMain();
     }
     else if (!strcmp(argv1, "esc") || !strcmp(argv1, "escape"))
     {

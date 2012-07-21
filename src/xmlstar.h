@@ -48,7 +48,7 @@ extern int elMain(void);
 extern int c14nMain(void);
 extern int lsMain(void);
 extern int pyxMain(void);
-extern int depyxMain(int argc, char **argv);
+extern int depyxMain(void);
 extern int escMain(int argc, char **argv, int escape);
 
 typedef enum { ARG0, ARG_PEEK, ARG_NEXT, OPTION_NEXT } ArgOp;

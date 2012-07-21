@@ -38,12 +38,12 @@ THE SOFTWARE.
 #define INSZ 4*1024
 
 static void
-depyxUsage(int argc, char **argv, exit_status status)
+depyxUsage(exit_status status)
 {
     extern void fprint_depyx_usage(FILE* o, const char* argv0);
     extern const char more_info[];
     FILE *o = (status == EXIT_SUCCESS)? stdout : stderr;
-    fprint_depyx_usage(o, argv[0]);
+    fprint_depyx_usage(o, get_arg(ARG0));
     fprintf(o, "%s", more_info);
     exit(status);
 }
@@ -53,7 +53,7 @@ depyxUsage(int argc, char **argv, exit_status status)
  *
  */
 void
-pyxDecode(char *str, xml_C14NNormalizationMode mode)
+pyxDecode(const char *str, xml_C14NNormalizationMode mode)
 {
    while (*str)
    {
@@ -101,12 +101,12 @@ pyxDecode(char *str, xml_C14NNormalizationMode mode)
  *
  */
 int
-pyxDePyx(char *file)
+pyxDePyx(const char *file)
 {
    static char line[INSZ];
    FILE *in = stdin;
 
-   if (strcmp(file, "-"))
+   if (strcmp(file, "-") != 0)
    {
        in = fopen(file, "r");
        if (in == NULL)
@@ -206,6 +206,7 @@ pyxDePyx(char *file)
        }
    }
 
+   printf("\n");
    return EXIT_SUCCESS;
 }
 
@@ -214,29 +215,14 @@ pyxDePyx(char *file)
  *
  */
 int
-depyxMain(int argc, char **argv)
+depyxMain(void)
 {
-   int ret = EXIT_SUCCESS;
+   const char* filename = get_arg(ARG_NEXT);
+   if (!filename) filename = "-";
 
-   if ((argc >= 3) && (!strcmp(argv[2], "-h") || !strcmp(argv[2], "--help")))
-   {
-       depyxUsage(argc, argv, EXIT_SUCCESS);
+   if (strcmp(filename, "-h") == 0 || strcmp(filename, "--help") == 0) {
+       depyxUsage(EXIT_SUCCESS);
    }
-   else if (argc == 3)
-   {
-       ret = pyxDePyx(argv[2]);
-   }
-   else if (argc == 2)
-   {  
-       ret = pyxDePyx("-");
-   }
-   else
-   {
-       depyxUsage(argc, argv, EXIT_BAD_ARGS);
-   }
-   
-   printf("\n");
-
-   return ret;
+   return pyxDePyx(filename);
 }
 
