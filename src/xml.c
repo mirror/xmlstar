@@ -244,7 +244,7 @@ main(int argc, char **argv)
     }
     else if (!strcmp(argv1, "val") || !strcmp(argv1, "validate"))
     {
-        ret = valMain(argc, argv);
+        ret = valMain();
     }
     else if (!strcmp(argv1, "el") || !strcmp(argv1, "elements"))
     {

@@ -54,9 +54,9 @@ THE SOFTWARE.
  */
 
 typedef struct _valOptions {
-    char *dtd;                /* External DTD URL or file name */
-    char *schema;             /* External Schema URL or file name */
-    char *relaxng;            /* External Relax-NG Schema URL or file name */
+    const char *dtd;          /* External DTD URL or file name */
+    const char *schema;       /* External Schema URL or file name */
+    const char *relaxng;      /* External Relax-NG Schema URL or file name */
     int   err;                /* Allow stderr messages */
     int   embed;              /* Validate using embeded DTD */
     int   wellFormed;         /* Check if well formed only */
@@ -71,12 +71,12 @@ typedef valOptions *valOptionsPtr;
  *  display short help message
  */
 void
-valUsage(int argc, char **argv, exit_status status)
+valUsage(exit_status status)
 {
     extern void fprint_validate_usage(FILE* o, const char* argv0);
     extern const char more_info[];
     FILE *o = (status == EXIT_SUCCESS)? stdout : stderr;
-    fprint_validate_usage(o, argv[0]);
+    fprint_validate_usage(o, get_arg(ARG0));
     fprintf(o, "%s", more_info);
     exit(status);
 }
@@ -101,101 +101,65 @@ valInitOptions(valOptionsPtr ops)
 /**
  *  Parse global command line options
  */
-int
-valParseOptions(valOptionsPtr ops, int argc, char **argv)
+void
+valParseOptions(valOptionsPtr ops)
 {
-    int i;
-
-    i = 2;
-    while(i < argc)
+    for (;;)
     {
-        if (!strcmp(argv[i], "--well-formed") || !strcmp(argv[i], "-w"))
-        {
+        const char* arg = get_arg(OPTION_NEXT);
+        if (!arg) break;
+
+        if (strcmp(arg, "--well-formed") == 0 || strcmp(arg, "-w") == 0) {
             ops->wellFormed = 1;
-            i++;
-        }
-        else if (!strcmp(argv[i], "--err") || !strcmp(argv[i], "-e"))
-        {
+        } else if (strcmp(arg, "--err") == 0 || strcmp(arg, "-e") == 0) {
             ops->err = 1;
-            i++;
-        }
-        else if (!strcmp(argv[i], "--embed") || !strcmp(argv[i], "-E"))
-        {
+        } else if (strcmp(arg, "--embed") == 0 || strcmp(arg, "-E") == 0) {
             ops->embed = 1;
-            i++;
-        }
-        else if (!strcmp(argv[i], "--list-good") || !strcmp(argv[i], "-g"))
-        {
+        } else if (strcmp(arg, "--list-good") == 0 || strcmp(arg, "-g") == 0) {
             ops->listGood = 1;
             ops->show_val_res = 0;
-            i++;
-        }
-        else if (!strcmp(argv[i], "--list-bad") || !strcmp(argv[i], "-b"))
-        {
+        } else if (strcmp(arg, "--list-bad") == 0 || strcmp(arg, "-b") == 0) {
             ops->listGood = -1;
             ops->show_val_res = 0;
-            i++;
-        }
-        else if (!strcmp(argv[i], "--quiet") || !strcmp(argv[i], "-q"))
-        {
+        } else if (strcmp(arg, "--quiet") == 0 || strcmp(arg, "-q") == 0) {
             ops->listGood = 0;
             ops->show_val_res = 0;
-            i++;
-        }
-        else if (!strcmp(argv[i], "--dtd") || !strcmp(argv[i], "-d"))
-        {
-            i++;
-            if (i >= argc) valUsage(argc, argv, EXIT_BAD_ARGS);
-            ops->dtd = argv[i];
-            i++;
-        }
-        else if (!strcmp(argv[i], "--xsd") || !strcmp(argv[i], "-s"))
-        {
-            i++;
-            if (i >= argc) valUsage(argc, argv, EXIT_BAD_ARGS);
-            ops->schema = argv[i];
-            i++;
-        }
-        else if (!strcmp(argv[i], "--relaxng") || !strcmp(argv[i], "-r"))
-        {
-            i++;
-            if (i >= argc) valUsage(argc, argv, EXIT_BAD_ARGS);
-            ops->relaxng = argv[i];
-            i++;
-        }
-        else if (!strcmp(argv[i], "--net"))
-        {
+        } else if (strcmp(arg, "--dtd") == 0 || strcmp(arg, "-d") == 0) {
+            arg = get_arg(ARG_NEXT);
+            if (!arg) {
+                fprintf(stderr, "expected <dtd-file>\n");
+                exit(EXIT_BAD_ARGS);
+            }
+            ops->dtd = arg;
+        } else if (strcmp(arg, "--xsd") == 0 || strcmp(arg, "-s") == 0) {
+            arg = get_arg(ARG_NEXT);
+            if (!arg) {
+                fprintf(stderr, "expected <xsd-file>\n");
+                exit(EXIT_BAD_ARGS);
+            }
+            ops->schema = arg;
+        } else if (strcmp(arg, "--relaxng") == 0 || strcmp(arg, "-r") == 0) {
+            arg = get_arg(ARG_NEXT);
+            if (!arg) {
+                fprintf(stderr, "expected <rng-file>\n");
+                exit(EXIT_BAD_ARGS);
+            }
+            ops->relaxng = arg;
+        } else if (strcmp(arg, "--net") == 0) {
             ops->nonet = 0;
-            i++;
-        }
-        else if (!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h"))
-        {
-            valUsage(argc, argv, EXIT_SUCCESS);
-        }
-        else if (!strcmp(argv[i], "-"))
-        {
-            i++;
-            break;
-        }
-        else if (argv[i][0] == '-')
-        {
-            valUsage(argc, argv, EXIT_BAD_ARGS);
-        }
-        else
-        {
-            i++;
-            break;
+        } else if (strcmp(arg, "--help") == 0 || strcmp(arg, "-h") == 0) {
+            valUsage(EXIT_SUCCESS);
+        } else {
+            fprintf(stderr, "unrecognized option %s\n", arg);
         }
     }
-
-    return i-1;
 }
 
 /**
  *  Validate XML document against DTD
  */
 int
-valAgainstDtd(valOptionsPtr ops, char* dtdvalid, xmlDocPtr doc, char* filename)
+valAgainstDtd(valOptionsPtr ops, const char* dtdvalid, xmlDocPtr doc, const char* filename)
 {
     int result = 0;
 
@@ -270,17 +234,16 @@ valAgainstDtd(valOptionsPtr ops, char* dtdvalid, xmlDocPtr doc, char* filename)
  *  This is the main function for 'validate' option
  */
 int
-valMain(int argc, char **argv)
+valMain(void)
 {
-    int start;
     static valOptions ops;
     static ErrorInfo errorInfo;
     int invalidFound = 0;
     int options = XML_PARSE_DTDLOAD | XML_PARSE_DTDATTR;
 
-    if (argc <= 2) valUsage(argc, argv, EXIT_BAD_ARGS);
+    if (!get_arg(ARG_PEEK)) valUsage(EXIT_BAD_ARGS);
     valInitOptions(&ops);
-    start = valParseOptions(&ops, argc, argv);
+    valParseOptions(&ops);
     if (ops.nonet) options |= XML_PARSE_NONET;
 
     errorInfo.verbose = ops.err;
@@ -291,46 +254,31 @@ valMain(int argc, char **argv)
     {
         /* xmlReader doesn't work with external dtd, have to use SAX
          * interface */
-        int i;
+        for (;;) {
+            xmlDocPtr doc = NULL;
+            int ret = 0;
+            const char* filename = get_arg(ARG_NEXT);
+            if (!filename) break;
 
-        for (i=start; i<argc; i++)
-        {
-            xmlDocPtr doc;
-            int ret;
-
-            ret = 0;
-            doc = NULL;
-
-            errorInfo.filename = argv[i];
-            doc = xmlReadFile(argv[i], NULL, options);
-            if (doc)
-            {
+            errorInfo.filename = filename;
+            doc = xmlReadFile(filename, NULL, options);
+            if (doc) {
                 /* TODO: precompile DTD once */                
-                ret = valAgainstDtd(&ops, ops.dtd, doc, argv[i]);
+                ret = valAgainstDtd(&ops, ops.dtd, doc, filename);
                 xmlFreeDoc(doc);
-            }
-            else
-            {
+            } else {
                 ret = 1; /* Malformed XML or could not open file */
                 if ((ops.listGood < 0) && !ops.show_val_res)
-                {
-                    fprintf(stdout, "%s\n", argv[i]);
-                }
+                    fprintf(stdout, "%s\n", filename);
             }
             if (ret) invalidFound = 1;     
 
-            if (ops.show_val_res)
-            {
-                if (ret == 0)
-                    fprintf(stdout, "%s - valid\n", argv[i]);
-                else
-                    fprintf(stdout, "%s - invalid\n", argv[i]);
+            if (ops.show_val_res) {
+                fprintf(stdout, "%s - %s\n",
+                    filename, (ret == 0)? "valid" : "invalid");
             }
         }
-    }
-    else if (ops.schema || ops.relaxng || ops.embed || ops.wellFormed)
-    {
-        int i;
+    } else if (ops.schema || ops.relaxng || ops.embed || ops.wellFormed) {
         xmlTextReaderPtr reader = NULL;
 
 #ifdef LIBXML_SCHEMAS_ENABLED
@@ -388,22 +336,20 @@ valMain(int argc, char **argv)
         }
 #endif  /* LIBXML_SCHEMAS_ENABLED */
 
-        for (i=start; i<argc; i++)
-        {
+        for (;;) {
             int ret = 0;
+            const char* filename = get_arg(ARG_NEXT);
+            if (!filename) break;
+
             if (ops.embed) options |= XML_PARSE_DTDVALID;
 
             if (!reader)
-            {
-                reader = xmlReaderForFile(argv[i], NULL, options);
-            }
+                reader = xmlReaderForFile(filename, NULL, options);
             else
-            {
-                ret = xmlReaderNewFile(reader, argv[i], NULL, options);
-            }
+                ret = xmlReaderNewFile(reader, filename, NULL, options);
 
             errorInfo.xmlReader = reader;
-            errorInfo.filename = argv[i];
+            errorInfo.filename = filename;
 
             if (reader && ret == 0)
             {
@@ -441,16 +387,16 @@ valMain(int argc, char **argv)
             if (!ops.show_val_res)
             {
                 if ((ops.listGood > 0) && (ret == 0))
-                    fprintf(stdout, "%s\n", argv[i]);
+                    fprintf(stdout, "%s\n", filename);
                 if ((ops.listGood < 0) && (ret != 0))
-                    fprintf(stdout, "%s\n", argv[i]);
+                    fprintf(stdout, "%s\n", filename);
             }
             else
             {
                 if (ret == 0)
-                    fprintf(stdout, "%s - valid\n", argv[i]);
+                    fprintf(stdout, "%s - valid\n", filename);
                 else
-                    fprintf(stdout, "%s - invalid\n", argv[i]);
+                    fprintf(stdout, "%s - invalid\n", filename);
             }
         }
         errorInfo.xmlReader = NULL;

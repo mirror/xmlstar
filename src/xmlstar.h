@@ -42,7 +42,7 @@ extern xmlChar *ns_arr[];
 extern int edMain(void);
 extern int selMain(void);
 extern int trMain(void);
-extern int valMain(int argc, char **argv);
+extern int valMain(void);
 extern int foMain(void);
 extern int elMain(int argc, char **argv);
 extern int c14nMain(int argc, char **argv);
