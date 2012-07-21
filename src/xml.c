@@ -240,7 +240,7 @@ main(int argc, char **argv)
     }
     else if (!strcmp(argv1, "fo") || !strcmp(argv1, "format"))
     {
-        ret = foMain(argc, argv);
+        ret = foMain();
     }
     else if (!strcmp(argv1, "val") || !strcmp(argv1, "validate"))
     {

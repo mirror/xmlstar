@@ -43,7 +43,7 @@ extern int edMain(void);
 extern int selMain(void);
 extern int trMain(void);
 extern int valMain(int argc, char **argv);
-extern int foMain(int argc, char **argv);
+extern int foMain(void);
 extern int elMain(int argc, char **argv);
 extern int c14nMain(int argc, char **argv);
 extern int lsMain(int argc, char **argv);

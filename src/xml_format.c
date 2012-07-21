@@ -73,12 +73,12 @@ static char *spaces = NULL;
  *  Print small help for command line options
  */
 void
-foUsage(int argc, char **argv, exit_status status)
+foUsage(int status)
 {
     extern void fprint_format_usage(FILE* o, const char* argv0);
     extern const char more_info[];
     FILE *o = (status == EXIT_SUCCESS)? stdout : stderr;
-    fprint_format_usage(o, argv[0]);
+    fprint_format_usage(o, get_arg(ARG0));
     fprintf(o, "%s", more_info);
     exit(status);
 }
@@ -151,110 +151,57 @@ foInitLibXml(foOptionsPtr ops)
 /**
  *  Parse global command line options
  */
-int
-foParseOptions(foOptionsPtr ops, int argc, char **argv)
+void
+foParseOptions(foOptionsPtr ops)
 {
-    int i;
+    for (;;) {
+        const char* arg = get_arg(OPTION_NEXT);
+        if (!arg) break;
 
-    i = 2;
-    while(i < argc)
-    {
-        if (!strcmp(argv[i], "--noindent") || !strcmp(argv[i], "-n"))
-        {
+        if (strcmp(arg, "--noindent") == 0 || strcmp(arg, "-n") == 0) {
             ops->indent = 0;
-            i++;
-        }
-        else if (!strcmp(argv[i], "--encode") || !strcmp(argv[i], "-e"))
-        {
-            i++;
-            encoding = argv[i];
-            i++;
-        }
-        else if (!strcmp(argv[i], "--indent-tab") || !strcmp(argv[i], "-t"))
-        {
+        } else if (strcmp(arg, "--encode") == 0 || strcmp(arg, "-e") == 0) {
+            encoding = get_arg(ARG_NEXT);
+        } else if (strcmp(arg, "--indent-tab") == 0 || strcmp(arg, "-t") == 0) {
             ops->indent_tab = 1;
-            i++;
-        }
-        else if (!strcmp(argv[i], "--omit-decl") || !strcmp(argv[i], "-o"))
-        {
+        } else if (strcmp(arg, "--omit-decl") == 0 || strcmp(arg, "-o") == 0) {
             ops->omit_decl = 1;
-            i++;
-        }
-        else if (!strcmp(argv[i], "--dropdtd") || !strcmp(argv[i], "-D"))
-        {
+        } else if (strcmp(arg, "--dropdtd") == 0 || strcmp(arg, "-D") == 0) {
             ops->dropdtd = 1;
-            i++;
-        }
-        else if (!strcmp(argv[i], "--recover") || !strcmp(argv[i], "-R"))
-        {
+        } else if (strcmp(arg, "--recover") == 0 || strcmp(arg, "-R") == 0) {
             ops->recovery = 1;
-	    ops->options |= XML_PARSE_RECOVER;
-            i++;
-        }
-        else if (!strcmp(argv[i], "--nocdata") || !strcmp(argv[i], "-C"))
-        {
+            ops->options |= XML_PARSE_RECOVER;
+        } else if (strcmp(arg, "--nocdata") == 0 || strcmp(arg, "-C") == 0) {
             ops->options |= XML_PARSE_NOCDATA;
-	    i++;
-        }
-        else if (!strcmp(argv[i], "--nsclean") || !strcmp(argv[i], "-N"))
-        {
+        } else if (strcmp(arg, "--nsclean") == 0 || strcmp(arg, "-N") == 0) {
             ops->options |= XML_PARSE_NSCLEAN;
-	    i++;
-        }
-        else if (!strcmp(argv[i], "--indent-spaces") || !strcmp(argv[i], "-s"))
-        {
-            int value;
-            i++;
-            if (i >= argc) foUsage(argc, argv, EXIT_BAD_ARGS);
-            if (sscanf(argv[i], "%d", &value) == 1)
-            {
-                if (value > 0) ops->indent_spaces = value;
-            }
-            else
-            {
-                foUsage(argc, argv, EXIT_BAD_ARGS);
+        } else if (strcmp(arg, "--indent-spaces") == 0 || strcmp(arg, "-s") == 0) {
+            int value, got_value = 0;
+            arg = get_arg(ARG_NEXT);
+            if (arg) got_value = (sscanf(arg, "%d", &value) == 1);
+
+            if (got_value) {
+                ops->indent_spaces = value;
+            } else {
+                fprintf(stderr, "--indent-spaces must be followed by <num>\n");
+                exit(EXIT_BAD_ARGS);
             }
             ops->indent_tab = 0;
-            i++;
-        }
-        else if (!strcmp(argv[i], "--quiet") || !strcmp(argv[i], "-Q"))
-        {
+        } else if (strcmp(arg, "--quiet") == 0 || strcmp(arg, "-Q") == 0) {
             ops->quiet = 1;
-            i++;
-        }
 #ifdef LIBXML_HTML_ENABLED
-        else if (!strcmp(argv[i], "--html") || !strcmp(argv[i], "-H"))
-        {
+        } else if (strcmp(arg, "--html") == 0 || strcmp(arg, "-H") == 0) {
             ops->html = 1;
-            i++;
-        }
 #endif
-        else if (!strcmp(argv[i], "--net"))
-        {
+        } else if (strcmp(arg, "--net") == 0) {
             ops->options &= ~XML_PARSE_NONET;
-            i++;
-        }
-        else if (!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h"))
-        {
-            foUsage(argc, argv, EXIT_SUCCESS);
-        }
-        else if (!strcmp(argv[i], "-"))
-        {
-            i++;
-            break;
-        }
-        else if (argv[i][0] == '-')
-        {
-            foUsage(argc, argv, EXIT_BAD_ARGS);
-        }
-        else
-        {
-            i++;
-            break;
+        } else if (strcmp(arg, "--help") == 0 || strcmp(arg, "-h") == 0) {
+            foUsage(EXIT_SUCCESS);
+        } else {
+            fprintf(stderr, "unrecognized option %s\n", arg);
+            exit(EXIT_BAD_ARGS);
         }
     }
-
-    return i-1;
 }
 
 void my_error_func(void* ctx, const char * msg, ...) {
@@ -269,28 +216,21 @@ void my_structured_error_func(void * userData, xmlErrorPtr error) {
  *  'process' xml document(s)
  */
 int
-foProcess(foOptionsPtr ops, int start, int argc, char **argv)
+foProcess(foOptionsPtr ops)
 {
     int ret = 0;
     xmlDocPtr doc = NULL;
     char *fileName = "-";
 
-    if ((start > 1) && (start < argc) && (argv[start][0] != '-') &&
-        strcmp(argv[start-1], "--indent-spaces") &&
-        strcmp(argv[start-1], "-s"))
-    {
-        fileName = argv[start];   
-    }
-/*
-    if (ops->recovery)
-    {
+    if (get_arg(ARG_PEEK))
+        fileName = get_arg(ARG_NEXT);
+
+
+    if (ops->recovery) {
         doc = xmlRecoverFile(fileName);
-    }
-    else    
-*/
-    if (ops->quiet) {
-      xmlSetGenericErrorFunc(NULL, my_error_func);
-      xmlSetStructuredErrorFunc(NULL, my_structured_error_func);
+    } else if (ops->quiet) {
+        xmlSetGenericErrorFunc(NULL, my_error_func);
+        xmlSetStructuredErrorFunc(NULL, my_structured_error_func);
     }
 
 #ifdef LIBXML_HTML_ENABLED
@@ -374,18 +314,16 @@ foCleanup()
  *  This is the main function for 'format' option
  */
 int
-foMain(int argc, char **argv)
+foMain(void)
 {
     int ret = 0;
-    int start;
     static foOptions ops;
 
-    if (argc <=1) foUsage(argc, argv, EXIT_BAD_ARGS);
+    if (!get_arg(ARG_PEEK)) foUsage(EXIT_BAD_ARGS);
     foInitOptions(&ops);
-    start = foParseOptions(&ops, argc, argv);
-    if (argc-start > 1) foUsage(argc, argv, EXIT_BAD_ARGS);
+    foParseOptions(&ops);
     foInitLibXml(&ops);
-    ret = foProcess(&ops, start, argc, argv);
+    ret = foProcess(&ops);
     foCleanup();
     
     return ret;
