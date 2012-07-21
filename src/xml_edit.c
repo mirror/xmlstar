@@ -124,12 +124,12 @@ typedef struct _XmlEdAction {
  *  display short help message
  */
 static void
-edUsage(const char *argv0, exit_status status)
+edUsage(exit_status status)
 {
     extern void fprint_edit_usage(FILE* o, const char* argv0);
     extern const char more_info[];
     FILE *o = (status == EXIT_SUCCESS)? stdout : stderr;
-    fprint_edit_usage(o, argv0);
+    fprint_edit_usage(o, get_arg(ARG0));
     fprintf(o, "%s", more_info);
     exit(status);
 }
@@ -150,47 +150,46 @@ edInitOptions(edOptionsPtr ops)
 /**
  *  Parse global command line options
  */
-static int
-edParseOptions(edOptionsPtr ops, int argc, char **argv)
+static void
+edParseOptions(edOptionsPtr ops)
 {
-    int i;
-
-    i = 2;
-    while((i < argc) && (argv[i][0] == '-'))
+    for (;;)
     {
-        if (!strcmp(argv[i], "-S") || !strcmp(argv[i], "--ps"))
+        const char* arg = get_arg(ARG_PEEK);
+        if (!arg) break;
+
+        if (!strcmp(arg, "-S") || !strcmp(arg, "--ps"))
         {
             ops->noblanks = 0;            /* preserve spaces */
         }
-        else if (!strcmp(argv[i], "-P") || !strcmp(argv[i], "--pf"))
+        else if (!strcmp(arg, "-P") || !strcmp(arg, "--pf"))
         {
             ops->preserveFormat = 1;      /* preserve format */
         }
-        else if (!strcmp(argv[i], "-O") || !strcmp(argv[i], "--omit-decl"))
+        else if (!strcmp(arg, "-O") || !strcmp(arg, "--omit-decl"))
         {
             ops->omit_decl = 1;
         }
-        else if (!strcmp(argv[i], "-L") || !strcmp(argv[i], "--inplace"))
+        else if (!strcmp(arg, "-L") || !strcmp(arg, "--inplace"))
         {
             ops->inplace = 1;
         }
-        else if (!strcmp(argv[i], "--net"))
+        else if (!strcmp(arg, "--net"))
         {
             ops->nonet = 0;
         }
-        else if (!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h") ||
-                 !strcmp(argv[i], "-?") || !strcmp(argv[i], "-Z"))
+        else if (!strcmp(arg, "--help") || !strcmp(arg, "-h") ||
+                 !strcmp(arg, "-?") || !strcmp(arg, "-Z"))
         {
-            edUsage(argv[0], EXIT_SUCCESS);
+            edUsage(EXIT_SUCCESS);
         }
         else
         {
             break;
         }
-        i++;
-    }
 
-    return i;
+        get_arg(ARG_NEXT);
+    }
 }
 
 /**
@@ -552,14 +551,13 @@ edOutput(const char* filename, const XmlEdAction* ops, int ops_count,
  * @argi is incremented
  */
 static const char*
-nextArg(char *const*const argv, int *argi)
+nextArg(ArgOp op)
 {
-    const char *arg = argv[*argi];
+    const char *arg = get_arg(op);
     if (arg == NULL)
     {
-        edUsage(argv[0], EXIT_BAD_ARGS);
+        edUsage(EXIT_BAD_ARGS);
     }
-    *argi += 1;
     return arg;
 }
 
@@ -567,137 +565,127 @@ nextArg(char *const*const argv, int *argi)
  * like nextArg(), but additionally look for next arg in @choices
  */
 static XmlNodeType
-parseNextArg(char *const*const argv, int *argi,
-    const OptionSpec choices[], int choices_count)
+parseNextArg(const OptionSpec choices[], int choices_count)
 {
-    const char* arg = nextArg(argv, argi);
+    const char* arg = nextArg(ARG_NEXT);
     int i;
-    for (i = 0; i < choices_count; i++) {
+    if (arg) for (i = 0; i < choices_count; i++) {
         if ((arg[0] == '-' && arg[1] == choices[i].shortOpt) ||
             (strcmp(arg, choices[i].longOpt) == 0))
             return choices[i].type;
     }
-    edUsage(argv[0], EXIT_BAD_ARGS);
+    edUsage(EXIT_BAD_ARGS);
     return 0;                   /* never reach here */
 }
-#define parseNextArg(argv, argi, choices) \
-    parseNextArg(argv, argi, choices, COUNT_OF(choices))
+#define parseNextArg(choices) \
+    parseNextArg(choices, COUNT_OF(choices))
 
 
 /** --insert, --append, and --subnode all take the same arguments */
 static void
-parseInsertionArgs(XmlEdOp op_type, XmlEdAction* op,
-    char *const*const argv, int *argi)
+parseInsertionArgs(XmlEdOp op_type, XmlEdAction* op)
 {
     op->op = op_type;
-    op->arg1 = nextArg(argv, argi);
-    parseNextArg(argv, argi, OPT_JUST_TYPE);
-    op->type = parseNextArg(argv, argi, OPT_NODE_TYPE);
-    parseNextArg(argv, argi, OPT_JUST_NAME);
-    op->arg3 = nextArg(argv, argi);
-    parseNextArg(argv, argi, OPT_JUST_VAL);
-    op->arg2 = nextArg(argv, argi);
+    op->arg1 = nextArg(ARG_NEXT);
+    parseNextArg(OPT_JUST_TYPE);
+    op->type = parseNextArg(OPT_NODE_TYPE);
+    parseNextArg(OPT_JUST_NAME);
+    op->arg3 = nextArg(ARG_NEXT);
+    parseNextArg(OPT_JUST_VAL);
+    op->arg2 = nextArg(ARG_NEXT);
 }
 
 /**
  *  This is the main function for 'edit' option
  */
 int
-edMain(int argc, char **argv)
+edMain(void)
 {
-    int i, ops_count, max_ops_count = 8, n, start = 0;
+    int ops_count, max_ops_count = 8;
     XmlEdAction* ops = xmlMalloc(sizeof(XmlEdAction) * max_ops_count);
     static edOptions g_ops;
-    int nCount = 0;
 
-    if (argc < 3) edUsage(argv[0], EXIT_BAD_ARGS);
+    if (!get_arg(ARG_PEEK)) edUsage(EXIT_BAD_ARGS);
 
     edInitOptions(&g_ops);
-    start = edParseOptions(&g_ops, argc, argv);
+    edParseOptions(&g_ops);
 
-    parseNSArr(ns_arr, &nCount, argc-start, argv+start);
+    /* parseNSArr(ns_arr, &nCount, argc-start, argv+start); */
         
     /*
-     *  Parse command line and fill array of operations
+     *  parse command line and fill array of operations
      */
     ops_count = 0;
-    i = start + nCount;
 
-    while (i < argc)
+    for (;;)
     {
-        const char *arg = nextArg(argv, &i);
-        if (arg[0] == '-')
-        {
-            if (ops_count >= max_ops_count)
-            {
-                max_ops_count *= 2;
-                ops = xmlRealloc(ops, sizeof(XmlEdAction) * max_ops_count);
-            }
-            ops[ops_count].type = XML_UNDEFINED;
+        const char *arg = get_arg(OPTION_NEXT);
+        if (!arg) break;
 
-            if (!strcmp(arg, "-d") || !strcmp(arg, "--delete"))
-            {
-                ops[ops_count].op = XML_ED_DELETE;
-                ops[ops_count].arg1 = nextArg(argv, &i);
-                ops[ops_count].arg2 = 0;
-            }
-            else if (!strcmp(arg, "-m") || !strcmp(arg, "--move"))
-            {
-                ops[ops_count].op = XML_ED_MOVE;
-                ops[ops_count].arg1 = nextArg(argv, &i);
-                ops[ops_count].arg2 = nextArg(argv, &i);
-            }
-            else if (!strcmp(arg, "-u") || !strcmp(arg, "--update"))
-            {
-                ops[ops_count].op = XML_ED_UPDATE;
-                ops[ops_count].arg1 = nextArg(argv, &i);
-                ops[ops_count].type = parseNextArg(argv, &i, OPT_VAL_OR_EXP);
-                ops[ops_count].arg2 = nextArg(argv, &i);
-            }
-            else if (!strcmp(arg, "-r") || !strcmp(arg, "--rename"))
-            {
-                ops[ops_count].op = XML_ED_RENAME;
-                ops[ops_count].arg1 = nextArg(argv, &i);
-                ops[ops_count].type = parseNextArg(argv, &i, OPT_JUST_VAL);
-                ops[ops_count].arg2 = nextArg(argv, &i);
-            }
-            else if (!strcmp(arg, "-i") || !strcmp(arg, "--insert"))
-            {
-                parseInsertionArgs(XML_ED_INSERT, &ops[ops_count], argv, &i);
-            }
-            else if (!strcmp(arg, "-a") || !strcmp(arg, "--append"))
-            {
-                parseInsertionArgs(XML_ED_APPEND, &ops[ops_count], argv, &i);
-            }
-            else if (!strcmp(arg, "-s") || !strcmp(arg, "--subnode"))
-            {
-                parseInsertionArgs(XML_ED_SUBNODE, &ops[ops_count], argv, &i);
-            }
-            else
-            {
-                fprintf(stderr, "Warning: unrecognized option '%s'\n", arg);
-            }
-            ops_count++;
+        if (ops_count >= max_ops_count)
+        {
+            max_ops_count *= 2;
+            ops = xmlRealloc(ops, sizeof(XmlEdAction) * max_ops_count);
+        }
+        ops[ops_count].type = XML_UNDEFINED;
+
+        if (!strcmp(arg, "-d") || !strcmp(arg, "--delete"))
+        {
+            ops[ops_count].op = XML_ED_DELETE;
+            ops[ops_count].arg1 = nextArg(ARG_NEXT);
+            ops[ops_count].arg2 = 0;
+        }
+        else if (!strcmp(arg, "-m") || !strcmp(arg, "--move"))
+        {
+            ops[ops_count].op = XML_ED_MOVE;
+            ops[ops_count].arg1 = nextArg(ARG_NEXT);
+            ops[ops_count].arg2 = nextArg(ARG_NEXT);
+        }
+        else if (!strcmp(arg, "-u") || !strcmp(arg, "--update"))
+        {
+            ops[ops_count].op = XML_ED_UPDATE;
+            ops[ops_count].arg1 = nextArg(ARG_NEXT);
+            ops[ops_count].type = parseNextArg(OPT_VAL_OR_EXP);
+            ops[ops_count].arg2 = nextArg(ARG_NEXT);
+        }
+        else if (!strcmp(arg, "-r") || !strcmp(arg, "--rename"))
+        {
+            ops[ops_count].op = XML_ED_RENAME;
+            ops[ops_count].arg1 = nextArg(ARG_NEXT);
+            ops[ops_count].type = parseNextArg(OPT_JUST_VAL);
+            ops[ops_count].arg2 = nextArg(ARG_NEXT);
+        }
+        else if (!strcmp(arg, "-i") || !strcmp(arg, "--insert"))
+        {
+            parseInsertionArgs(XML_ED_INSERT, &ops[ops_count]);
+        }
+        else if (!strcmp(arg, "-a") || !strcmp(arg, "--append"))
+        {
+            parseInsertionArgs(XML_ED_APPEND, &ops[ops_count]);
+        }
+        else if (!strcmp(arg, "-s") || !strcmp(arg, "--subnode"))
+        {
+            parseInsertionArgs(XML_ED_SUBNODE, &ops[ops_count]);
         }
         else
         {
-            i--;                /* it was a filename, we didn't use it */
-            break;
+            fprintf(stderr, "Warning: unrecognized option '%s'\n", arg);
         }
+        ops_count++;
     }
 
     xmlKeepBlanksDefault(0);
 
     if ((!g_ops.noblanks) || g_ops.preserveFormat) xmlKeepBlanksDefault(1);
 
-    if (i >= argc)
-    {
+    if (!get_arg(ARG_PEEK)) {
         edOutput("-", ops, ops_count, &g_ops);
-    }
-    
-    for (n=i; n<argc; n++)
-    {
-        edOutput(argv[n], ops, ops_count, &g_ops);
+    } else {
+        for (;;) {
+            const char* filename = get_arg(ARG_NEXT);
+            if (!filename) break;
+            edOutput(filename, ops, ops_count, &g_ops);
+        }
     }
 
     xmlFree(ops);

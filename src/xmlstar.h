@@ -40,4 +40,19 @@ int parseNSArr(xmlChar** ns_arr, int* plen, int argc, char **argv);
 void cleanupNSArr(xmlChar **ns_arr);
 extern xmlChar *ns_arr[];
 
+extern int edMain(void);
+extern int selMain(int argc, char **argv);
+extern int trMain(int argc, char **argv);
+extern int valMain(int argc, char **argv);
+extern int foMain(int argc, char **argv);
+extern int elMain(int argc, char **argv);
+extern int c14nMain(int argc, char **argv);
+extern int lsMain(int argc, char **argv);
+extern int pyxMain(int argc, char **argv);
+extern int depyxMain(int argc, char **argv);
+extern int escMain(int argc, char **argv, int escape);
+
+typedef enum { ARG0, ARG_PEEK, ARG_NEXT, OPTION_NEXT } ArgOp;
+char* get_arg(ArgOp op);
+
 #endif  /* XMLSTAR_H */

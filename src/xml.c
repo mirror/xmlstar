@@ -42,18 +42,6 @@ THE SOFTWARE.
 static const xmlChar* XMLSTAR_NS = BAD_CAST "http://xmlstar.sourceforge.net";
 static const xmlChar* XMLSTAR_NS_PREFIX = BAD_CAST "xstar";
 
-extern int edMain(int argc, char **argv);
-extern int selMain(int argc, char **argv);
-extern int trMain(int argc, char **argv);
-extern int valMain(int argc, char **argv);
-extern int foMain(int argc, char **argv);
-extern int elMain(int argc, char **argv);
-extern int c14nMain(int argc, char **argv);
-extern int lsMain(int argc, char **argv);
-extern int pyxMain(int argc, char **argv);
-extern int depyxMain(int argc, char **argv);
-extern int escMain(int argc, char **argv, int escape);
-
 const char more_info[] =
 "XMLStarlet is a command line toolkit to query/edit/check/transform\n"
 "XML documents (for more information see http://xmlstar.sourceforge.net/)\n";
@@ -157,12 +145,39 @@ xstrdup(const char *str)
     return ret;
 }
 
+static int main_argc;
+static char** main_argv;
+char* get_arg(ArgOp op)
+{
+    static int argi = 0;
+    switch (op) {
+    case ARG0:
+        return main_argv[0];
+    case ARG_NEXT:
+    case ARG_PEEK:
+    case OPTION_NEXT:
+        if (argi >= main_argc) {
+            return NULL;
+        } else {
+            char* arg =  main_argv[argi];
+            if (op == OPTION_NEXT && arg[0] != '-') return NULL;
+            if (op == ARG_NEXT || op == OPTION_NEXT) argi++;
+            return arg;
+        }
+
+    default:
+        fprintf(stderr, "bad call to get_arg(%d)\n", op);
+        exit(EXIT_INTERNAL_ERROR); /* should never happen */
+    }
+}
+
 /**
  *  This is the main function
  */
 int
 main(int argc, char **argv)
 {
+    const char* argv1;
     int ret = 0;
     /* by default errors are reported */
     static ErrorInfo errorInfo = { NULL, NULL, VERBOSE };
@@ -170,59 +185,64 @@ main(int argc, char **argv)
     xmlMemSetup(free, xmalloc, xrealloc, xstrdup);
     xmlSetStructuredErrorFunc(&errorInfo, reportError);
 
+    main_argc = argc;
+    main_argv = argv;
+    get_arg(ARG_NEXT);          /* skip argv0 */
+    argv1 = get_arg(ARG_NEXT);
+
     if (argc <= 1)
     {
         usage(argc, argv, EXIT_BAD_ARGS);
     }
-    else if (!strcmp(argv[1], "ed") || !strcmp(argv[1], "edit"))
+    else if (!strcmp(argv1, "ed") || !strcmp(argv1, "edit"))
     {
-        ret = edMain(argc, argv);
+        ret = edMain();
     }
-    else if (!strcmp(argv[1], "sel") || !strcmp(argv[1], "select"))
+    else if (!strcmp(argv1, "sel") || !strcmp(argv1, "select"))
     {
         ret = selMain(argc, argv);
     }
-    else if (!strcmp(argv[1], "tr") || !strcmp(argv[1], "transform"))
+    else if (!strcmp(argv1, "tr") || !strcmp(argv1, "transform"))
     {
         ret = trMain(argc, argv);
     }
-    else if (!strcmp(argv[1], "fo") || !strcmp(argv[1], "format"))
+    else if (!strcmp(argv1, "fo") || !strcmp(argv1, "format"))
     {
         ret = foMain(argc, argv);
     }
-    else if (!strcmp(argv[1], "val") || !strcmp(argv[1], "validate"))
+    else if (!strcmp(argv1, "val") || !strcmp(argv1, "validate"))
     {
         ret = valMain(argc, argv);
     }
-    else if (!strcmp(argv[1], "el") || !strcmp(argv[1], "elements"))
+    else if (!strcmp(argv1, "el") || !strcmp(argv1, "elements"))
     {
         ret = elMain(argc, argv);
     }
-    else if (!strcmp(argv[1], "c14n") || !strcmp(argv[1], "canonic"))
+    else if (!strcmp(argv1, "c14n") || !strcmp(argv1, "canonic"))
     {
         ret = c14nMain(argc, argv);
     }
-    else if (!strcmp(argv[1], "ls") || !strcmp(argv[1], "list"))
+    else if (!strcmp(argv1, "ls") || !strcmp(argv1, "list"))
     {
         ret = lsMain(argc, argv);
     }
-    else if (!strcmp(argv[1], "pyx") || !strcmp(argv[1], "xmln"))
+    else if (!strcmp(argv1, "pyx") || !strcmp(argv1, "xmln"))
     {
         ret = pyxMain(argc, argv);
     }
-    else if (!strcmp(argv[1], "depyx") || !strcmp(argv[1], "p2x"))
+    else if (!strcmp(argv1, "depyx") || !strcmp(argv1, "p2x"))
     {
         ret = depyxMain(argc, argv);
     }
-    else if (!strcmp(argv[1], "esc") || !strcmp(argv[1], "escape"))
+    else if (!strcmp(argv1, "esc") || !strcmp(argv1, "escape"))
     {
         ret = escMain(argc, argv, 1);
     }
-    else if (!strcmp(argv[1], "unesc") || !strcmp(argv[1], "unescape"))
+    else if (!strcmp(argv1, "unesc") || !strcmp(argv1, "unescape"))
     {
         ret = escMain(argc, argv, 0);
     }
-    else if (!strcmp(argv[1], "--version"))
+    else if (!strcmp(argv1, "--version"))
     {
         fprintf(stdout, "%s\n"
             "compiled against libxml2 %s, linked with %s\n"
@@ -234,7 +254,7 @@ main(int argc, char **argv)
     }
     else
     {
-        usage(argc, argv, strcmp(argv[1], "--help") == 0?
+        usage(argc, argv, strcmp(argv1, "--help") == 0?
             EXIT_SUCCESS : EXIT_BAD_ARGS);
     }
     

@@ -263,7 +263,7 @@ pyx_process_file(const char *filename)
 }
 
 int
-pyxMain(int argc,const char *argv[])
+pyxMain(int argc, char *argv[])
 {
     int status = 0;
 
