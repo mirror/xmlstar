@@ -73,7 +73,7 @@ include doc/doc.mk
 man_MANS = $(manpage)
 dist_doc_DATA = $(userguide_gen) $(txtguide)
 EXTRA_DIST += $(manpage_src) $(userguide_src) $(txtguide_src)
-
+EXTRA_DIST += $(misc_docs)
 
 
 CLEANFILES = version.h $(generated_usage_sources)

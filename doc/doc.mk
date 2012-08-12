@@ -10,6 +10,8 @@ manpage_src = doc/xmlstarlet-man.xml
 
 generated_docs = $(userguide_gen) $(txtguide) $(manpage)
 
+misc_docs = doc/html.css doc/replace-PROG-VERSION.xsl
+
 DOCBOOK_PARAMS = \
 --param section.autolabel 1 \
 --stringparam generate.toc 'book toc,title'
