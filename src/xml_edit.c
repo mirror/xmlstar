@@ -64,12 +64,13 @@ typedef edOptions *edOptionsPtr;
 
 typedef enum _XmlEdOp {
    XML_ED_DELETE,
+   XML_ED_VAR,
    XML_ED_INSERT,
    XML_ED_APPEND,
    XML_ED_UPDATE,
    XML_ED_RENAME,
    XML_ED_MOVE,
-   XML_ED_SUBNODE   
+   XML_ED_SUBNODE
 } XmlEdOp;
 
 /* TODO ??? */
@@ -448,6 +449,13 @@ edProcess(xmlDocPtr doc, const XmlEdAction* ops, int ops_count)
         /* NOTE: to make relative paths match as if from "/", set context to
            document; setting to root would match as if from "/node()/" */
         ctxt->node = (xmlNodePtr) doc;
+
+        if (ops[k].op == XML_ED_VAR) {
+            res = xmlXPathEvalExpression(BAD_CAST ops[k].arg2, ctxt);
+            xmlXPathRegisterVariable(ctxt, BAD_CAST ops[k].arg1, res);
+            continue;
+        }
+
         res = xmlXPathEvalExpression(BAD_CAST ops[k].arg1, ctxt);
         if (!res || res->type != XPATH_NODESET || !res->nodesetval) continue;
         nodes = res->nodesetval;
@@ -640,6 +648,12 @@ edMain(int argc, char **argv)
                 ops[ops_count].op = XML_ED_DELETE;
                 ops[ops_count].arg1 = nextArg(argv, &i);
                 ops[ops_count].arg2 = 0;
+            }
+            else if (!strcmp(arg, "--var"))
+            {
+                ops[ops_count].op = XML_ED_VAR;
+                ops[ops_count].arg1 = nextArg(argv, &i);
+                ops[ops_count].arg2 = nextArg(argv, &i);
             }
             else if (!strcmp(arg, "-m") || !strcmp(arg, "--move"))
             {
