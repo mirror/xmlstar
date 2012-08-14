@@ -1,3 +1,23 @@
+1.4.0: Aug 26, 2012
+
+    - Documentation:
+        - executable name used in documentation now matches
+          --transform-program-name (Bug #3283713)
+        - added Makefile rules for generating documentation
+          (./configure --enable-build-docs)
+
+    - ed subcommand:
+        - relative XPaths are now handled correctly (Bug #3527850)
+        - the last nodeset inserted by an edit operation can be
+          accessed as the XPath variable $prev (or $xstar:prev)
+        - add --var option to define XPath variables
+        - allow ed -u -x to insert nodesets instead of converting to
+          string
+        - remove hard limit for number of edit operations (Bug
+          #3488240)
+
+    - pyx now handles namespaces correctly
+
 1.3.1: Jan 14, 2012
 
     - handle multiple values for --value-of properly (Bug #2563866)
