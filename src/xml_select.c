@@ -599,32 +599,25 @@ selPrepareXslt(xmlDocPtr style, selOptionsPtr ops, xmlChar *ns_arr[],
     }
 
     if (use_value_of) {
-#       define XSLT_NS "http://www.w3.org/1999/XSL/Transform"
-
-        xmlNodePtr value_of_template;
-        int failed = xmlParseBalancedChunkMemory(style, NULL, NULL, 0, BAD_CAST
-            "<xsl:template name='value-of-template' xmlns:xsl='"XSLT_NS"'>"
-              "<xsl:param name='select'/>"
-              "<xsl:value-of select='$select'/>"
-              "<xsl:for-each select='exslt:node-set($select)[position()&gt;1]'>"
-                "<xsl:value-of select='\"&#10;\"'/>"
-                "<xsl:value-of select='.'/>"
-              "</xsl:for-each>"
-            "</xsl:template>",
-            &value_of_template);
-        if (failed) {
-            /* should never happen */
-            fprintf(stderr, "Error: value-of-template failed to parse!\n");
-            exit(EXIT_LIB_ERROR);
-        }
-        xmlAddChild(root, value_of_template);
-
-        /* get rid of redundant namespace declaration */
-        xmlReconciliateNs(style, root);
-        xmlFreeNs(value_of_template->nsDef);
-        value_of_template->nsDef = NULL;
-
-#       undef XSLT_NS
+        xmlNodePtr value_of_template, for_each, value_of, param;
+        /* <xsl:template name='value-of-template' xmlns:xsl=XSLT_NS> */
+        value_of_template = xmlNewChild(root, xslns, BAD_CAST "template", NULL);
+        xmlNewProp(value_of_template, BAD_CAST "name", BAD_CAST "value-of-template");
+        /*   <xsl:param name='select'/> */
+        param = xmlNewChild(value_of_template, xslns, BAD_CAST "param", NULL);
+        xmlNewProp(param, BAD_CAST "name", BAD_CAST "select");
+        /*   <xsl:value-of select='$select'/> */
+        value_of = xmlNewChild(value_of_template, xslns, BAD_CAST "value-of", NULL);
+        xmlNewProp(value_of, BAD_CAST "select", BAD_CAST "$select");
+        /*   <xsl:for-each select='exslt:node-set($select)[position()&gt;1]'> */
+        for_each = xmlNewChild(value_of_template, xslns, BAD_CAST "for-each", NULL);
+        xmlNewProp(for_each, BAD_CAST "select", BAD_CAST "exslt:node-set($select)[position()>1]");
+        /*     <xsl:value-of select='\"&#10;\"'/> */
+        value_of = xmlNewChild(for_each, xslns, BAD_CAST "value-of", NULL);
+        xmlNewProp(value_of, BAD_CAST "select", BAD_CAST "'\n'");
+        /*     <xsl:value-of select='.'/> */
+        value_of = xmlNewChild(for_each, xslns, BAD_CAST "value-of", NULL);
+        xmlNewProp(value_of, BAD_CAST "select", BAD_CAST ".");
     }
 
     return i;
