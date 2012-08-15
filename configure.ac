@@ -74,14 +74,19 @@ AS_IF([test x"$enable_build_docs" = xyes],
        AS_IF([test "$XSLTPROC" = none], [AC_MSG_ERROR([xsltproc not found, unable to build documentation])])
 
        AC_PATH_PROG(FOP, fop, [none])
-       AM_CONDITIONAL([HAVE_FOP], [test "$FOP" != none])
+       AM_CONDITIONAL([HAVE_FOP], [test x"$FOP" != xnone])
        AS_IF([test "$FOP" = none], [AC_MSG_WARN([fop not installed, unable to build pdf documentation])])
 
        AC_PATH_PROG(PDF2PS, pdf2ps, [none])
-       AM_CONDITIONAL([HAVE_PDF2PS], [test "$PDF2PS" != none])
-       AS_IF([test "$PDF2PS" = none], [AC_MSG_WARN([pdf2ps not installed, unable to build postscript documentation])])])
+       AM_CONDITIONAL([HAVE_PDF2PS], [test x"$PDF2PS" != xnone])
+       AS_IF([test "$PDF2PS" = none], [AC_MSG_WARN([pdf2ps not installed, unable to build postscript documentation])])],
 
-AM_CONDITIONAL([BUILD_DOCS], [test "$enable_build_docs" = yes])
+       [# these don't get used when BUILD_DOCS is false but Automake
+        # will get cranky if we don't set the conditional
+        AM_CONDITIONAL([HAVE_FOP], [false])
+        AM_CONDITIONAL([HAVE_PDF2PS], [false])])
+
+AM_CONDITIONAL([BUILD_DOCS], [test x"$enable_build_docs" = xyes])
 
 
 AS_IF([test "x$STATIC_LIBS" = xno],
