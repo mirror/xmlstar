@@ -71,9 +71,9 @@ $(generated_usage_sources) : usage2c.awk
 include doc/doc.mk
 
 man_MANS = $(manpage)
-dist_doc_DATA = $(userguide_gen) $(txtguide)
+dist_doc_DATA = $(userguide_gen) doc/html.css $(txtguide)
 EXTRA_DIST += $(manpage_src) $(userguide_src) $(txtguide_src)
-EXTRA_DIST += $(misc_docs)
+EXTRA_DIST += doc/replace-PROG-VERSION.xsl $(manpage)
 
 
 CLEANFILES = version.h $(generated_usage_sources)
