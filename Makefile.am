@@ -1,5 +1,6 @@
 EXTRA_DIST = Copyright examples solaris tests
-WIN32_DIST = README TODO Copyright COPYING AUTHORS ChangeLog INSTALL NEWS xml.exe doc
+WIN32_DIST = README TODO Copyright COPYING AUTHORS ChangeLog INSTALL NEWS xml.exe
+WIN32_doc_DIST = $(generated_docs) doc/html.css
 
 ACLOCAL_AMFLAGS = -I m4
 if GCC
@@ -24,9 +25,9 @@ rpm: cleantar distdir xmlstarlet.spec
 	rpmbuild -ta $(distdir).tar.gz
 
 $(distdir)-win32.zip: xml.exe
-	mkdir -p /tmp/$(distdir)
-	cp -r $(WIN32_DIST) /tmp/$(distdir)
-	rm /tmp/$(distdir)/doc/gen-doc
+	mkdir -p /tmp/$(distdir)/doc
+	cp $(WIN32_DIST) /tmp/$(distdir)
+	cp $(WIN32_doc_DIST) /tmp/$(distdir)/doc
 	strip /tmp/$(distdir)/xml.exe
 	cd /tmp && zip -9 --symlinks --recurse-paths --to-crlf --move \
 	  $(distdir)-win32.zip $(distdir)
