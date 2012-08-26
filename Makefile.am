@@ -64,7 +64,7 @@ nodist_xml_SOURCES = $(generated_usage_sources)
 EXTRA_DIST += $(usage_texts) usage2c.awk
 
 .txt.c:
-	$(AM_V_GEN)$(AWK) -f ./usage2c.awk $< > $@
+	$(AM_V_GEN)$(AWK) -f $(srcdir)/usage2c.awk $< > $@
 $(generated_usage_sources) : usage2c.awk
 
 

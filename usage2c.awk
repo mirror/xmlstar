@@ -8,7 +8,7 @@ BEGIN {
 length(command_name) == 0 {
     command_name = FILENAME;
     sub(/\.txt$/, "", command_name);
-    sub(/^src\//, "", command_name);
+    sub(/^([^\/]+\/)*/, "", command_name);
     gsub(/-/, "_", command_name);
     printf("static const char %s[] = {\n", command_name);
     progs = 0;
