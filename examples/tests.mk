@@ -1,4 +1,4 @@
-TESTS_ENVIRONMENT = abs_builddir=$(abs_builddir) EXEEXT=$(EXEEXT) SED=$(SED) \
+LOG_COMPILER = abs_builddir=$(abs_builddir) EXEEXT=$(EXEEXT) SED=$(SED) \
  $(srcdir)/tests/runTest.sh
 
 # split tests into fast and slow, so we can run just the fast ones

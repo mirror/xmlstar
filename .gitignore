@@ -27,3 +27,5 @@
 /doc/xmlstarlet-ug.ps
 /doc/xmlstarlet.1
 /doc/xmlstarlet.txt
+/examples/*.log
+/test-suite.log
