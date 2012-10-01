@@ -4,4 +4,4 @@
     --var new-field '$prev' \
     -i '$new-field' -t attr -n new-attr -v new-attr-value \
     -s '$new-field' -t elem -n new-subelem -v '' \
-    xml/table.xml
+    xml/table.xml | ./xmlstarlet c14n

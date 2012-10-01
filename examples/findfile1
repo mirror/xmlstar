@@ -1,3 +1,3 @@
 #!/bin/sh
 # Find XML files matching XPath expression (containing 'object' element)
-./xmlstarlet sel -t -m //object -f xml/table.xml xml/tab-obj.xml
+./xmlstarlet sel -T -t -m //object -f --nl xml/table.xml xml/tab-obj.xml
