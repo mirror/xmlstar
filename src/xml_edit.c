@@ -329,6 +329,12 @@ edInsert(xmlDocPtr doc, xmlNodeSetPtr nodes, const char *val, const char *name,
     for (i = 0; i < nodes->nodeNr; i++)
     {
         xmlNodePtr node;
+
+        if (nodes->nodeTab[i] == (void*) doc && mode != 0) {
+            fprintf(stderr, "The document node cannot have siblings.\n");
+            exit(EXIT_INTERNAL_ERROR);
+        }
+
         /* update node */
         if (type == XML_ATTR)
         {
@@ -367,6 +373,10 @@ edRename(xmlDocPtr doc, xmlNodeSetPtr nodes, const char *val, XmlNodeType type)
     int i;
     for (i = 0; i < nodes->nodeNr; i++)
     {
+        if (nodes->nodeTab[i] == (void*) doc) {
+            fprintf(stderr, "The document node cannot be renamed.\n");
+            exit(EXIT_INTERNAL_ERROR);
+        }
         xmlNodeSetName(nodes->nodeTab[i], BAD_CAST val);
     }
 }
@@ -380,6 +390,11 @@ edDelete(xmlDocPtr doc, xmlNodeSetPtr nodes)
     int i;
     for (i = nodes->nodeNr - 1; i >= 0; i--)
     {
+        if (nodes->nodeTab[i] == (void*) doc) {
+            fprintf(stderr, "The document node cannot be deleted.\n");
+            exit(EXIT_INTERNAL_ERROR);
+        }
+
         if (nodes->nodeTab[i]->type == XML_NAMESPACE_DECL) {
             fprintf(stderr, "FIXME: can't delete namespace nodes\n");
             exit(EXIT_INTERNAL_ERROR);
@@ -402,6 +417,11 @@ edMove(xmlDocPtr doc, xmlNodeSetPtr nodes, xmlNodePtr to)
     int i;
     for (i = 0; i < nodes->nodeNr; i++)
     {
+        if (nodes->nodeTab[i] == (void*) doc) {
+            fprintf(stderr, "The document node cannot be moved.\n");
+            exit(EXIT_INTERNAL_ERROR);
+        }
+
         if (nodes->nodeTab[i]->type == XML_NAMESPACE_DECL) {
             fprintf(stderr, "FIXME: can't move namespace nodes\n");
             exit(EXIT_INTERNAL_ERROR);
