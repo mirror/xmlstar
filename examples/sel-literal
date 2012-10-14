@@ -1,4 +1,6 @@
 #!/bin/sh
-
-${SED:-sed} "s/[\\'\"]/\\\&/g" < results/sel-literal.out | xargs -I LIT \
-    ./xmlstarlet sel --text -t -m /doc -o LIT --nl xml/foo.xml
+IFS='
+'
+for lit in `cat results/sel-literal.out` ; do
+    ./xmlstarlet sel --text -t -m /doc -o "$lit" --nl xml/foo.xml
+done
