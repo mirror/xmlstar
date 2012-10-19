@@ -37,6 +37,6 @@ END {
     printf("  fprintf(out, %s", command_name);
     for (i = 1; i <= progs; i++)
         printf(", argv0");
-    printf(");\n}");
+    print(");\n}");
 }
 
