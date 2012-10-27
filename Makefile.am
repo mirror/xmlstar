@@ -74,7 +74,7 @@ include doc/doc.mk
 man_MANS = $(manpage)
 dist_doc_DATA = $(userguide_gen) doc/html.css $(txtguide)
 EXTRA_DIST += $(manpage_src) $(userguide_src) $(txtguide_src)
-EXTRA_DIST += doc/replace-PROG-VERSION.xsl $(manpage)
+EXTRA_DIST += $(buildfiles_docs) $(manpage)
 
 
 CLEANFILES = version.h $(generated_usage_sources)

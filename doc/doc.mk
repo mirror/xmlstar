@@ -9,6 +9,7 @@ manpage = doc/xmlstarlet.1
 manpage_src = doc/xmlstarlet-man.xml
 
 generated_docs = $(userguide_gen) $(txtguide) $(manpage)
+buildfiles_docs = doc/replace-PROG-VERSION.xsl doc/xmlstar-fodoc-style.xsl
 
 DOCBOOK_PARAMS = \
 --param section.autolabel 1 \
