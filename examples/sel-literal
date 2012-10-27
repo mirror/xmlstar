@@ -1,6 +1,6 @@
 #!/bin/sh
-IFS='
-'
-for lit in `cat results/sel-literal.out` ; do
-    ./xmlstarlet sel --text -t -m /doc -o "$lit" --nl xml/foo.xml
-done
+the_test() {
+    ./xmlstarlet sel --text -t -m /doc -o "$1" --nl xml/foo.xml
+}
+
+. foreach-literal.sh

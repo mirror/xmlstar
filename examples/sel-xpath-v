@@ -1,6 +1,6 @@
 #!/bin/sh
-IFS='
-'
-for xpath in `cat sel-xpath.input` ; do
-    ./xmlstarlet sel --text -t -m /doc -v "$xpath" --nl xml/foo.xml
-done
+the_test() {
+    ./xmlstarlet sel --text -t -m /doc -v "$1" --nl xml/foo.xml
+}
+
+. foreach-xpath.sh
