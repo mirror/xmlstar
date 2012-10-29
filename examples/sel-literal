@@ -3,4 +3,4 @@ the_test() {
     ./xmlstarlet sel --text -t -m /doc -o "$1" --nl xml/foo.xml
 }
 
-. foreach-literal.sh
+. "${srcdir-.}"/foreach-literal.sh

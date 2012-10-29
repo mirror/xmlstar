@@ -3,4 +3,4 @@ the_test() {
     ./xmlstarlet sel --text -t -i "$1" -v "$1" --nl xml/foo.xml
 }
 
-. foreach-xpath.sh
+. "${srcdir-.}"/foreach-xpath.sh
