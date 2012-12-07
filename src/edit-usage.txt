@@ -19,9 +19,9 @@ where
 where <action>
   -d or --delete <xpath>
   --var <name> <xpath>
-  -i or --insert <xpath> -t (--type) elem|text|attr -n <name> -v (--value) <value>
-  -a or --append <xpath> -t (--type) elem|text|attr -n <name> -v (--value) <value>
-  -s or --subnode <xpath> -t (--type) elem|text|attr -n <name> -v (--value) <value>
+  -i or --insert <xpath> -t (--type) elem|text|attr -n <name> [-v (--value) <value>]
+  -a or --append <xpath> -t (--type) elem|text|attr -n <name> [-v (--value) <value>]
+  -s or --subnode <xpath> -t (--type) elem|text|attr -n <name> [-v (--value) <value>]
   -m or --move <xpath1> <xpath2>
   -r or --rename <xpath1> -v <new-name>
   -u or --update <xpath> -v (--value) <value>

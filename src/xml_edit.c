@@ -617,14 +617,21 @@ static void
 parseInsertionArgs(XmlEdOp op_type, XmlEdAction* op,
     char *const*const argv, int *argi)
 {
+    XmlEdArg arg;
     op->op = op_type;
     op->arg1 = nextArg(argv, argi);
     parseNextArg(argv, argi, OPT_JUST_TYPE);
     op->type = parseNextArg(argv, argi, OPT_NODE_TYPE);
     parseNextArg(argv, argi, OPT_JUST_NAME);
     op->arg3 = nextArg(argv, argi);
-    parseNextArg(argv, argi, OPT_JUST_VAL);
-    op->arg2 = nextArg(argv, argi);
+    /* test if value is given */
+    op->arg2 = 0;
+    arg = argv[*argi];
+    if (!arg) return;
+    if (!strcmp(arg, "-v") || !strcmp(arg, "--value")) {
+        parseNextArg(argv, argi, OPT_JUST_VAL);
+        op->arg2 = nextArg(argv, argi);
+    }
 }
 
 /**
