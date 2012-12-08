@@ -9,7 +9,11 @@ endif
 
 GIT_DESCRIBE = git describe --tags --dirty
 
+# TODO: figure out why log removal is needed and/or make it completely automatic
 dist-hook:
+	@for log in $(srcdir)/examples/*.log ; do if [ -f "$$log" ] ; then \
+	  rm $(srcdir)/examples/*.log ; \
+	  echo 'ERROR: log files need to cleaned BEFORE making tarball, try again'; exit 1 ; fi ; done
 	@ if [ -d .git ] ; then \
 	    if [ $(VERSION) != `$(GIT_DESCRIBE)` ] ; then \
 		echo 'ERROR: version mismatch, rerun autoconf -f' ; exit 1 ; fi ; \
