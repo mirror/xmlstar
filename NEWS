@@ -1,3 +1,27 @@
+1.4.1: Dec 8, 2012
+
+    - avoid segfault when attempting to edit the document node (Bug
+      #3575722)
+
+    - Packaging:
+      - include doc/xmlstar-fodoc-style.xsl in the dist so that the
+        --enable-build-docs option works from the tarball (Bug
+        #3580667)
+      - AC_SUBST PACKAGE_TARNAME for automake so that documentation is
+        installed to the right place (Bug #3561958)
+
+    - Test Suite:
+      - avoid test failures due to XML formatting and whitespace
+        changes (also fixes Bug #3572789)
+      - use automake's parallel test suite
+      - make bigxml tests much faster by using whitespace instead of nodes
+      - don't test str:replace() with ed: it doesn't work outside of
+        xslt in new libxslt
+      - ignore extra errors from libxml 2.9.0 bug
+      - let tests run using busybox
+      - add runAllTests.sh to run tests without make
+
+
 1.4.0: Aug 26, 2012
 
     - Documentation:
