@@ -62,7 +62,8 @@ int
 CompareAttributes(const void *a1,const void *a2)
 {
     typedef xmlChar const *const xmlCStr;
-    xmlCStr *attr1 = a1, *attr2 = a2;
+    xmlCStr *attr1 = *(xmlCStr* const* const)a1;
+    xmlCStr *attr2 = *(xmlCStr* const* const)a2;
     return xmlStrcmp(*attr1, *attr2);
 }
 
@@ -78,17 +79,24 @@ pyxStartElement (void * ctx,
     const xmlChar ** attributes)
 {
     int i;
+    /* DON'T modify the attributes array, ever. */
+    const xmlChar*** atts = &attributes;
+
     fprintf(stdout,"(");
     print_qname(prefix, localname);
     fprintf(stdout, "\n");
 
-
-    if (nb_attributes > 1)
+    if (nb_attributes > 1) {
+        atts = calloc(nb_attributes, sizeof(*atts));
+        for (i = 0; i < nb_attributes; ++i) {
+            atts[i] = &(attributes[i * 5]);
+        }
         /* Sort the pairs based on the name part of the pair */
-        qsort ((void *)attributes,
+        qsort (atts,
             nb_attributes,
-            sizeof(xmlChar *)*5,
+            sizeof(*atts),
             CompareAttributes);
+    }
 
     for (i = 0; i < nb_namespaces; i++) {
         int aidx = i * 2;
@@ -107,12 +115,11 @@ pyxStartElement (void * ctx,
     }
 
     for (i = 0; i < nb_attributes; i++) {
-        int aidx = i * 5;
-        const xmlChar *localname = attributes[aidx],
-            *prefix = attributes[aidx+1],
-            /* *nsURI = attributes[aidx+2], */
-            *valueBegin = attributes[aidx+3],
-            *valueEnd = attributes[aidx+4];
+        const xmlChar *localname = atts[i][0],
+            *prefix = atts[i][1],
+            /* *nsURI = attributes[atts][2], */
+            *valueBegin = atts[i][3],
+            *valueEnd = atts[i][4];
         int valueLen = valueEnd - valueBegin;
 
         /* Attribute Name */
@@ -123,6 +130,9 @@ pyxStartElement (void * ctx,
         SanitizeData(valueBegin, valueLen);
         putchar('\n');
     }
+
+    /* we did only allocate memory if nb_attributes > 1 */
+    if (nb_attributes > 1) free(atts);
 }
 
 void
