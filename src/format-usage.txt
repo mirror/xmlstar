@@ -14,6 +14,5 @@ where <options> are
 #ifdef LIBXML_HTML_ENABLED
   -H or --html                - input is HTML
 #endif
-  -Q or --quiet               - Suppress errors from libxml2
   -h or --help                - print help
 
