@@ -5,6 +5,10 @@ BEGIN {
     print("#include <libxml/xmlversion.h>");
 }
 
+# text in src/foo-bar.txt results in
+#   static const char foo_text[] = {
+#     't', 'h', 'e', ' ', 't', 'e', 'x', 't', ...
+#   }
 length(command_name) == 0 {
     command_name = FILENAME;
     sub(/\.txt$/, "", command_name);
@@ -14,6 +18,12 @@ length(command_name) == 0 {
     progs = 0;
 }
 
+# escape percent signs: we are going to use printf(). I don't think there are
+# any %s currently, but it's bound to happen eventually.
+{ gsub(/%/, "%%"); }
+
+# white space separted instances of PROG will be replaced with the final name of
+# the xmlstarlet executable
 /PROG/ {
     for (i = 1; i <= NF; i++) {
         if ($i == "PROG") {
@@ -23,12 +33,22 @@ length(command_name) == 0 {
     }
 }
 
+# C-preprocessor directives are unchanged
 /^#/
+
+# convert plain text lines into equivalent char array literal
 !/^#/ {
-    gsub(/./, "'&',");
-    gsub(/'\\'/, "'\\\\'");     # '\' --> '\\'
-    gsub(/'''/, "'\\''");       # ''' --> '\''
-    print($0 "'\\n',");
+    for (i = 1; i <= length($0); i++) {
+        c = substr($0, i, 1);
+        if (c == "\\")          # \ --> '\\'
+            printf("'\\\\'");
+        else if (c == "'")      # ' --> '\''
+            printf("'\\''");
+        else                    # X --> 'X'
+            printf("'%c'", c);
+        printf(",");
+    }
+    print("'\\n',");
 }
 
 END {
