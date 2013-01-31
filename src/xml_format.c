@@ -61,6 +61,7 @@ typedef struct _foOptions {
 #ifdef LIBXML_HTML_ENABLED
     int html;                 /* inputs are in HTML format */
 #endif
+    int quiet;                 /* quiet mode */
 } foOptions;
 
 typedef foOptions *foOptionsPtr;
@@ -98,6 +99,7 @@ foInitOptions(foOptionsPtr ops)
 #ifdef LIBXML_HTML_ENABLED
     ops->html = 0;
 #endif
+    ops->quiet = 0;
 }
 
 /**
@@ -215,6 +217,11 @@ foParseOptions(foOptionsPtr ops, int argc, char **argv)
             ops->indent_tab = 0;
             i++;
         }
+        else if (!strcmp(argv[i], "--quiet") || !strcmp(argv[i], "-Q"))
+        {
+            ops->quiet = 1;
+            i++;
+        }
 #ifdef LIBXML_HTML_ENABLED
         else if (!strcmp(argv[i], "--html") || !strcmp(argv[i], "-H"))
         {
@@ -250,6 +257,14 @@ foParseOptions(foOptionsPtr ops, int argc, char **argv)
     return i-1;
 }
 
+void my_error_func(void* ctx, const char * msg, ...) {
+  /* do nothing */
+}
+
+void my_structured_error_func(void * userData, xmlErrorPtr error) {
+  /* do nothing */
+}
+
 /**
  *  'process' xml document(s)
  */
@@ -273,6 +288,10 @@ foProcess(foOptionsPtr ops, int start, int argc, char **argv)
     }
     else    
 */
+    if (ops->quiet) {
+      xmlSetGenericErrorFunc(NULL, my_error_func);
+      xmlSetStructuredErrorFunc(NULL, my_structured_error_func);
+    }
 
 #ifdef LIBXML_HTML_ENABLED
     if (ops->html)
