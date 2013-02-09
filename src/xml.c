@@ -63,6 +63,12 @@ const char libxslt_more_info[] =
 "Current implementation uses libxslt from GNOME codebase as XSLT processor\n"
 "(see http://xmlsoft.org/ for more details)\n";
 
+typedef struct _gOptions {
+    int quiet;            /* no error output */
+} gOptions;
+
+typedef gOptions *gOptionsPtr;
+
 /**
  *  Display usage syntax
  */
@@ -77,8 +83,24 @@ usage(int argc, char **argv, exit_status status)
 }  
 
 /**
- * Error reporting function
+ *  Initialize global command line options
  */
+void
+gInitOptions(gOptionsPtr ops)
+{
+    ops->quiet = 0;
+}
+
+/**
+ * Error reporting functions
+ */
+void reportGenericError(void* ctx, const char * msg, ...) {
+    /* do nothing */
+}
+
+/* by default errors are reported */
+static ErrorInfo errorInfo = { NULL, NULL, VERBOSE };
+
 void reportError(void *ptr, xmlErrorPtr error)
 {
     ErrorInfo *errorInfo = (ErrorInfo*) ptr;
@@ -132,6 +154,13 @@ void reportError(void *ptr, xmlErrorPtr error)
     }
 }
 
+void
+suppressErrors(void)
+{
+    xmlSetGenericErrorFunc(NULL, reportGenericError);
+    errorInfo.verbose = QUIET;
+}
+
 #define CHECK_MEM(ret) if (!ret) \
         (fprintf(stderr, "out of memory\n"), exit(EXIT_INTERNAL_ERROR))
 
@@ -158,17 +187,71 @@ xstrdup(const char *str)
 }
 
 /**
+ *  Parse global command line options
+ */
+void
+gParseOptions(gOptionsPtr ops, int *argc, char **argv)
+{
+    int i, j;
+    i = 1;
+    while(i < *argc)
+    {
+        if (!strcmp(argv[i], "--quiet") || !strcmp(argv[i], "-q"))
+        {
+            ops->quiet = 1;
+            i++;
+        }
+        else if (!strcmp(argv[i], "--version"))
+        {
+            fprintf(stdout, "%s\n"
+                "compiled against libxml2 %s, linked with %s\n"
+                "compiled against libxslt %s, linked with %s\n",
+                VERSION,
+                LIBXML_DOTTED_VERSION, xmlParserVersion,
+                LIBXSLT_DOTTED_VERSION, xsltEngineVersion);
+            exit(EXIT_SUCCESS);
+        }
+        else if (!strcmp(argv[i], "--help"))
+        {
+            usage(*argc, argv, EXIT_SUCCESS);
+        }
+        else if (argv[i][0] != '-')
+        {
+            /* remove parsed arguments */
+            i--;
+            for (j = 1; j < *argc; j++) {
+                if (j < *argc - i)
+                    argv[j] = argv[j + i];
+                else
+                    argv[j] = 0;
+            }
+            *argc -= i;
+            return;
+        }
+        else
+        {
+            usage(*argc, argv, EXIT_BAD_ARGS);
+        }
+    }
+}
+
+/**
  *  This is the main function
  */
 int
 main(int argc, char **argv)
 {
     int ret = 0;
-    /* by default errors are reported */
-    static ErrorInfo errorInfo = { NULL, NULL, VERBOSE };
+    static gOptions ops;
 
     xmlMemSetup(free, xmalloc, xrealloc, xstrdup);
+    
+    gInitOptions(&ops);
+    gParseOptions(&ops, &argc, argv);
+    
     xmlSetStructuredErrorFunc(&errorInfo, reportError);
+    if (ops.quiet)
+        suppressErrors();
 
     if (argc <= 1)
     {
@@ -222,22 +305,11 @@ main(int argc, char **argv)
     {
         ret = escMain(argc, argv, 0);
     }
-    else if (!strcmp(argv[1], "--version"))
-    {
-        fprintf(stdout, "%s\n"
-            "compiled against libxml2 %s, linked with %s\n"
-            "compiled against libxslt %s, linked with %s\n",
-            VERSION,
-            LIBXML_DOTTED_VERSION, xmlParserVersion,
-            LIBXSLT_DOTTED_VERSION, xsltEngineVersion);
-        ret = EXIT_SUCCESS;
-    }
     else
     {
-        usage(argc, argv, strcmp(argv[1], "--help") == 0?
-            EXIT_SUCCESS : EXIT_BAD_ARGS);
+        usage(argc, argv, EXIT_BAD_ARGS);
     }
-    
+
     exit(ret);
 }
 

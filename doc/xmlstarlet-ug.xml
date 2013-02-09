@@ -323,6 +323,7 @@ where &lt;command&gt; is one of:
    pyx   (or xmln)      - Convert XML into PYX format (based on ESIS - ISO 8879)
    p2x   (or depyx)     - Convert PYX into XML
 &lt;options&gt; are:
+   -q or --quiet        - no error output
    --version            - show version
    --help               - show help
 Wherever file name mentioned in command help it is assumed

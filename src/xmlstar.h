@@ -31,6 +31,7 @@ typedef struct _errorInfo {
 } ErrorInfo;
 
 void reportError(void *ptr, xmlErrorPtr error);
+void suppressErrors(void);
 
 void registerXstarVariable(xmlXPathContextPtr ctxt,
     const char* name, xmlXPathObjectPtr value);
