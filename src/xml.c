@@ -97,6 +97,10 @@ gInitOptions(gOptionsPtr ops)
 void reportGenericError(void* ctx, const char * msg, ...) {
     /* do nothing */
 }
+
+/* by default errors are reported */
+static ErrorInfo errorInfo = { NULL, NULL, VERBOSE };
+
 void reportError(void *ptr, xmlErrorPtr error)
 {
     ErrorInfo *errorInfo = (ErrorInfo*) ptr;
@@ -148,6 +152,13 @@ void reportError(void *ptr, xmlErrorPtr error)
             if (ctxt) xmlParserPrintFileContext(ctxt->input);
         }
     }
+}
+
+void
+suppressErrors(void)
+{
+    xmlSetGenericErrorFunc(NULL, reportGenericError);
+    errorInfo.verbose = QUIET;
 }
 
 #define CHECK_MEM(ret) if (!ret) \
@@ -233,19 +244,14 @@ main(int argc, char **argv)
     int ret = 0;
     static gOptions ops;
 
-    /* by default errors are reported */
-    static ErrorInfo errorInfo = { NULL, NULL, VERBOSE };
-
     xmlMemSetup(free, xmalloc, xrealloc, xstrdup);
     
     gInitOptions(&ops);
     gParseOptions(&ops, &argc, argv);
     
-    if (ops.quiet) {
-        xmlSetGenericErrorFunc(NULL, reportGenericError);
-        errorInfo.verbose = QUIET;
-    }
     xmlSetStructuredErrorFunc(&errorInfo, reportError);
+    if (ops.quiet)
+        suppressErrors();
 
     if (argc <= 1)
     {

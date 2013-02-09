@@ -257,14 +257,6 @@ foParseOptions(foOptionsPtr ops, int argc, char **argv)
     return i-1;
 }
 
-void my_error_func(void* ctx, const char * msg, ...) {
-  /* do nothing */
-}
-
-void my_structured_error_func(void * userData, xmlErrorPtr error) {
-  /* do nothing */
-}
-
 /**
  *  'process' xml document(s)
  */
@@ -288,10 +280,8 @@ foProcess(foOptionsPtr ops, int start, int argc, char **argv)
     }
     else    
 */
-    if (ops->quiet) {
-      xmlSetGenericErrorFunc(NULL, my_error_func);
-      xmlSetStructuredErrorFunc(NULL, my_structured_error_func);
-    }
+    if (ops->quiet)
+        suppressErrors();
 
 #ifdef LIBXML_HTML_ENABLED
     if (ops->html)
