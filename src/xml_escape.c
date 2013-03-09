@@ -42,11 +42,6 @@ THE SOFTWARE.
 
 #define INSZ 4*1024
 
-/*
- *  TODO:  1. stdin input
- *         2. exit values on errors
- */
-
 /**
  *  Print small help for command line options
  */
@@ -63,20 +58,25 @@ escUsage(int argc, char **argv, int escape, exit_status status)
     exit(status);
 }
 
-struct xmlPredefinedChar {
-    const char *name;
-    char        value;
-    int         name_len;
-};
+/* "apos" or "quot" are biggest, add 1 for leading "&" */
+enum { MAX_ENTITY_NAME = 1+4 };
 
-static struct xmlPredefinedChar xmlPredefinedCharValues[] = {
-    { "lt", '<', 2 },
-    { "gt", '>', 2 },
-    { "apos", '\'', 4 },
-    { "quot", '\"', 4 },
-    { "amp", '&', 3 },
-    { NULL, '\0', 0 }
-};
+/* return 1 if entity was recognized and value output, 0 otherwise */
+static int
+put_entity_value(const char* entname, FILE* out)
+{
+    if (entname[1] == '#') {
+        putc(atoi(&entname[2]), out);
+        return 1;
+    } else {
+        xmlEntityPtr entity = xmlGetPredefinedEntity((xmlChar*) &entname[1]);
+        if (entity) {
+            fputs((char*) (entity->content), out);
+            return 1;
+        }
+    }
+    return 0;
+}
 
 /*
  * Macro used to grow the current buffer.
@@ -193,71 +193,42 @@ xml_C11NNormalizeString(const xmlChar * input,
     return (buffer);
 }
 
-/* TODO: CHECK THIS PROCEDURE IT'S PROB FULL OF BUGS */
-char *
-xml_unescape(char* str)
+/**
+ * write unescaped version of @str to @out, if @str appears to end in the middle
+ * of entity, return the entity.
+ */
+static const char *
+xml_unescape(const char* str, FILE* out)
 {
-   char *p = str, *p2 = NULL;
-   char *ret = NULL;
+    static char entity[MAX_ENTITY_NAME+1]; /* +1 for NUL terminator */
+    int i;
 
-   ret = (char*) xmlCharStrdup(str);
-   p2 = ret;
-   
-   while(*p)
-   {
-      if (*p == '&')
-      {
-         struct xmlPredefinedChar *pair = xmlPredefinedCharValues;
-
-         p++;
-         if (*p == '\0') break;
-
-         
-         if (*p == '#')
-         {
-            int num;
-            p++;
-            if (*p == '\0') break;
-            num = atoi(p);
-
-            while((*p >= '0') && (*p <= '9')) p++;
-
-            if (*p == ';')
-            {
-               *p2 = (char) num;
-               p2++;
-               p++;
+    for (i = 0; str[i]; i++) {
+        if (str[i] == '&') {
+            int entity_len;
+            int semicolon_off = i+1;
+            for (;;) {
+                if (str[semicolon_off] == ';') break;
+                if (str[semicolon_off] == '\0') break;
+                semicolon_off++;
             }
-            continue;
-         }
-         else         
-         {
-            while(pair->name)
-            {
-               if (!strncmp(p, pair->name, pair->name_len))
-               {
-                  if (*(p+pair->name_len) == ';')
-                  {
-                     *p2 = pair->value;
-                     p2++;
-                     p += (pair->name_len + 1);
-                     break;
-                  }
-               }
-               pair++;
+            entity_len = semicolon_off - i;
+            if (entity_len < MAX_ENTITY_NAME) {
+                memcpy(entity, &str[i], entity_len);
+                entity[entity_len] = '\0';
+                if (str[semicolon_off] == ';') {
+                    if (put_entity_value(entity, out)) {
+                        i = semicolon_off;
+                        continue;
+                    }
+                } else {
+                    return entity;
+                }
             }
-            continue;
-         }
-      }
-
-      *p2 = *p;
-      p2++;
-      p++;
-   }
-
-   *p2 = '\0';
-   
-   return ret;   
+        }
+        putc(str[i], out);
+    }
+    return NULL;
 }
 
 /**
@@ -291,10 +262,11 @@ escMain(int argc, char **argv, int escape)
     if (readStdIn)
     {
        static char line[INSZ];
+       int offset = 0;
 
        while (!feof(stdin))
        {
-           if (fgets(line, INSZ - 1, stdin))
+           if (fgets(line + offset, INSZ - offset, stdin))
            {
                if (escape)
                {
@@ -307,11 +279,12 @@ escMain(int argc, char **argv, int escape)
                }
                else
                {
-                   outBuf = (xmlChar*) xml_unescape(line);
-                   if (outBuf)
-                   {
-                       fprintf(stdout, "%s", outBuf);
-                       free(outBuf);
+                   const char* partial_entity = xml_unescape(line, stdout);
+                   if (partial_entity) {
+                       offset = strlen(partial_entity);
+                       memcpy(line, partial_entity, offset);
+                   } else {
+                       offset = 0;
                    }
                }
            }
@@ -331,11 +304,10 @@ escMain(int argc, char **argv, int escape)
     }
     else
     {
-        outBuf = (xmlChar*) xml_unescape(inp);
-        if (outBuf)
+        const char* partial_entity = xml_unescape(inp, stdout);
+        if (partial_entity)
         {
-            fprintf(stdout, "%s\n", outBuf);
-            free(outBuf);
+            fprintf(stdout, "%s\n", partial_entity);
         }
     }
         
