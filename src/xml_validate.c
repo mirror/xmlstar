@@ -88,14 +88,20 @@ void
 valInitOptions(valOptionsPtr ops)
 {
     ops->wellFormed = 1;
-    ops->listGood = -1;
     ops->err = 0;
     ops->embed = 0;
     ops->dtd = NULL;
     ops->schema = NULL;
     ops->relaxng = NULL;
-    ops->show_val_res = 1;
     ops->nonet = 1;
+
+    if (globalOptions.quiet) {
+        ops->listGood = 0;
+        ops->show_val_res = 0;
+    } else {
+        ops->listGood = -1;
+        ops->show_val_res = 1;
+    }
 }
 
 /**

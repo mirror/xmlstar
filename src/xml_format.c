@@ -99,7 +99,7 @@ foInitOptions(foOptionsPtr ops)
 #ifdef LIBXML_HTML_ENABLED
     ops->html = 0;
 #endif
-    ops->quiet = 0;
+    ops->quiet = globalOptions.quiet;
 }
 
 /**

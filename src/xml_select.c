@@ -173,7 +173,7 @@ selUsage(const char *argv0, exit_status status)
 void
 selInitOptions(selOptionsPtr ops)
 {
-    ops->quiet = 0;
+    ops->quiet = globalOptions.quiet;
     ops->printXSLT = 0;
     ops->printRoot = 0;
     ops->outText = 0;
