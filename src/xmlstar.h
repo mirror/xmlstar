@@ -33,6 +33,14 @@ typedef struct _errorInfo {
 void reportError(void *ptr, xmlErrorPtr error);
 void suppressErrors(void);
 
+typedef struct _gOptions {
+    int quiet;            /* no error output */
+} gOptions;
+
+typedef gOptions *gOptionsPtr;
+
+extern gOptions globalOptions;
+
 void registerXstarVariable(xmlXPathContextPtr ctxt,
     const char* name, xmlXPathObjectPtr value);
 void registerXstarNs(xmlXPathContextPtr ctxt);

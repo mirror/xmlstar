@@ -39,6 +39,8 @@ THE SOFTWARE.
 
 #include "xmlstar.h"
 
+gOptions globalOptions;
+
 static const xmlChar* XMLSTAR_NS = BAD_CAST "http://xmlstar.sourceforge.net";
 static const xmlChar* XMLSTAR_NS_PREFIX = BAD_CAST "xstar";
 
@@ -62,12 +64,6 @@ const char libxslt_more_info[] =
 "\n"
 "Current implementation uses libxslt from GNOME codebase as XSLT processor\n"
 "(see http://xmlsoft.org/ for more details)\n";
-
-typedef struct _gOptions {
-    int quiet;            /* no error output */
-} gOptions;
-
-typedef gOptions *gOptionsPtr;
 
 /**
  *  Display usage syntax
@@ -242,15 +238,14 @@ int
 main(int argc, char **argv)
 {
     int ret = 0;
-    static gOptions ops;
 
     xmlMemSetup(free, xmalloc, xrealloc, xstrdup);
     
-    gInitOptions(&ops);
-    gParseOptions(&ops, &argc, argv);
+    gInitOptions(&globalOptions);
+    gParseOptions(&globalOptions, &argc, argv);
     
     xmlSetStructuredErrorFunc(&errorInfo, reportError);
-    if (ops.quiet)
+    if (globalOptions.quiet)
         suppressErrors();
 
     if (argc <= 1)

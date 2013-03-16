@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 #include <libxml/xmlmemory.h>
 #include <libxml/debugXML.h>
@@ -215,8 +216,9 @@ xml_unescape(const char* str, FILE* out)
             int entity_len;
             int semicolon_off = i+1;
             for (;;) {
-                if (str[semicolon_off] == ';') break;
-                if (str[semicolon_off] == '\0') break;
+                if (str[semicolon_off] == ';' ||
+                    str[semicolon_off] == '\0' ||
+                    isspace(str[semicolon_off])) break;
                 semicolon_off++;
             }
             entity_len = semicolon_off - i;
@@ -228,9 +230,17 @@ xml_unescape(const char* str, FILE* out)
                         i = semicolon_off;
                         continue;
                     }
-                } else {
+                    if (!globalOptions.quiet)
+                        fprintf(stderr, "unrecognized entity: %s\n", entity);
+                } else if (str[semicolon_off] == '\0') {
                     return entity;
+                } else {
+                    if (!globalOptions.quiet)
+                        fprintf(stderr, "unterminated entity name: %.*s\n", entity_len, &str[i]);
                 }
+            } else {
+                if (!globalOptions.quiet)
+                    fprintf(stderr, "entity name too long: %.*s\n", entity_len, &str[i]);
             }
         }
         putc(str[i], out);
@@ -296,7 +306,11 @@ escMain(int argc, char **argv, int escape)
                }
            }
        }
-       
+       if (offset) {
+           fprintf(stdout, "%.*s", offset, line);
+           if (!globalOptions.quiet)
+               fprintf(stderr, "partial entity: %.*s\n", offset, line);
+       }
        return ret;
     }
     
@@ -315,6 +329,8 @@ escMain(int argc, char **argv, int escape)
         if (partial_entity)
         {
             fprintf(stdout, "%s\n", partial_entity);
+            if (!globalOptions.quiet)
+                fprintf(stderr, "partial entity: %s\n", partial_entity);
         }
     }
         
