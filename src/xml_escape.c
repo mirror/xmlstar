@@ -66,8 +66,15 @@ static int
 put_entity_value(const char* entname, FILE* out)
 {
     if (entname[1] == '#') {
-        putc(atoi(&entname[2]), out);
-        return 1;
+        char* endptr;
+        const char* entnul = entname + strlen(entname);
+        int num = (entname[2] == 'x')?
+            strtol(&entname[3], &endptr, 16):
+            strtol(&entname[2], &endptr, 10);
+        if (endptr == entnul) {
+            putc(num, out);
+            return 1;
+        }
     } else {
         xmlEntityPtr entity = xmlGetPredefinedEntity((xmlChar*) &entname[1]);
         if (entity) {
