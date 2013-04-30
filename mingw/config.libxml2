@@ -1,0 +1,19 @@
+#!/bin/sh
+tail -n +3 "$0"
+./configure \
+    --prefix=/usr/local/mingw32 \
+    --host=i586-mingw32msvc \
+    --with-gnu-ld \
+    --enable-silent-rules \
+    CPPFLAGS=-I/usr/local/mingw32/include \
+    LDFLAGS=-L/usr/local/mingw32/lib \
+    \
+    --disable-shared \
+    --without-debug \
+    --without-legacy \
+    --without-python \
+    --without-readline \
+    --without-sax1 \
+    --without-threads \
+    --without-modules
+    

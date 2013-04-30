@@ -1,0 +1,17 @@
+#!/bin/sh
+tail -n +3 "$0"
+
+# see http://machine-cycle.blogspot.co.il/2010/07/mingw-64bit-cross-compilation.html
+export ac_cv_func_realloc_0_nonnull=yes
+export ac_cv_func_malloc_0_nonnull=yes
+
+./configure \
+    --prefix=/usr/local/mingw32 \
+    --host=i586-mingw32msvc \
+    --enable-silent-rules \
+    CPPFLAGS=-I/usr/local/mingw32/include \
+    LDFLAGS=-L/usr/local/mingw32/lib \
+    \
+    --with-libxml-prefix=/usr/local/mingw32 \
+    --with-libxslt-prefix=/usr/local/mingw32 \
+    --enable-static-libs
