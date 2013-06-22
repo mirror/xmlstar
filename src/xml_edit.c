@@ -442,10 +442,12 @@ edMove(xmlDocPtr doc, xmlNodeSetPtr nodes, xmlNodePtr to)
 
 /**
  *  Loop through array of operations and perform them
+ *  @return number of successful operations
  */
-static void
+static int
 edProcess(xmlDocPtr doc, const XmlEdAction* ops, int ops_count)
 {
+    int op_applied = 0;
     int k;
     xmlXPathContextPtr ctxt = xmlXPathNewContext(doc);
     /* NOTE: later registrations override earlier ones */
@@ -487,6 +489,8 @@ edProcess(xmlDocPtr doc, const XmlEdAction* ops, int ops_count)
         res = xmlXPathEvalExpression(BAD_CAST ops[k].arg1, ctxt);
         if (!res || res->type != XPATH_NODESET || !res->nodesetval) continue;
         nodes = res->nodesetval;
+
+        op_applied += (nodes->nodeNr > 0);
 
         switch (ops[k].op)
         {
@@ -532,6 +536,8 @@ edProcess(xmlDocPtr doc, const XmlEdAction* ops, int ops_count)
     xmlDeregisterNodeDefault(NULL);
 
     xmlXPathFreeContext(ctxt);
+
+    return op_applied;
 }
 
 /**
@@ -541,6 +547,7 @@ static void
 edOutput(const char* filename, const XmlEdAction* ops, int ops_count,
     const edOptions* g_ops)
 {
+    int op_applied;
     xmlDocPtr doc;
     int save_options =
 #if LIBXML_VERSION >= 20708
@@ -561,7 +568,7 @@ edOutput(const char* filename, const XmlEdAction* ops, int ops_count,
         exit(EXIT_BAD_FILE);
     }
 
-    edProcess(doc, ops, ops_count);
+    op_applied = edProcess(doc, ops, ops_count);
 
     /* avoid getting ASCII CRs in UTF-16/UCS-(2,4) text */
     if ((xmlStrcasestr(doc->encoding, BAD_CAST "UTF") == 0
@@ -578,8 +585,11 @@ edOutput(const char* filename, const XmlEdAction* ops, int ops_count,
     save = xmlSaveToFilename(g_ops->inplace? filename : "-", NULL, save_options);
     xmlSaveDoc(save, doc);
     xmlSaveClose(save);
-
     xmlFreeDoc(doc);
+
+    if (!op_applied && ops_count > 0 && default_ns && !globalOptions.quiet) {
+        fprintf(stderr, DEFAULT_NS_FAIL_MESSAGE);
+    }
 }
 
 /**

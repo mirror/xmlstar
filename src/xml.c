@@ -351,6 +351,10 @@ static void bad_ns_opt(const char *msg)
     exit(EXIT_BAD_ARGS);
 }
 
+const char* DEFAULT_NS_FAIL_MESSAGE =
+    "None of the XPaths matched; to match a node in the default namespace\n"
+    "use '_' as the prefix (see section 5.1 in the manual).\n"
+    "For instance, use /_:node instead of /node\n";
 const xmlChar *default_ns = NULL;
 
 #define MAX_NS_ARGS    256

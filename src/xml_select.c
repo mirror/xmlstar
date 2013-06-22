@@ -739,6 +739,10 @@ selMain(int argc, char **argv)
     if (i == argc)
         do_file("-", style_tree, xml_options, &ops, &xsltOps, &status);
 
+    if (status != EXIT_SUCCESS && default_ns && !ops.quiet) {
+        fprintf(stderr, DEFAULT_NS_FAIL_MESSAGE);
+    }
+
     /* 
      * Shutdown libxml
      */
