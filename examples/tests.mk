@@ -1,6 +1,8 @@
-LOG_COMPILER = abs_builddir=$(abs_builddir) \
-EXEEXT=$(EXEEXT) SED=$(SED) AWK=$(AWK) SHELL=$(SHELL) \
- $(SHELL) $(srcdir)/tests/runTest.sh
+AM_TESTS_ENVIRONMENT = abs_builddir=$(abs_builddir) \
+EXEEXT=$(EXEEXT) SED=$(SED) AWK=$(AWK) SHELL=$(SHELL); \
+export abs_buildir; export EXEEXT; export SED; export AWK; export SHELL;
+
+LOG_COMPILER = $(SHELL) $(srcdir)/tests/runTest.sh
 
 # split tests into fast and slow, so we can run just the fast ones
 

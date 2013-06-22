@@ -13,6 +13,7 @@
 /install-sh
 /missing
 /compile
+/test-driver
 /stamp-h1
 /xmlstarlet.spec
 /solaris/package/sol[89]-sparc/pkginfo
@@ -28,4 +29,5 @@
 /doc/xmlstarlet.1
 /doc/xmlstarlet.txt
 /examples/*.log
+/examples/*.trs
 /test-suite.log
