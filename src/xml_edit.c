@@ -217,8 +217,16 @@ extract_ns_defs(xmlDocPtr doc, xmlXPathContextPtr ctxt)
     if (!root) return;
 
     for (nsDef = root->nsDef; nsDef; nsDef = nsDef->next) {
-        if (nsDef->prefix != NULL) /* can only register ns with prefix */
+        if (nsDef->prefix != NULL) { /* can only register ns with prefix */
             xmlXPathRegisterNs(ctxt, nsDef->prefix, nsDef->href);
+        } else {
+            default_ns = nsDef->href;
+        }
+    }
+
+    if (default_ns) {
+        xmlXPathRegisterNs(ctxt, BAD_CAST "_", default_ns);
+        xmlXPathRegisterNs(ctxt, BAD_CAST "DEFAULT", default_ns);
     }
 }
 

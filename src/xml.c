@@ -351,6 +351,8 @@ static void bad_ns_opt(const char *msg)
     exit(EXIT_BAD_ARGS);
 }
 
+const xmlChar *default_ns = NULL;
+
 #define MAX_NS_ARGS    256
 xmlChar *ns_arr[2 * MAX_NS_ARGS + 1];
 

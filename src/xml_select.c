@@ -635,6 +635,12 @@ extract_ns_defs(xmlNodePtr root, xmlDocPtr style_tree)
 
     for (nsDef = root->nsDef; nsDef; nsDef = nsDef->next) {
         xmlNewNs(style_root, nsDef->href, nsDef->prefix);
+        if (nsDef->prefix == NULL)
+            default_ns = nsDef->href;
+    }
+    if (default_ns) {
+        xmlNewNs(style_root, default_ns, BAD_CAST "_");
+        xmlNewNs(style_root, default_ns, BAD_CAST "DEFAULT");
     }
 }
 
