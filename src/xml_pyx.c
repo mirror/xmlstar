@@ -241,40 +241,11 @@ pyxUsage(const char *argv0, exit_status status)
     exit(status);
 }
 
-int
-pyx_process_file(const char *filename)
-{
-    int ret;
-    xmlParserCtxtPtr ctxt;
-
-    xmlInitParser();
-    ctxt = xmlCreateFileParserCtxt(filename);
-
-    memset(ctxt->sax, 0, sizeof(*ctxt->sax));
-
-    /* Establish Event Handlers */
-    ctxt->sax->initialized = XML_SAX2_MAGIC;
-    ctxt->sax->startElementNs = pyxStartElement;
-    ctxt->sax->endElementNs = pyxEndElement;
-    ctxt->sax->processingInstruction = pyxProcessingInstruction;
-    ctxt->sax->characters = pyxCharacterData;
-    ctxt->sax->notationDecl = pyxNotationDeclHandler;
-    ctxt->sax->reference = pyxExternalEntityReferenceHandler;
-    ctxt->sax->unparsedEntityDecl = pyxUnparsedEntityDeclHandler;
-    ctxt->sax->externalSubset = pyxExternalSubsetHandler;
-    ctxt->sax->comment = pyxCommentHandler;
-    ctxt->sax->cdataBlock = pyxCdataBlockHandler;
-
-    ret = xmlParseDocument(ctxt);
-    xmlFreeParserCtxt(ctxt);
-    xmlCleanupParser();
-
-    return ret;
-}
 
 int
 pyxMain(int argc,const char *argv[])
 {
+    static xmlSAXHandler pyxSAX;
     int status = 0;
 
     if ((argc > 2) &&
@@ -288,16 +259,32 @@ pyxMain(int argc,const char *argv[])
     {
         pyxUsage(argv[0], EXIT_SUCCESS);
     }
+
+    xmlInitParser();
+    /* Establish Event Handlers */
+    pyxSAX.startElementNs = pyxStartElement;
+    pyxSAX.endElementNs = pyxEndElement;
+    pyxSAX.processingInstruction = pyxProcessingInstruction;
+    pyxSAX.characters = pyxCharacterData;
+    pyxSAX.notationDecl = pyxNotationDeclHandler;
+    pyxSAX.reference = pyxExternalEntityReferenceHandler;
+    pyxSAX.unparsedEntityDecl = pyxUnparsedEntityDeclHandler;
+    pyxSAX.externalSubset = pyxExternalSubsetHandler;
+    pyxSAX.comment = pyxCommentHandler;
+    pyxSAX.cdataBlock = pyxCdataBlockHandler;
+    pyxSAX.initialized = XML_SAX2_MAGIC;
+
     if (argc == 2) {
-        status = pyx_process_file("-");
+        status = xmlSAXUserParseFile(&pyxSAX, NULL, "-");
     }
     else {
         argv++;
         argc--;
         for (++argv; argc>1; argc--,argv++) {
-            int ret = pyx_process_file(*argv);
+            int ret = xmlSAXUserParseFile(&pyxSAX, NULL, *argv);
             if (ret != 0) status = ret;
         }
     }
-    return status;
+    xmlCleanupParser();
+    return (status == 0)? 0 : EXIT_LIB_ERROR;
 }
