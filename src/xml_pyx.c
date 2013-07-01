@@ -241,11 +241,30 @@ pyxUsage(const char *argv0, exit_status status)
     exit(status);
 }
 
+static xmlSAXHandler pyxSAX;
+
+static int
+pyx_process_file(const char *filename)
+{
+    int ret;
+    xmlParserCtxtPtr ctxt;
+
+    ctxt = xmlCreateFileParserCtxt(filename);
+    if (!ctxt) /* assume it failed because of filename */
+        return EXIT_BAD_FILE;
+
+    ctxt->sax = &pyxSAX;
+    ret = xmlParseDocument(ctxt);
+
+    ctxt->sax = NULL; /* don't try to free pyxSAX */
+    xmlFreeParserCtxt(ctxt);
+
+    return (ret == 0)? 0 : EXIT_LIB_ERROR;
+}
 
 int
 pyxMain(int argc,const char *argv[])
 {
-    static xmlSAXHandler pyxSAX;
     int status = 0;
 
     if ((argc > 2) &&
@@ -275,16 +294,16 @@ pyxMain(int argc,const char *argv[])
     pyxSAX.initialized = XML_SAX2_MAGIC;
 
     if (argc == 2) {
-        status = xmlSAXUserParseFile(&pyxSAX, NULL, "-");
+        status = pyx_process_file("-");
     }
     else {
         argv++;
         argc--;
         for (++argv; argc>1; argc--,argv++) {
-            int ret = xmlSAXUserParseFile(&pyxSAX, NULL, *argv);
+            int ret = pyx_process_file(*argv);
             if (ret != 0) status = ret;
         }
     }
     xmlCleanupParser();
-    return (status == 0)? 0 : EXIT_LIB_ERROR;
+    return status;
 }

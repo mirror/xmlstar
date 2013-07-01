@@ -31,3 +31,6 @@
 /examples/*.log
 /examples/*.trs
 /test-suite.log
+/mingw/*/*
+/mingw/*.tar.[gx]z
+/xmlstarlet-*.tar.gz
