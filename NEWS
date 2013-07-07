@@ -1,3 +1,23 @@
+1.5.0: Jul 7, 2013
+
+    - Bugs:
+      - avoid segfault on pyx non-existant file
+      - fix unescaping of entities straddling 4K byte boundary (Bug #102)
+    - Enhancements:
+      - unescape hex entities (&#xXX;)
+      - give a helpful message if doc has default namespace and
+        nothing matched
+      - add "_" and "DEFAULT" as names for document's top-level
+        default namespace
+      - Adding a global quiet option
+      - ed: Allow omitting value argument to create empty element.
+      - use default attribute values in sel subcommand
+    - Build:
+      - fix test variables to work with newer automake (1.11 -> 1.13)
+      - fix usage2c.awk for mawk
+      - scripts for building on mingw
+
+
 1.4.2: Dec 28, 2012
 
     - pyx: avoid segfault on documents with multiple attributes (Bug
