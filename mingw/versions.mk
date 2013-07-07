@@ -1,6 +1,5 @@
-ZLIB_VERSION			:= 1.2.7
+ZLIB_VERSION			:= 1.2.8
 ICONV_VERSION			:= 1.14
-# --> 2.9.1
-XML2_VERSION			:= 2.9.0
+XML2_VERSION			:= 2.9.1
 XSLT_VERSION			:= 1.1.28
 XMLSTARLET_VERSION		:= $(shell git describe --tag --dirty)

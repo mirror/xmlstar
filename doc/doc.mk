@@ -1,15 +1,15 @@
 userguide = doc/xmlstarlet-ug
 userguide_gen = $(userguide).pdf $(userguide).ps $(userguide).html
-userguide_src = $(userguide).xml
+userguide_src = $(srcdir)/$(userguide).xml
 
 txtguide = doc/xmlstarlet.txt
-txtguide_src = doc/gen-doc
+txtguide_src = $(srcdir)/doc/gen-doc
 
 manpage = doc/xmlstarlet.1
-manpage_src = doc/xmlstarlet-man.xml
+manpage_src = $(srcdir)/doc/xmlstarlet-man.xml
 
 generated_docs = $(userguide_gen) $(txtguide) $(manpage)
-buildfiles_docs = doc/replace-PROG-VERSION.xsl doc/xmlstar-fodoc-style.xsl
+buildfiles_docs = $(srcdir)/doc/replace-PROG-VERSION.xsl $(srcdir)/doc/xmlstar-fodoc-style.xsl
 
 DOCBOOK_PARAMS = \
 --param section.autolabel 1 \
@@ -18,7 +18,7 @@ DOCBOOK_PARAMS = \
 EDIT_XML = $(XSLTPROC) \
   --stringparam VERSION '$(VERSION)' \
   --stringparam PROG "`echo xml | $(SED) '$(program_transform_name)'`" \
-  doc/replace-PROG-VERSION.xsl
+  $(srcdir)/doc/replace-PROG-VERSION.xsl
 
 if BUILD_DOCS
 
@@ -29,7 +29,7 @@ if BUILD_DOCS
   - > $@
 
 .xml.fo:
-	$(V_DOCBOOK)$(EDIT_XML) $< | $(XSLTPROC) $(DOCBOOK_PARAMS) doc/xmlstar-fodoc-style.xsl - > $@
+	$(V_DOCBOOK)$(EDIT_XML) $< | $(XSLTPROC) $(DOCBOOK_PARAMS) $(srcdir)/doc/xmlstar-fodoc-style.xsl - > $@
 
 if HAVE_FOP
 .fo.pdf:
@@ -40,7 +40,7 @@ if HAVE_PDF2PS
 	$(AM_V_GEN)$(PDF2PS) $< $@
 endif
 
-$(userguide).html : $(userguide).xml
+$(userguide).html : $(userguide_src)
 
 $(manpage): $(manpage_src)
 	 $(V_DOCBOOK)$(EDIT_XML) $< | $(XSLTPROC) -o $@ \

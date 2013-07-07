@@ -1,3 +1,12 @@
+# This makefile automates the building of xmlstarlet and its
+# dependancies (including downloading) with the mingw cross compiler.
+
+# Things that are somewhat specific to my setup and should probably be
+# generalized:
+
+#   - Uses i586-mingw32msvc- as the cross compiler prefix which I
+#     think is Debian (derivative) specific.
+
 include versions.mk
 
 PREFIX := $(CURDIR)/build
@@ -24,6 +33,7 @@ zlib-$(ZLIB_VERSION).tar.xz :
 
 zlib-$(ZLIB_VERSION) : zlib-$(ZLIB_VERSION).tar.xz
 	tar -xf $<
+	touch $@
 
 $(ZLIB) : zlib-$(ZLIB_VERSION)
 	cd $< \
@@ -53,6 +63,7 @@ libiconv-$(ICONV_VERSION).tar.gz :
 
 libiconv-$(ICONV_VERSION) : libiconv-$(ICONV_VERSION).tar.gz
 	tar -xf $<
+	touch $@
 
 $(ICONV) : libiconv-$(ICONV_VERSION)
 	cd $< \
@@ -75,6 +86,7 @@ libxml2-$(XML2_VERSION).tar.gz :
 
 libxml2-$(XML2_VERSION) : libxml2-$(XML2_VERSION).tar.gz
 	tar -xf $<
+	touch $@
 
 $(LIBXML) : libxml2-$(XML2_VERSION) $(ICONV) $(ZLIB)
 	cd $< \
@@ -105,6 +117,7 @@ libxslt-$(XSLT_VERSION).tar.gz :
 
 libxslt-$(XSLT_VERSION) : libxslt-$(XSLT_VERSION).tar.gz
 	tar -xf $<
+	touch $@
 
 $(LIBXSLT) : libxslt-$(XSLT_VERSION) $(LIBXML)
 	cd $< \
@@ -124,23 +137,25 @@ libxslt : $(LIBXSLT)
 # XMLSTARLET
 ####################
 
-../xmlstarlet-$(XMLSTARLET_VERSION).tar.gz :
-	cd .. && make dist
-
-xmlstarlet-$(XMLSTARLET_VERSION) : ../xmlstarlet-$(XMLSTARLET_VERSION).tar.gz
-	tar -xf $<
+xmlstarlet-$(XMLSTARLET_VERSION) :
+	mkdir $@
 
 # see http://machine-cycle.blogspot.co.il/2010/07/mingw-64bit-cross-compilation.html
 export ac_cv_func_realloc_0_nonnull := yes
 export ac_cv_func_malloc_0_nonnull := yes
 
 xmlstarlet-$(XMLSTARLET_VERSION)/xmlstarlet-$(XMLSTARLET_VERSION)-win32.zip : xmlstarlet-$(XMLSTARLET_VERSION) $(LIBXML) $(LIBXSLT)
-	cd xmlstarlet-$(XMLSTARLET_VERSION) \
- && ./configure $(CONFIGURE_FLAGS) \
+	rm -rf xmlstarlet-$(XMLSTARLET_VERSION) \
+ && mkdir xmlstarlet-$(XMLSTARLET_VERSION) \
+ && cd xmlstarlet-$(XMLSTARLET_VERSION) \
+ && ../../configure $(CONFIGURE_FLAGS) \
     --with-libxml-prefix=$(PREFIX) \
     --with-libxslt-prefix=$(PREFIX) \
     --enable-static-libs \
- && make dist-win32
+    --enable-build-docs \
+ && make dist-win32 \
+ && cd .. \
+ && touch $@
 
 xmlstarlet : xmlstarlet-$(XMLSTARLET_VERSION)/xmlstarlet-$(XMLSTARLET_VERSION)-win32.zip
 .PHONY : xmlstarlet
