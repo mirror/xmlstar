@@ -31,6 +31,8 @@ dnl
 dnl Check the environment
 dnl
 
+AC_DEFINE([_XOPEN_SOURCE], [500], [needed to get lstat declaration in -ansi mode])
+
 AC_CANONICAL_HOST
 AC_PROG_CC
 AM_CONDITIONAL([GCC], [test x$GCC = xyes])
@@ -170,8 +172,6 @@ np_SILENT_RULE([DOCBOOK], [DBOOK])
 AC_SUBST(PACKAGE_NAME)
 AC_SUBST(PACKAGE_TARNAME)
 AC_SUBST(PACKAGE_VERSION)
-
-AC_DEFINE([_XOPEN_SOURCE], [500], [needed to get lstat declaration in -ansi mode])
 
 dnl for the spec file
 
