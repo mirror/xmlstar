@@ -38,7 +38,9 @@ AC_DEFUN([XSTAR_LIB_CHECK],
         AC_MSG_WARN([not checking libxxx version])],
  [AC_PATH_PROG(LIBXXX()_CONFIG, xxx_config(),
                [], [$LIBXXX()_PREFIX/bin$PATH_SEPARATOR$PATH])
-  AS_IF([test "x$LIBXXX()_CONFIG" = x], [AC_MSG_FAILURE([xxx_config not found])])
+  AS_IF([test "x$LIBXXX()_CONFIG" = x],
+  [AC_MSG_FAILURE([xxx_config not found,
+  libxxx is not installed or LIBXXX()_PREFIX is not correctly defined])])
   LIBXXX()_VERSION=$($LIBXXX()_CONFIG --version)
   AS_VERSION_COMPARE([$LIBXXX()_VERSION], [$LIBXXX()_REQUIRED_VERSION],
                      [AC_MSG_ERROR([xmlstarlet needs at least libxxx version $LIBXXX()_REQUIRED_VERSION (http://www.xmlsoft.org/)])])
