@@ -22,10 +22,12 @@ AC_ARG_ENABLE([static-libs],
         [STATIC_LIBS=$enableval],
         [STATIC_LIBS=no])
 
+AS_IF([test -r doc/xmlstarlet.1], [LACK_DOCS=no], [LACK_DOCS=yes])
+
 AC_ARG_ENABLE([build_docs],
         [AS_HELP_STRING([--enable-build-docs],
                 [include rules to build documentation files])],
-        [], [enable_build_docs=no])
+        [], [enable_build_docs=$LACK_DOCS])
 
 dnl
 dnl Check the environment
@@ -77,11 +79,9 @@ AS_IF([test x"$enable_build_docs" = xyes],
 
        AC_PATH_PROG(FOP, fop, [none])
        AM_CONDITIONAL([HAVE_FOP], [test x"$FOP" != xnone])
-       AS_IF([test "$FOP" = none], [AC_MSG_WARN([fop not installed, unable to build pdf documentation])])
 
        AC_PATH_PROG(PDF2PS, pdf2ps, [none])
-       AM_CONDITIONAL([HAVE_PDF2PS], [test x"$PDF2PS" != xnone])
-       AS_IF([test "$PDF2PS" = none], [AC_MSG_WARN([pdf2ps not installed, unable to build postscript documentation])])],
+       AM_CONDITIONAL([HAVE_PDF2PS], [test x"$PDF2PS" != xnone])],
 
        [# these don't get used when BUILD_DOCS is false but Automake
         # will get cranky if we don't set the conditional
@@ -155,6 +155,14 @@ AC_CHECK_DECL([exsltDateXpathCtxtRegister],
 
 AM_CONDITIONAL([HAVE_EXSLT_XPATH_REGISTER], [test $HAVE_EXSLT_XPATH_REGISTER = 1])
 [CPPFLAGS="$OLD_CPPFLAGS"]
+
+# put warnings about missing docs at the end, so there is a better
+# chance of seeing them.
+AS_IF([test x$LACK_DOCS = xyes],
+      [AS_IF([test "$FOP" = none],
+        [AC_MSG_WARN([fop not installed, unable to build pdf documentation])])
+       AS_IF([test "$PDF2PS" = none],
+        [AC_MSG_WARN([pdf2ps not installed, unable to build postscript documentation])])])
 
 # make flags
 AC_SUBST([AM_CPPFLAGS], ["$LIBXSLT_CPPFLAGS $LIBXML_CPPFLAGS"])

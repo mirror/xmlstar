@@ -1,5 +1,11 @@
 userguide = doc/xmlstarlet-ug
-userguide_gen = $(userguide).pdf $(userguide).ps $(userguide).html
+userguide_gen = $(userguide).html
+if HAVE_FOP
+userguide_gen += $(userguide).pdf
+if HAVE_PDF2PS
+userguide_gen += $(userguide).ps
+endif
+endif
 userguide_src = $(srcdir)/$(userguide).xml
 
 txtguide = doc/xmlstarlet.txt
