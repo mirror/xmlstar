@@ -85,6 +85,7 @@ void
 gInitOptions(gOptionsPtr ops)
 {
     ops->quiet = 0;
+    ops->doc_namespace = 1;
 }
 
 /**
@@ -195,6 +196,16 @@ gParseOptions(gOptionsPtr ops, int *argc, char **argv)
         if (!strcmp(argv[i], "--quiet") || !strcmp(argv[i], "-q"))
         {
             ops->quiet = 1;
+            i++;
+        }
+        else if (!strcmp(argv[i], "--no-doc-namespace"))
+        {
+            ops->doc_namespace = 0;
+            i++;
+        }
+        else if (!strcmp(argv[i], "--doc-namespace"))
+        {
+            ops->doc_namespace = 1;
             i++;
         }
         else if (!strcmp(argv[i], "--version"))

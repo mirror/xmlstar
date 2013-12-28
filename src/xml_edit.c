@@ -467,7 +467,8 @@ edProcess(xmlDocPtr doc, const XmlEdAction* ops, int ops_count)
     exsltStrXpathCtxtRegister(ctxt, BAD_CAST "str");
 #endif
     /* namespaces from doc */
-    extract_ns_defs(doc, ctxt);
+    if (globalOptions.doc_namespace)
+        extract_ns_defs(doc, ctxt);
     /* namespaces from command line */
     nsarr_xpath_register(ctxt);
 
@@ -588,7 +589,8 @@ edOutput(const char* filename, const XmlEdAction* ops, int ops_count,
     xmlFreeDoc(doc);
 
     if (!op_applied && ops_count > 0
-        && !probably_using_prefixes && default_ns && !globalOptions.quiet) {
+        && !probably_using_prefixes && default_ns
+        && !globalOptions.quiet && globalOptions.doc_namespace) {
         fprintf(stderr, DEFAULT_NS_FAIL_MESSAGE);
     }
 }

@@ -35,6 +35,7 @@ void suppressErrors(void);
 
 typedef struct _gOptions {
     int quiet;            /* no error output */
+    int doc_namespace;   /* extract namespace bindings from input doc */
 } gOptions;
 
 typedef gOptions *gOptionsPtr;

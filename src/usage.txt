@@ -15,6 +15,8 @@ where <command> is one of:
   p2x   (or depyx)     - Convert PYX into XML
 <options> are:
   -q or --quiet        - no error output
+  --doc-namespace      - extract namespace bindings from input doc (default)
+  --no-doc-namespace   - don't extract namespace bindings from input doc
   --version            - show version
   --help               - show help
 Wherever file name mentioned in command help it is assumed

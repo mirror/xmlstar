@@ -672,7 +672,8 @@ do_file(const char *filename, xmlDocPtr style_tree,
 
         static xsltStylesheetPtr style = NULL;
         if (!style) {
-            extract_ns_defs(xmlDocGetRootElement(doc), style_tree);
+            if (globalOptions.doc_namespace)
+                extract_ns_defs(xmlDocGetRootElement(doc), style_tree);
             /* Parse XSLT stylesheet */
             style = xsltParseStylesheetDoc(style_tree);
             if (!style) exit(EXIT_LIB_ERROR);
@@ -746,7 +747,8 @@ selMain(int argc, char **argv)
         do_file("-", style_tree, xml_options, &ops, &xsltOps, &status);
 
     if (status != EXIT_SUCCESS
-        && !probably_using_prefixes && default_ns && !ops.quiet) {
+        && !probably_using_prefixes && default_ns
+        && !ops.quiet && globalOptions.doc_namespace) {
         fprintf(stderr, DEFAULT_NS_FAIL_MESSAGE);
     }
 
