@@ -587,9 +587,21 @@ edOutput(const char* filename, const XmlEdAction* ops, int ops_count,
     xmlSaveClose(save);
     xmlFreeDoc(doc);
 
-    if (!op_applied && ops_count > 0 && default_ns && !globalOptions.quiet) {
+    if (!op_applied && ops_count > 0
+        && !probably_using_prefixes && default_ns && !globalOptions.quiet) {
         fprintf(stderr, DEFAULT_NS_FAIL_MESSAGE);
     }
+}
+
+/**
+ * approximate searching for xpath namespace references, by just searching for
+ * ':'.
+ */
+static void
+check_for_ns(const char* xpath)
+{
+    if (!probably_using_prefixes)
+        probably_using_prefixes = (strchr(xpath, ':') != NULL);
 }
 
 /**
@@ -736,6 +748,26 @@ edMain(int argc, char **argv)
             {
                 fprintf(stderr, "Warning: unrecognized option '%s'\n", arg);
             }
+
+
+            /* check for namespace references in XPath arguments */
+            if (ops[ops_count].op != XML_ED_VAR)
+                check_for_ns(ops[ops_count].arg1);
+
+            switch (ops[ops_count].op) {
+            case XML_ED_UPDATE:
+                if (ops[ops_count].type != XML_EXPR)
+                    break;
+                /* else fallthrough */
+            case XML_ED_VAR:
+            case XML_ED_MOVE:
+                check_for_ns(ops[ops_count].arg2);
+                break;
+
+            default:            /* do nothing */
+                ;
+            }
+
             ops_count++;
         }
         else

@@ -265,10 +265,14 @@ selParseOptions(selOptionsPtr ops, int argc, char **argv)
  * might pickup things that aren't actually namespace references because we
  * don't have a full XPath parser. That's okay, an extra namespace definition
  * won't hurt anyone.
+ *
+ * @returns: 1 if a namespace referenece was found
  */
-static void
+static int
 checkNsRefs(xmlNodePtr root, const char *xpath)
 {
+    int found_ref = 0;
+
     const char *colon;
     for (colon = xpath; colon; colon++) {
         int ns_idx = -1;
@@ -281,6 +285,7 @@ checkNsRefs(xmlNodePtr root, const char *xpath)
                 ||!isalnum(colon[ns_idx])) {
                 const NsEntry *ns;
                 ns_idx++;
+                found_ref = 1;
                 ns = lookup_ns_entry(&colon[ns_idx], -ns_idx);
                 if (ns) xmlNewNs(root, ns->href, ns->prefix);
                 break;
@@ -288,6 +293,7 @@ checkNsRefs(xmlNodePtr root, const char *xpath)
             if (-ns_idx >= MAX_NS_PREFIX_LEN) break;
         }
     }
+    return found_ref;
 }
 
 /**
@@ -402,7 +408,7 @@ selGenTemplate(xmlNodePtr root, xmlNodePtr template_node,
             }
 
             case TARG_XPATH:
-                checkNsRefs(root, argv[i]);
+                probably_using_prefixes |= checkNsRefs(root, argv[i]);
             case TARG_ATTR_STRING:
                 xmlNewProp(newnode, newtarg->arguments[j].attrname, BAD_CAST argv[i]);
                 break;
@@ -739,7 +745,8 @@ selMain(int argc, char **argv)
     if (i == argc)
         do_file("-", style_tree, xml_options, &ops, &xsltOps, &status);
 
-    if (status != EXIT_SUCCESS && default_ns && !ops.quiet) {
+    if (status != EXIT_SUCCESS
+        && !probably_using_prefixes && default_ns && !ops.quiet) {
         fprintf(stderr, DEFAULT_NS_FAIL_MESSAGE);
     }
 

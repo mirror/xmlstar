@@ -45,6 +45,7 @@ void registerXstarVariable(xmlXPathContextPtr ctxt,
     const char* name, xmlXPathObjectPtr value);
 void registerXstarNs(xmlXPathContextPtr ctxt);
 
+extern int probably_using_prefixes;
 const char* DEFAULT_NS_FAIL_MESSAGE;
 extern const xmlChar *default_ns;
 
