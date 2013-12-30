@@ -313,9 +313,9 @@ valMain(int argc, char **argv)
         for (i=start; i<argc; i++)
         {
             xmlDocPtr doc;
-            int ret;
+            int failed;
 
-            ret = 0;
+            failed = 0;
             doc = NULL;
 
             errorInfo.filename = argv[i];
@@ -323,22 +323,22 @@ valMain(int argc, char **argv)
             if (doc)
             {
                 /* TODO: precompile DTD once */                
-                ret = valAgainstDtd(&ops, ops.dtd, doc, argv[i]);
+                failed = valAgainstDtd(&ops, ops.dtd, doc, argv[i]);
                 xmlFreeDoc(doc);
             }
             else
             {
-                ret = 1; /* Malformed XML or could not open file */
+                failed = 1; /* Malformed XML or could not open file */
                 if ((ops.listGood < 0) && !ops.show_val_res)
                 {
                     fprintf(stdout, "%s\n", argv[i]);
                 }
             }
-            if (ret) invalidFound = 1;     
+            if (failed) invalidFound = 1;
 
             if (ops.show_val_res)
             {
-                if (ret == 0)
+                if (!failed)
                     fprintf(stdout, "%s - valid\n", argv[i]);
                 else
                     fprintf(stdout, "%s - invalid\n", argv[i]);
@@ -407,7 +407,7 @@ valMain(int argc, char **argv)
 
         for (i=start; i<argc; i++)
         {
-            int ret = 0;
+            int failed = 0;
             if (ops.embed) options |= XML_PARSE_DTDVALID;
 
             if (!reader)
@@ -416,7 +416,7 @@ valMain(int argc, char **argv)
             }
             else
             {
-                ret = xmlReaderNewFile(reader, argv[i], NULL, options);
+                failed = xmlReaderNewFile(reader, argv[i], NULL, options);
             }
 
             errorInfo.xmlReader = reader;
@@ -430,50 +430,53 @@ valMain(int argc, char **argv)
             if (!ops.err)
                 ops.stop = STOP;
 
-            if (reader && ret == 0)
+            if (reader && !failed)
             {
 #ifdef LIBXML_SCHEMAS_ENABLED
                 if (schemaCtxt)
                 {
-                    ret = xmlTextReaderSchemaValidateCtxt(reader,
+                    failed = xmlTextReaderSchemaValidateCtxt(reader,
                         schemaCtxt, 0);
                 }
                 else if (relaxng)
                 {
-                    ret = xmlTextReaderRelaxNGSetSchema(reader,
+                    failed = xmlTextReaderRelaxNGSetSchema(reader,
                         relaxng);
                 }
 #endif  /* LIBXML_SCHEMAS_ENABLED */
 
-                if (ret == 0)
+                if (failed == 0)
                 {
+                    int more_nodes;
+                    int validating = (schema || relaxng || ops.embed);
                     do
                     {
-                        ret = xmlTextReaderRead(reader);
-                    } while (ret == 1
-                        && (!ops.stop || (xmlTextReaderIsValid(reader) == 1)));
-                    if (ret != -1 && (schema || relaxng || ops.embed))
-                        ret = !xmlTextReaderIsValid(reader);
+                        more_nodes = xmlTextReaderRead(reader);
+                        failed =
+                            (more_nodes == -1)? 1 :
+                            (!validating)? 0 :
+                            xmlTextReaderIsValid(reader) != 1;
+                    } while (more_nodes == 1 && (!failed || !ops.stop));
                 }
             }
             else
             {
                 if (ops.err)
                     fprintf(stderr, "couldn't read file '%s'\n", errorInfo.filename);
-                ret = 1; /* could not open file */
+                failed = 1; /* could not open file */
             }
-            if (ret) invalidFound = 1;
+            if (failed) invalidFound = 1;
 
             if (!ops.show_val_res)
             {
-                if ((ops.listGood > 0) && (ret == 0))
+                if ((ops.listGood > 0) && !failed)
                     fprintf(stdout, "%s\n", argv[i]);
-                if ((ops.listGood < 0) && (ret != 0))
+                if ((ops.listGood < 0) && failed)
                     fprintf(stdout, "%s\n", argv[i]);
             }
             else
             {
-                if (ret == 0)
+                if (!failed)
                     fprintf(stdout, "%s - valid\n", argv[i]);
                 else
                     fprintf(stdout, "%s - invalid\n", argv[i]);
