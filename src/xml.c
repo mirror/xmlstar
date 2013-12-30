@@ -95,8 +95,8 @@ void reportGenericError(void* ctx, const char * msg, ...) {
     /* do nothing */
 }
 
-/* by default errors are reported */
-static ErrorInfo errorInfo = { NULL, NULL, VERBOSE };
+/* by default all errors are reported */
+static ErrorInfo errorInfo = { NULL, NULL, VERBOSE, CONTINUE };
 
 void reportError(void *ptr, xmlErrorPtr error)
 {
@@ -148,6 +148,9 @@ void reportError(void *ptr, xmlErrorPtr error)
             xmlParserCtxtPtr ctxt = error->ctxt;
             if (ctxt) xmlParserPrintFileContext(ctxt->input);
         }
+    }
+    if (errorInfo->stop == STOP) {
+        exit(EXIT_FAILURE);
     }
 }
 

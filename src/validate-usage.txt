@@ -12,6 +12,7 @@ where <options>
   -r or --relaxng <rng-file> - validate against Relax-NG schema
 #endif
   -e or --err                - print verbose error messages on stderr
+  -S or --stop               - stop on first error
   -b or --list-bad           - list only files which do not validate
   -g or --list-good          - list only files which validate
   -q or --quiet              - do not list files (return result code only)

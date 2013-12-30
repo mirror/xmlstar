@@ -58,6 +58,7 @@ typedef struct _valOptions {
     char *schema;             /* External Schema URL or file name */
     char *relaxng;            /* External Relax-NG Schema URL or file name */
     int   err;                /* Allow stderr messages */
+    int   stop;               /* Stop on first error */
     int   embed;              /* Validate using embeded DTD */
     int   wellFormed;         /* Check if well formed only */
     int   listGood;           /* >0 list good, <0 list bad */
@@ -89,6 +90,7 @@ valInitOptions(valOptionsPtr ops)
 {
     ops->wellFormed = 1;
     ops->err = 0;
+    ops->stop = 0;
     ops->embed = 0;
     ops->dtd = NULL;
     ops->schema = NULL;
@@ -123,6 +125,11 @@ valParseOptions(valOptionsPtr ops, int argc, char **argv)
         else if (!strcmp(argv[i], "--err") || !strcmp(argv[i], "-e"))
         {
             ops->err = 1;
+            i++;
+        }
+        else if (!strcmp(argv[i], "--stop") || !strcmp(argv[i], "-S"))
+        {
+            ops->stop = STOP;
             i++;
         }
         else if (!strcmp(argv[i], "--embed") || !strcmp(argv[i], "-E"))
@@ -299,6 +306,10 @@ valMain(int argc, char **argv)
          * interface */
         int i;
 
+        /* we have to exit() from the error reporting function to implement
+           --stop */
+        errorInfo.stop = ops.stop;
+
         for (i=start; i<argc; i++)
         {
             xmlDocPtr doc;
@@ -411,6 +422,14 @@ valMain(int argc, char **argv)
             errorInfo.xmlReader = reader;
             errorInfo.filename = argv[i];
 
+            /* It makes no sense to continue if we are not reporting errors
+             * anyway. Note this doesn't apply to the --dtd case because the we
+             * can't stop there without aborting the whole program (and
+             * therefore we wouldn't be able to check multiple files).
+             */
+            if (!ops.err)
+                ops.stop = STOP;
+
             if (reader && ret == 0)
             {
 #ifdef LIBXML_SCHEMAS_ENABLED
@@ -431,7 +450,8 @@ valMain(int argc, char **argv)
                     do
                     {
                         ret = xmlTextReaderRead(reader);
-                    } while (ret == 1);
+                    } while (ret == 1
+                        && (!ops.stop || (xmlTextReaderIsValid(reader) == 1)));
                     if (ret != -1 && (schema || relaxng || ops.embed))
                         ret = !xmlTextReaderIsValid(reader);
                 }
