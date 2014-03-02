@@ -58,9 +58,9 @@
       <para>We welcome any user's feedback on this project which would greatly
       help us to improve its quality. Comments, suggestions, feature requests,
       bug reports can be done via SourceForge project web site (see <link
-      xlink:href="http://sourceforge.net/forum/?group_id=66612">XMLStarlet
+      xlink:href="http://sourceforge.net/p/xmlstar/discussion/">XMLStarlet
       Sourceforge forums</link>, or <link
-      xlink:href="http://lists.sourceforge.net/lists/listinfo/xmlstar-devel/">XMLStarlet
+      xlink:href="http://sourceforge.net/p/xmlstar/mailman/">XMLStarlet
       mailing list</link>)</para>
     </sect1>
 
@@ -324,6 +324,8 @@ where &lt;command&gt; is one of:
    p2x   (or depyx)     - Convert PYX into XML
 &lt;options&gt; are:
    -q or --quiet        - no error output
+   --doc-namespace      - extract namespace bindings from input doc (default)
+   --no-doc-namespace   - don't extract namespace bindings from input doc
    --version            - show version
    --help               - show help
 Wherever file name mentioned in command help it is assumed
@@ -462,39 +464,45 @@ xml/table/rec/stringField</programlisting>
       XML documents. Here is synopsis for '<phrase role="PROG"/> sel' command:</para>
 
       <programlisting>XMLStarlet Toolkit: Select from XML document(s)
-Usage: <phrase role="PROG"/> sel &lt;global-options&gt; {&lt;template&gt;} [ &lt;xml-file&gt; ... ]
+Usage: <phrase role="PROG"/><![CDATA[ sel <global-options> {<template>} [ <xml-file> ... ]
 where
-  &lt;global-options&gt; - global options for selecting
-  &lt;xml-file&gt; - input XML document file name/uri (stdin is used if missing)
-  &lt;template&gt; - template for querying XML document with following syntax:
+  <global-options> - global options for selecting
+  <xml-file> - input XML document file name/uri (stdin is used if missing)
+  <template> - template for querying XML document with following syntax:
 
-&lt;global-options&gt; are:
-  -C or --comp       - display generated XSLT
-  -R or --root       - print root element &lt;xsl-select&gt;
-  -T or --text       - output is text (default is XML)
-  -I or --indent     - indent output
-  -D or --xml-decl   - do not omit xml declaration line
-  -B or --noblanks   - remove insignificant spaces from XML tree
-  -N &lt;name&gt;=&lt;value&gt;  - predefine namespaces (name without 'xmlns:')
-                       ex: xsql=urn:oracle-xsql
-                       Multiple -N options are allowed.
-  --net              - allow fetch DTDs or entities over network
-  --help             - display help
+<global-options> are:
+  -Q or --quiet             - do not write anything to standard output.
+  -C or --comp              - display generated XSLT
+  -R or --root              - print root element <xsl-select>
+  -T or --text              - output is text (default is XML)
+  -I or --indent            - indent output
+  -D or --xml-decl          - do not omit xml declaration line
+  -B or --noblanks          - remove insignificant spaces from XML tree
+  -E or --encode <encoding> - output in the given encoding (utf-8, unicode...)
+  -N <name>=<value>         - predefine namespaces (name without 'xmlns:')
+                              ex: xsql=urn:oracle-xsql
+                              Multiple -N options are allowed.
+  --net                     - allow fetch DTDs or entities over network
+  --help                    - display help
 
-Syntax for templates: -t|--template &lt;options&gt;
-where &lt;options&gt;
-  -c or --copy-of &lt;xpath&gt;  - print copy of XPATH expression
-  -v or --value-of &lt;xpath&gt; - print value of XPATH expression
-  -o or --output &lt;string&gt;  - output string literal
-  -n or --nl               - print new line
-  -f or --inp-name         - print input file name (or URL)
-  -m or --match &lt;xpath&gt;    - match XPATH expression
-  -i or --if &lt;test-xpath&gt;  - check condition &lt;xsl:if test="test-xpath"&gt;
-  -e or --elem &lt;name&gt;      - print out element &lt;xsl:element name="name"&gt;
-  -a or --attr &lt;name&gt;      - add attribute &lt;xsl:attribute name="name"&gt;
-  -b or --break            - break nesting
-  -s or --sort op xpath    - sort in order (used after -m) where
-  op is X:Y:Z,
+Syntax for templates: -t|--template <options>
+where <options>
+  -c or --copy-of <xpath>   - print copy of XPATH expression
+  -v or --value-of <xpath>  - print value of XPATH expression
+  -o or --output <string>   - output string literal
+  -n or --nl                - print new line
+  -f or --inp-name          - print input file name (or URL)
+  -m or --match <xpath>     - match XPATH expression
+  --var <name> <value> --break or
+  --var <name>=<value>      - declare a variable (referenced by $name)
+  -i or --if <test-xpath>   - check condition <xsl:if test="test-xpath">
+  --elif <test-xpath>       - check condition if previous conditions failed
+  --else                    - check if previous conditions failed
+  -e or --elem <name>       - print out element <xsl:element name="name">
+  -a or --attr <name>       - add attribute <xsl:attribute name="name">
+  -b or --break             - break nesting
+  -s or --sort op xpath     - sort in order (used after -m) where
+  op is X:Y:Z, 
       X is A - for order="ascending"
       X is D - for order="descending"
       Y is N - for data-type="numeric"
@@ -506,38 +514,33 @@ There can be multiple --match, --copy-of, --value-of, etc options
 in a single template. The effect of applying command line templates
 can be illustrated with the following XSLT analogue
 
-<phrase role="PROG"/> sel -t -c "xpath0" -m "xpath1" -m "xpath2" -v "xpath3" \
+]]><phrase role="PROG"/><![CDATA[ sel -t -c "xpath0" -m "xpath1" -m "xpath2" -v "xpath3" \
         -t -m "xpath4" -c "xpath5"
 
 is equivalent to applying the following XSLT
 
-&lt;?xml version="1.0"?&gt;
-&lt;xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"&gt;
-&lt;xsl:template match="/"&gt;
-  &lt;xsl:call-template name="t1"/&gt;
-  &lt;xsl:call-template name="t2"/&gt;
-&lt;/xsl:template&gt;
-&lt;xsl:template name="t1"&gt;
-  &lt;xsl:copy-of select="xpath0"/&gt;
-  &lt;xsl:for-each select="xpath1"&gt;
-    &lt;xsl:for-each select="xpath2"&gt;
-      &lt;xsl:value-of select="xpath3"/&gt;
-    &lt;/xsl:for-each&gt;
-  &lt;/xsl:for-each&gt;
-&lt;/xsl:template&gt;
-&lt;xsl:template name="t2"&gt;
-  &lt;xsl:for-each select="xpath4"&gt;
-    &lt;xsl:copy-of select="xpath5"/&gt;
-  &lt;/xsl:for-each&gt;
-&lt;/xsl:template&gt;
-&lt;/xsl:stylesheet&gt;
+<?xml version="1.0"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:template match="/">
+  <xsl:call-template name="t1"/>
+  <xsl:call-template name="t2"/>
+</xsl:template>
+<xsl:template name="t1">
+  <xsl:copy-of select="xpath0"/>
+  <xsl:for-each select="xpath1">
+    <xsl:for-each select="xpath2">
+      <xsl:value-of select="xpath3"/>
+    </xsl:for-each>
+  </xsl:for-each>
+</xsl:template>
+<xsl:template name="t2">
+  <xsl:for-each select="xpath4">
+    <xsl:copy-of select="xpath5"/>
+  </xsl:for-each>
+</xsl:template>
+</xsl:stylesheet>
 
-XMLStarlet is a command line toolkit to query/edit/check/transform
-XML documents (for more information see http://xmlstar.sourceforge.net/)
-
-Current implementation uses libxslt from GNOME codebase as XSLT processor
-(see http://xmlsoft.org/ for more details)
-</programlisting>
+]]></programlisting>
 
       <para>'select' option allows you basically avoid writting XSLT
       stylesheet to perform some queries on XML documents. I.e. various
@@ -971,7 +974,7 @@ where &lt;action&gt;
    -m or --move &lt;xpath1&gt; &lt;xpath2&gt;
    -r or --rename &lt;xpath1&gt; -v &lt;new-name&gt;
    -u or --update &lt;xpath&gt; -v (--value) &lt;value&gt;
-                          -x (--expr) &lt;xpath&gt; (-x is not implemented yet)
+                          -x (--expr) &lt;xpath&gt;
 
 XMLStarlet is a command line toolkit to query/edit/check/transform
 XML documents (for more information see http://xmlstar.sourceforge.net/)
@@ -1568,65 +1571,101 @@ XML documents (for more information see http://xmlstar.sourceforge.net/)
     <sect1>
       <title xml:id="s.5.1">Namespaces and default namespace</title>
 
-      <para>One of the commonly asked questions about XmlStarlet 'select' or
-      'edit' options is: "Why nothing matched for my XPath expression which
-      seems right to me?". Common cause of these problems is not properly
-      defining a namespace for XPath. This chapter will show several examples
-      to illustrate these issues you might encounter.</para>
+      <sect2>
+        <title xml:id="s.5.1.1">The Problem: Why does nothing match?</title>
 
-      <para>For example the following XHTML document has a default namespace
-      declaration</para>
+        <para>You try to extract the links from an XHTML document like
+        this:
 
-      <para><programlisting>&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
-&lt;head&gt;
-&lt;title&gt;Query Page&lt;/title&gt;
-&lt;meta http-equiv="Content-Style-Type" content="text/css" /&gt;
-&lt;meta http-equiv="Content-Script-Type" content="text/javascript" /&gt;
-&lt;meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" /&gt;
-&lt;meta name="robots" content="noindex,nofollow" /&gt;
-&lt;/head&gt;
-&lt;body&gt;
-...
-&lt;/body&gt;
-&lt;/html&gt;
-</programlisting></para>
+        <programlisting><phrase role="PROG"/> sel -t -m "//a" -c . -n page.xhtml</programlisting>
 
-      <para>And the following (initially looking correct) query to print all
-      links</para>
+        The document contains an <code>&lt;a/&gt;</code> element, but
+        there are no matches.
 
-      <para><programlisting><phrase role="PROG"/> sel -t -m "//a" -c . -n </programlisting></para>
+        <programlisting><![CDATA[<html xmlns="http://www.w3.org/1999/xhtml"><body>
+     <a href="http://example.com">A link</a>
+</body></html>]]></programlisting>
+        </para>
 
-      <para>would return nothing. The issue with this query is that it is not
-      addressing element &lt;a&gt; in the right namespace. XPath requires all
-      namespaces used in XPath expression be defined. So for declared
-      namespace &lt;html xmlns="http://www.w3.org/1999/xhtml"&gt; in input
-      XML, you have to do same for XPath (or XSLT). There is another important
-      detail: namespace equivalency is determined not by namespace prefix, but
-      by URI. See query below, which would return expected result</para>
+        <para>
+          The problem is the
+          <code>xmlns="http://www.w3.org/1999/xhtml"</code> attribute
+          on the root element, meaning that it, and all elements below
+          have this url as part of their name.
+        </para>
+      </sect2>
 
-      <para><programlisting><phrase role="PROG"/> sel -N x="http://www.w3.org/1999/xhtml" -t -m "//x:a" -c . -n</programlisting></para>
+      <sect2>
+        <title xml:id="s.5.1.2">The Solution</title>
+        <para>
+          To match namespaced elements you must bind the namespace to
+          a prefix and prepend it to the name:
+          <programlisting><phrase
+          role="PROG"/> sel -N x="http://www.w3.org/1999/xhtml" -t -m "//x:a" -c . -n page.xhtml</programlisting>
+        </para>
+      </sect2>
 
-      <para>Example of deleting namespace declarations.</para>
+      <sect2>
+        <title xml:id="s.5.1.3">A More Convenient Solution</title>
+        <para>
+          XML documents can also use different namespace prefixes, on
+          any element in the document. In order to handle namespaces
+          with greater ease, XMLStarlet (versions 1.2.1+) will use the
+          namespace prefixes declared on the root element of the input
+          document. The default namespace will be bound to the
+          prefixes "_" and "DEFAULT" (in versions 1.5.0+). So another
+          way to solve handle the previous example would be:
 
-      <para>Delete namespace declarations and all elements from non default
-      namespace from the following XML document:</para>
+          <programlisting><phrase
+          role="PROG"/> sel -t -m "//_:a" -c . -n page.xhtml</programlisting>
+        </para>
 
-      <para>Input (file ns2.xml)<programlisting>&lt;doc xmlns="http://www.a.com/xyz" xmlns:ns="http://www.c.com/xyz"&gt;
+        <para>
+          This feature can be disabled (versions 1.6.0+) by the global
+          <code>--no-doc-namespace</code> option. When should you
+          disable it? Suppose you are writing a script that handles
+          XML documents that look like this:
+
+          <programlisting><![CDATA[<data xmlns:a="http://example.com">
+  <a:important-data>...</a:important-data>
+</data>]]>
+          </programlisting>
+          and also this:
+          <programlisting><![CDATA[<data xmlns:b="http://example.com">
+  <b:important-data>...</b:important-data>
+</data>]]>
+          </programlisting>
+          Since both documents use the same namespace they are
+          equivalent, even though the prefixes happen to be different.
+          By using <code>--no-doc-namespace</code> and binding the
+          namespace with -N, you can be sure that XMLStarlet's
+          behaviour will be independant of the input document.
+        </para>
+      </sect2>
+
+      <sect2>
+        <title>Deleting namespace declarations </title>
+
+        <para>Delete namespace declarations and all elements from non default
+        namespace from the following XML document:</para>
+
+        <para>Input (file ns2.xml)<programlisting>&lt;doc xmlns="http://www.a.com/xyz" xmlns:ns="http://www.c.com/xyz"&gt;
   &lt;A&gt;test&lt;/A&gt;
   &lt;B&gt;
     &lt;ns:C&gt;xyz&lt;/ns:C&gt;
   &lt;/B&gt;
 &lt;/doc&gt;
-</programlisting></para>
+        </programlisting></para>
 
-      <para>Command:<programlisting><phrase role="PROG"/> ed -N N="http://www.c.com/xyz" -d '//N:*' ns2.xml | \
-  sed -e 's/ xmlns.*=".*"//g'</programlisting></para>
+        <para>Command:<programlisting><phrase role="PROG"/> ed -N N="http://www.c.com/xyz" -d '//N:*' ns2.xml | \
+        sed -e 's/ xmlns.*=".*"//g'</programlisting></para>
 
-      <para>Output<programlisting>&lt;doc&gt;
+        <para>Output<programlisting>&lt;doc&gt;
   &lt;A&gt;test&lt;/A&gt;
   &lt;B/&gt;
 &lt;/doc&gt;
-</programlisting></para>
+        </programlisting></para>
+      </sect2>
     </sect1>
 
     <sect1>
