@@ -442,12 +442,10 @@ edMove(xmlDocPtr doc, xmlNodeSetPtr nodes, xmlNodePtr to)
 
 /**
  *  Loop through array of operations and perform them
- *  @return number of successful operations
  */
-static int
+static void
 edProcess(xmlDocPtr doc, const XmlEdAction* ops, int ops_count)
 {
-    int op_applied = 0;
     int k;
     xmlXPathContextPtr ctxt = xmlXPathNewContext(doc);
     /* NOTE: later registrations override earlier ones */
@@ -490,8 +488,6 @@ edProcess(xmlDocPtr doc, const XmlEdAction* ops, int ops_count)
         res = xmlXPathEvalExpression(BAD_CAST ops[k].arg1, ctxt);
         if (!res || res->type != XPATH_NODESET || !res->nodesetval) continue;
         nodes = res->nodesetval;
-
-        op_applied += (nodes->nodeNr > 0);
 
         switch (ops[k].op)
         {
@@ -537,8 +533,6 @@ edProcess(xmlDocPtr doc, const XmlEdAction* ops, int ops_count)
     xmlDeregisterNodeDefault(NULL);
 
     xmlXPathFreeContext(ctxt);
-
-    return op_applied;
 }
 
 /**
@@ -548,7 +542,6 @@ static void
 edOutput(const char* filename, const XmlEdAction* ops, int ops_count,
     const edOptions* g_ops)
 {
-    int op_applied;
     xmlDocPtr doc;
     int save_options =
 #if LIBXML_VERSION >= 20708
@@ -569,7 +562,7 @@ edOutput(const char* filename, const XmlEdAction* ops, int ops_count,
         exit(EXIT_BAD_FILE);
     }
 
-    op_applied = edProcess(doc, ops, ops_count);
+    edProcess(doc, ops, ops_count);
 
     /* avoid getting ASCII CRs in UTF-16/UCS-(2,4) text */
     if ((xmlStrcasestr(doc->encoding, BAD_CAST "UTF") == 0
@@ -587,23 +580,6 @@ edOutput(const char* filename, const XmlEdAction* ops, int ops_count,
     xmlSaveDoc(save, doc);
     xmlSaveClose(save);
     xmlFreeDoc(doc);
-
-    if (!op_applied && ops_count > 0
-        && !probably_using_prefixes && default_ns
-        && !globalOptions.quiet && globalOptions.doc_namespace) {
-        fprintf(stderr, DEFAULT_NS_FAIL_MESSAGE);
-    }
-}
-
-/**
- * approximate searching for xpath namespace references, by just searching for
- * ':'.
- */
-static void
-check_for_ns(const char* xpath)
-{
-    if (!probably_using_prefixes)
-        probably_using_prefixes = (strchr(xpath, ':') != NULL);
 }
 
 /**
@@ -750,26 +726,6 @@ edMain(int argc, char **argv)
             {
                 fprintf(stderr, "Warning: unrecognized option '%s'\n", arg);
             }
-
-
-            /* check for namespace references in XPath arguments */
-            if (ops[ops_count].op != XML_ED_VAR)
-                check_for_ns(ops[ops_count].arg1);
-
-            switch (ops[ops_count].op) {
-            case XML_ED_UPDATE:
-                if (ops[ops_count].type != XML_EXPR)
-                    break;
-                /* else fallthrough */
-            case XML_ED_VAR:
-            case XML_ED_MOVE:
-                check_for_ns(ops[ops_count].arg2);
-                break;
-
-            default:            /* do nothing */
-                ;
-            }
-
             ops_count++;
         }
         else
