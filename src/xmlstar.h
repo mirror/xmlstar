@@ -48,7 +48,6 @@ void registerXstarVariable(xmlXPathContextPtr ctxt,
     const char* name, xmlXPathObjectPtr value);
 void registerXstarNs(xmlXPathContextPtr ctxt);
 
-const char* DEFAULT_NS_FAIL_MESSAGE;
 extern const xmlChar *default_ns;
 
 int parseNSArr(xmlChar** ns_arr, int* plen, int argc, char **argv);
