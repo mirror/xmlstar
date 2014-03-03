@@ -365,10 +365,6 @@ static void bad_ns_opt(const char *msg)
     exit(EXIT_BAD_ARGS);
 }
 
-/* set to 1 if an XPath argument contains a ':', meaning the user is probably
-   using namespace prefixes, and doesn't need to hear DEFAULT_NS_FAIL_MESSAGE */
-int probably_using_prefixes = 0;
-
 const char* DEFAULT_NS_FAIL_MESSAGE =
     "None of the XPaths matched; to match a node in the default namespace\n"
     "use '_' as the prefix (see section 5.1 in the manual).\n"
