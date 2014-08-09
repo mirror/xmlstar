@@ -4,14 +4,14 @@
 # Things that are somewhat specific to my setup and should probably be
 # generalized:
 
-#   - Uses i586-mingw32msvc- as the cross compiler prefix which I
+#   - Uses i686-w64-mingw32- as the cross compiler prefix which I
 #     think is Debian (derivative) specific.
 
 include versions.mk
 
 PREFIX := $(CURDIR)/build
 # Debian specific (I think)
-HOST := i586-mingw32msvc
+HOST := i686-w64-mingw32
 
 CONFIGURE_FLAGS := --prefix=$(PREFIX) --host=$(HOST) \
 --with-gnu-ld --enable-silent-rules \
