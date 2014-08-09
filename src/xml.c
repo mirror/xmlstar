@@ -37,6 +37,12 @@ THE SOFTWARE.
 #include <libxslt/xslt.h>
 #include <libxslt/xsltconfig.h>
 
+#ifdef _WIN32
+#  define WIN32_LEAN_AND_MEAN
+#  include <windows.h>
+#  include <shellapi.h>         /* CommandLineToArgvW() */
+#endif
+
 #include "xmlstar.h"
 
 gOptions globalOptions;
@@ -186,6 +192,38 @@ xstrdup(const char *str)
     return ret;
 }
 
+
+#ifdef _WIN32
+/* On Windows, it's not really practical to get argv in UTF-8, so we have to do
+   this little dance. */
+static void
+gGetUnicodeOptions(int argc, char **argv)
+{
+    int nArgs, i;
+    LPWSTR *szArglist = CommandLineToArgvW(GetCommandLineW(), &nArgs);
+    assert(nArgs == argc);
+
+    for (i = 0; i < argc; i++) {
+        char *utf;
+        int utflen = WideCharToMultiByte(CP_UTF8, 0,
+            szArglist[i], -1,
+            NULL, 0, NULL, NULL);
+        if (utflen <= 0) {
+            fprintf(stderr, "Error decoding argument %d\n", i);
+            exit(EXIT_BAD_ARGS);
+        }
+        utf = malloc(utflen);
+        WideCharToMultiByte(CP_UTF8, 0,
+            szArglist[i], -1,
+            utf, utflen, NULL, NULL);
+        argv[i] = utf;
+    }
+    LocalFree(szArglist);
+}
+#else
+#  define gGetUnicodeOptions(argc, argv)
+#endif
+
 /**
  *  Parse global command line options
  */
@@ -254,7 +292,8 @@ main(int argc, char **argv)
     int ret = 0;
 
     xmlMemSetup(free, xmalloc, xrealloc, xstrdup);
-    
+
+    gGetUnicodeOptions(argc, argv);
     gInitOptions(&globalOptions);
     gParseOptions(&globalOptions, &argc, argv);
     
