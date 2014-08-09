@@ -1,3 +1,8 @@
+1.6.1: August 9, 2014
+
+    - handle unicode arguments under Windows
+
+
 1.6.0: June 12, 2014
 
     - get rid of "helpful" message about namespaces
