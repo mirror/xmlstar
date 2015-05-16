@@ -127,6 +127,7 @@ AS_IF([test "x$STATIC_LIBS" != xno],
     [AC_SEARCH_LIBS([libiconv_open], [iconv], [], [], "$USER_LIBS")], "$USER_LIBS")
     AC_SEARCH_LIBS([clock_gettime], [rt], [], [], "$USER_LIBS")
     AC_SEARCH_LIBS([deflate], [z], [], [], "$USER_LIBS")
+    AC_SEARCH_LIBS([gpg_strerror], [gpg-error], [], [], "$USER_LIBS")
     AC_SEARCH_LIBS([gcry_cipher_encrypt], [gcrypt], [], [], "$USER_LIBS")
 
     # Checks for inet libraries:
