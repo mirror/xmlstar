@@ -48,6 +48,12 @@ endif
 
 $(userguide).html : $(userguide_src)
 
+ug-paged:
+	$(V_DOCBOOK)$(EDIT_XML) $(userguide_src) | $(XSLTPROC) $(DOCBOOK_PARAMS) \
+  --stringparam html.stylesheet html.css \
+  --stringparam base.dir doc/UG \
+  http://docbook.sourceforge.net/release/xsl-ns/current/html/chunkfast.xsl -
+
 $(manpage): $(manpage_src)
 	 $(V_DOCBOOK)$(EDIT_XML) $< | $(XSLTPROC) -o $@ \
 	  http://docbook.sourceforge.net/release/xsl-ns/current/manpages/docbook.xsl \
@@ -62,4 +68,4 @@ clean-doc:
 endif BUILD_DOCS
 
 # NOTE: if put inside "if BUILD_DOCS" automake issues a warning
-.PHONY: clean-doc
+.PHONY: clean-doc ug-paged
