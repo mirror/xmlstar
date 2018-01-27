@@ -1,0 +1,5 @@
+#!/bin/sh
+./xmlstarlet depyx - << EOT | head -c50
+(book
+Atype hardback
+EOT

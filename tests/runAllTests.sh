@@ -18,6 +18,8 @@ command-help
 count1
 countnode1
 delete1
+depyx-bug120a
+depyx-bug120b
 dtd1
 dtd2
 dtd3
