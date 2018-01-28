@@ -195,6 +195,13 @@ pyxDePyx(char *file)
        }
    }
 eof:
+   if (ferror(in))
+   {
+      fprintf(stderr, "error reading file: %s: %s",
+          in == stdin ? "stdin" : file, strerror(errno));
+      return EXIT_BAD_FILE;
+   }
+
    return EXIT_SUCCESS;
 }
 
