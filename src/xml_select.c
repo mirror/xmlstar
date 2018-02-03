@@ -549,7 +549,7 @@ selPrepareXslt(xmlDocPtr style, selOptionsPtr ops, xmlChar *ns_arr[],
 
             if (root_template) {
                 xmlChar num_buf[1+10+1];    /* t+maxnumber+NUL */
-                xmlStrPrintf(num_buf, sizeof num_buf, BAD_CAST "t%d", t);
+                xmlStrPrintf(num_buf, sizeof num_buf, "t%d", t);
 
                 call_template = xmlNewChild(root_template, xslns,
                     BAD_CAST "call-template", NULL);
