@@ -146,7 +146,7 @@ xml_print_dir(const char* dir)
       char mtime[20];
       int size_len;
 
-      if ((d->d_name == NULL) || !strcmp(d->d_name, ".") || !strcmp(d->d_name, ".."))
+      if (strcmp(d->d_name, ".") == 0 || strcmp(d->d_name, "..") == 0)
           continue;
 
       if(lstat(d->d_name, &stats) != 0)
