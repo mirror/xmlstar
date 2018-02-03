@@ -29,6 +29,9 @@ THE SOFTWARE.
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <strings.h>
+#include <errno.h>
 
 #include <libxml/xmlmemory.h>
 
@@ -105,6 +108,7 @@ pyxDePyx(char *file)
 {
    static char line[INSZ];
    FILE *in = stdin;
+   int parseattrs;
 
    if (strcmp(file, "-"))
    {
@@ -116,94 +120,74 @@ pyxDePyx(char *file)
        }
    }
    
-   while (!feof(in))
+   parseattrs = 0;
+   while (fgets(line, INSZ - 1, in) != NULL)
    {
-       if (fgets(line, INSZ - 1, in))
-       {
-           if(line[strlen(line)-1] == '\n') line[strlen(line)-1] = '\0';
+       if(line[strlen(line)-1] == '\n') line[strlen(line)-1] = '\0';
 
-           while (line[0] == '(')
-           {
-               printf("<%s", line+1);
-               if (!feof(in))
-               {
-                   if (fgets(line, INSZ - 1, in))
-                   {
-                       if(line[strlen(line)-1] == '\n') line[strlen(line)-1] = '\0';
-
-                       while(line[0] == 'A')  /* attribute */
-                       {
-                           char *value;
-
-                           printf(" ");
-                           value = line+1;
-                           while(*value && (*value != ' '))
-                           {
-                               printf("%c", *value);
-                               value++;
-                           }
-                           if (*value == ' ')
-                           {
-                               value++;
-                               printf("=\"");
-                               pyxDecode(value, XML_C14N_NORMALIZE_ATTR);  /* attribute value */
-                               printf("\"");
-                           }
-                           if (!feof(in))
-                           {
-                               if (fgets(line, INSZ - 1, in))
-                               {
-                                   if(line[strlen(line)-1] == '\n') line[strlen(line)-1] = '\0';
-                               }
-                           }
-                       }
-                       printf(">");
-                   }
-               }
-           }
-
-           if (line[0] == '-')
-           {
-               /* text */
-               pyxDecode(line+1, XML_C14N_NORMALIZE_TEXT);
-           }
-           else if (line[0] == '?')
-           {
-               /* processing instruction */
-               printf("<?");
-               pyxDecode(line+1, XML_C14N_NORMALIZE_TEXT);
-               printf("?>");
-               printf("\n");  /* is this correct? */
-           }
-           else if (line[0] == 'D')
-           {
-               /* processing instruction */
-               printf("<!DOCTYPE");
-               pyxDecode(line+1, XML_C14N_NORMALIZE_TEXT);
-               printf(">");
-               printf("\n");  /* is this correct? */
-           }
-           else if (line[0] == 'C')
-           {
-               /* comment */
-               printf("<!--");
-               pyxDecode(line+1, XML_C14N_NORMALIZE_TEXT);
-               printf("-->");
-               printf("\n");  /* is this correct? */
-           }
-           else if (line[0] == '[')
-           {
-               /* CDATA */
-               printf("<![CDATA[");
-               pyxDecode(line+1, XML_C14N_NORMALIZE_NOTHING);
-               printf("]]>");
-               printf("\n");  /* is this correct? */
-           }
-           else if (line[0] == ')')
-           {
-               printf("</%s>", line+1);
-           }
+       if (parseattrs  && line[0] != 'A') {
+           parseattrs = 0;
+           printf(">");
        }
+       switch (line[0]) {
+       case '(':
+           printf("<%s", line+1);
+           parseattrs = 1;
+           break;
+       case 'A': {
+           /* attribute */
+           char *value = index(line+1, ' ');
+           if (value != NULL) *value++ = '\0';
+           printf(" %s", line+1);
+           if (value != NULL) {
+               printf("=\"");
+               pyxDecode(value, XML_C14N_NORMALIZE_ATTR);
+               printf("\"");
+           }
+           break;
+       }
+       case '-':
+           /* text */
+           pyxDecode(line+1, XML_C14N_NORMALIZE_TEXT);
+           break;
+       case '?':
+           /* processing instruction */
+           printf("<?");
+           pyxDecode(line+1, XML_C14N_NORMALIZE_TEXT);
+           printf("?>");
+           printf("\n");  /* is this correct? */
+           break;
+       case 'D':
+           /* processing instruction */
+           printf("<!DOCTYPE");
+           pyxDecode(line+1, XML_C14N_NORMALIZE_TEXT);
+           printf(">");
+           printf("\n");  /* is this correct? */
+           break;
+       case 'C':
+           /* comment */
+           printf("<!--");
+           pyxDecode(line+1, XML_C14N_NORMALIZE_TEXT);
+           printf("-->");
+           printf("\n");  /* is this correct? */
+           break;
+       case '[':
+           /* CDATA */
+           printf("<![CDATA[");
+           pyxDecode(line+1, XML_C14N_NORMALIZE_NOTHING);
+           printf("]]>");
+           printf("\n");  /* is this correct? */
+           break;
+       case ')':
+           printf("</%s>", line+1);
+           break;
+       }
+   }
+   if (ferror(in))
+   {
+      fprintf(stderr, "error reading file: %s: %s",
+          in == stdin ? "stdin" : file, strerror(errno));
+      return EXIT_BAD_FILE;
    }
 
    return EXIT_SUCCESS;
