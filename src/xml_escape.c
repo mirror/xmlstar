@@ -59,9 +59,6 @@ escUsage(int argc, char **argv, int escape, exit_status status)
     exit(status);
 }
 
-/* "apos" or "quot" are biggest, add 1 for leading "&" */
-enum { MAX_ENTITY_NAME = 1+4 };
-
 /* return 1 if entity was recognized and value output, 0 otherwise */
 static int
 put_entity_value(const char* entname, FILE* out)
@@ -208,6 +205,8 @@ xml_C11NNormalizeString(const xmlChar * input,
 static const char *
 xml_unescape(const char* str, FILE* out)
 {
+    /* "apos" or "quot" are biggest, add 1 for leading "&" */
+    enum { MAX_ENTITY_NAME = 1+4 };
     static char entity[MAX_ENTITY_NAME+1]; /* +1 for NUL terminator */
     int i;
 
@@ -222,7 +221,7 @@ xml_unescape(const char* str, FILE* out)
                 semicolon_off++;
             }
             entity_len = semicolon_off - i;
-            if (entity_len < MAX_ENTITY_NAME) {
+            if (entity_len < sizeof entity) {
                 memcpy(entity, &str[i], entity_len);
                 entity[entity_len] = '\0';
                 if (str[semicolon_off] == ';') {
